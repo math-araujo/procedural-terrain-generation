@@ -1,0 +1,9 @@
+---
+Language:  Cpp
+Standard:  Latest      
+BasedOnStyle:  Microsoft
+PointerAlignment: Left
+AccessModifierOffset: -4
+AllowAllArgumentsOnNextLine: true
+...
+
