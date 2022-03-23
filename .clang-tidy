@@ -1,6 +1,8 @@
 ---
 Checks: '*,
 -altera-*,
+-fuchsia-*,
+-*-vararg,
 -modernize-use-trailing-return-type,
 -modernize-use-nodiscard,
 -llvm-header-guard,
