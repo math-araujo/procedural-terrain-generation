@@ -6,7 +6,9 @@ Checks: '*,
 -modernize-use-trailing-return-type,
 -modernize-use-nodiscard,
 -llvm-header-guard,
--llvmlibc-*
+-llvmlibc-*,
+-readability-implicit-bool-cast,
+-readability-implicit-bool-conversion,
 '
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
