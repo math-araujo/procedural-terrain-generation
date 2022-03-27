@@ -5,5 +5,8 @@ BasedOnStyle:  Microsoft
 PointerAlignment: Left
 AccessModifierOffset: -4
 AllowAllArgumentsOnNextLine: true
+BraceWrapping:
+  SplitEmptyFunction: false
+BreakConstructorInitializers: AfterColon
 ...
 
