@@ -1,12 +1,16 @@
 ---
 Checks: '*,
 -altera-*,
+-cppcoreguidelines-pro-type-reinterpret-cast,
 -fuchsia-*,
+-*-uppercase-literal-suffix,
 -*-vararg,
+-*-magic-numbers,
 -modernize-use-trailing-return-type,
 -modernize-use-nodiscard,
 -llvm-header-guard,
--llvmlibc-*
+-llvmlibc-*,
+-readability-implicit-bool-conversion
 '
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
