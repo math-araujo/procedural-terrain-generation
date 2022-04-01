@@ -3,6 +3,8 @@
 
 #include <string_view>
 
+#include "mesh.hpp"
+
 struct GLFWwindow;
 
 class Application

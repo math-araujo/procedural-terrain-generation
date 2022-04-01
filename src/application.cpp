@@ -1,9 +1,8 @@
-// GLAD must be imported before GLFW
-// clang-format off
-#include <glad/glad.h>
-// clang-format on
-
 #include "application.hpp"
+
+// GLAD must be imported before GLFW
+#include <glad/glad.h>
+
 #include <GLFW/glfw3.h>
 #include <exception>
 #include <iostream>
@@ -83,5 +82,6 @@ void Application::render()
     // Clear window with specified color
     glClearColor(0.0f, 0.1f, 0.4f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
+
     // Render scene
 }

@@ -1,6 +1,7 @@
 add_executable(main 
     main.cpp
     application.hpp application.cpp
+    mesh.hpp mesh.cpp
 )
 
 target_link_libraries(main PRIVATE glad glfw glm::glm imgui::imgui)
