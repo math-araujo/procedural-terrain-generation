@@ -8,5 +8,6 @@ AllowAllArgumentsOnNextLine: true
 BraceWrapping:
   SplitEmptyFunction: false
 BreakConstructorInitializers: AfterColon
+AlwaysBreakTemplateDeclarations: Yes
 ...
 
