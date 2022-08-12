@@ -28,14 +28,14 @@ private:
     GLFWwindow* window_{nullptr};
 
     /*
-    Create a window and OpenGL context. Returns true
-    if creation was succesfull and false otherwise.
+    Create a window and OpenGL context. If creation
+    was unsuccesfull, throws a runtime exception.
     */
     void create_context(std::string_view title);
 
     /*
-    Load OpenGL functions. Returns true
-    if loading was succesfull and false otherwise.
+    Load OpenGL functions. If loading was unsuccessfull,
+    throws a runtime exception.
     */
     void load_opengl();
 };
