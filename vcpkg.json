@@ -1,0 +1,15 @@
+{
+    "name": "procedural-terrain-generation",
+    "version": "1.0",
+    "dependencies": 
+    [
+      "glfw3",
+      "glad",
+      "glm",
+      "stb",
+      {
+        "name": "imgui",
+        "features": ["glfw-binding", "opengl3-binding"]
+      }
+    ]
+  }

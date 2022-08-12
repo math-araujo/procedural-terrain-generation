@@ -4,7 +4,8 @@ add_executable(main
     mesh.hpp mesh.cpp
 )
 
-target_link_libraries(main PRIVATE glad glfw glm::glm imgui::imgui)
+target_link_libraries(main PRIVATE glad::glad glfw glm::glm imgui::imgui)
+target_include_directories(main PRIVATE ${STB_INCLUDE_DIRS})
 
 if (MSVC)
     target_compile_options(main PRIVATE /W3)

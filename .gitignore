@@ -33,3 +33,5 @@
 
 # Directory
 .vscode/
+vcpkg/
+vcpkg_installed/
