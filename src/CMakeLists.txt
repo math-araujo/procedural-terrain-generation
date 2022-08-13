@@ -2,6 +2,7 @@ add_executable(main
     main.cpp
     application.hpp application.cpp
     mesh.hpp mesh.cpp
+    shader.hpp shader.cpp
 )
 
 target_link_libraries(main PRIVATE glad::glad glfw glm::glm imgui::imgui)
