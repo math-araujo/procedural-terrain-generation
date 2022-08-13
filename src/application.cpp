@@ -12,6 +12,28 @@ Application::Application(int window_width, int window_height, std::string_view t
 {
     create_context(title);
     load_opengl();
+    mesh_ = std::make_unique<Mesh>(
+        std::initializer_list<float>
+        {
+            0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
+            -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f,
+            0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f,
+            0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f,
+            -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f,
+            -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f
+        }
+    );
+    
+    shader_program_ = std::make_unique<ShaderProgram>(
+        std::initializer_list<std::pair<std::string_view, Shader::Type>>
+        {
+            {"vertex_shader.vs", Shader::Type::Vertex},
+            {"fragment_shader.fs", Shader::Type::Fragment},
+        }
+    );
+                
+    shader_program_->use();
+    mesh_->bind();
 }
 
 void Application::create_context(std::string_view title)
@@ -55,8 +77,15 @@ void Application::load_opengl()
 
 Application::~Application()
 {
+    cleanup();
     glfwDestroyWindow(window_);
     glfwTerminate();
+}
+
+void Application::cleanup()
+{
+    shader_program_.reset();
+    mesh_.reset();
 }
 
 void Application::run()
@@ -84,4 +113,5 @@ void Application::render()
     glClear(GL_COLOR_BUFFER_BIT);
 
     // Render scene
+    mesh_->render();
 }

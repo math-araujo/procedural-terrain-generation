@@ -5,7 +5,7 @@
 
 #include <GLFW/glfw3.h>
 
-Mesh::Mesh(std::vector<float> vertices) : number_of_vertices_{static_cast<int>(vertices.size()) / 5}
+Mesh::Mesh(std::vector<float> vertices) : number_of_vertices_{static_cast<int>(vertices.size()) / 6}
 {
     glGenVertexArrays(1, &vertex_array_identifier_);
     glBindVertexArray(vertex_array_identifier_);
@@ -17,10 +17,10 @@ Mesh::Mesh(std::vector<float> vertices) : number_of_vertices_{static_cast<int>(v
     glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizei>(vertices.size() * sizeof(float)), vertices.data(),
                  GL_STATIC_DRAW);
 
-    // Specify vertex format containing position and texture coordinates, respectively
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), reinterpret_cast<void*>(0));
+    // Specify vertex format containing position and colors, respectively
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), reinterpret_cast<void*>(0));
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 }
 

@@ -2,8 +2,10 @@
 #define APPLICATION_HPP
 
 #include <string_view>
+#include <memory>
 
 #include "mesh.hpp"
+#include "shader.hpp"
 
 struct GLFWwindow;
 
@@ -27,6 +29,9 @@ private:
     const int height_;
     GLFWwindow* window_{nullptr};
 
+    std::unique_ptr<Mesh> mesh_{};
+    std::unique_ptr<ShaderProgram> shader_program_{};
+
     /*
     Create a window and OpenGL context. If creation
     was unsuccesfull, throws a runtime exception.
@@ -38,6 +43,14 @@ private:
     throws a runtime exception.
     */
     void load_opengl();
+
+    /*
+    Manually cleanup OpenGL-related objects. Since Application
+    destructor terminates the OpenGL context, it's necessary
+    to manually cleanup all OpenGL-related objects prior to 
+    the termination of the context.
+    */
+    void cleanup();
 };
 
 void error_callback(int error, const char* description);

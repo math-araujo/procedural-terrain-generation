@@ -7,6 +7,7 @@
 class Mesh
 {
 public:
+    Mesh() = default;
     explicit Mesh(std::vector<float> vertices);
     Mesh(const Mesh&) = delete;
     Mesh(Mesh&& other) noexcept;
@@ -18,7 +19,7 @@ public:
     void render();
 
 private:
-    int number_of_vertices_;
+    int number_of_vertices_{0};
     std::uint32_t vertex_array_identifier_{0};
 };
 
