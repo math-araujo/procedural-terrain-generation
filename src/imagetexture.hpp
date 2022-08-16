@@ -8,6 +8,7 @@
 Class representing 3D image texture data stored using an interleaved
 format (e.g. RGBRGB or RGBARGBA).
 */
+template<typename T>
 class ImageTexture
 {
 public:
@@ -19,13 +20,13 @@ public:
     ImageTexture& operator=(ImageTexture&&) noexcept = default;
     ~ImageTexture() = default;
 
-    unsigned char get(std::size_t i, std::size_t j, std::size_t k = 0) const;
+    T get(std::size_t i, std::size_t j, std::size_t k = 0) const;
 
     template<typename RandomAccessIterator>
     void set(std::size_t i, std::size_t j, RandomAccessIterator begin, RandomAccessIterator end);
-    void set(std::size_t i, std::size_t j, std::size_t k, unsigned char value);
+    void set(std::size_t i, std::size_t j, std::size_t k, T value);
     
-    const unsigned char* data() const;
+    const T* data() const;
     std::size_t width() const;
     std::size_t height() const;
     std::size_t depth() const;
@@ -33,7 +34,7 @@ private:
     std::size_t width_{0};
     std::size_t height_{0};
     std::size_t depth_{1};
-    std::vector<unsigned char> image_data_;
+    std::vector<T> image_data_;
 };
 
 #include "imagetexture.inl"
