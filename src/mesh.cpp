@@ -1,9 +1,6 @@
 #include "mesh.hpp"
 
-// GLAD must be imported before GLFW
 #include <glad/glad.h>
-
-#include <GLFW/glfw3.h>
 
 Mesh::Mesh(std::vector<float> vertices) : number_of_vertices_{static_cast<int>(vertices.size()) / 6}
 {
