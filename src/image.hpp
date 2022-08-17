@@ -46,7 +46,6 @@ private:
     std::vector<T> image_data_;
 };
 
-//void save_image(std::string_view filename, const Image<float>& image);
 void save_image(std::string_view filename, const Image<std::uint8_t>& image);
 
 /* 
@@ -61,4 +60,4 @@ Image<std::uint8_t> from_float_to_uint8(const Image<float>& image);
 
 #include "image.inl"
 
-#endif // IMAGE_TEXTURE_HPP
+#endif // IMAGE_HPP

@@ -2,6 +2,7 @@
 #define TEXTURE_HPP
 
 #include <cstdint>
+#include <string_view>
 
 #include "image.hpp"
 
@@ -9,7 +10,6 @@ class Texture
 {
 public:
     Texture(std::uint32_t width, std::uint32_t height);
-    explicit Texture(const Image<std::uint8_t>& image);
 
     Texture(const Texture&) = delete;
     Texture(Texture&& other) noexcept;
@@ -18,6 +18,8 @@ public:
     ~Texture();
 
     void copy_image(const Image<std::uint8_t>& image);
+    void copy_image(std::string_view filename, bool flip_on_load = true);
+    void copy_image(const unsigned char* image_data, std::int32_t width, std::int32_t height);
     void bind(std::uint32_t unit);
 private:
     std::uint32_t width_;

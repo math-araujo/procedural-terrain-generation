@@ -2,8 +2,8 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image.h"
-#include "stb_image_write.h"
+#include <stb_image.h>
+#include <stb_image_write.h>
 
 void save_image(std::string_view filename, const Image<std::uint8_t>& image)
 {

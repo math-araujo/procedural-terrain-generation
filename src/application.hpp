@@ -6,6 +6,7 @@
 
 #include "mesh.hpp"
 #include "shader.hpp"
+#include "texture.hpp"
 
 struct GLFWwindow;
 
@@ -30,6 +31,7 @@ private:
     GLFWwindow* window_{nullptr};
 
     std::unique_ptr<Mesh> mesh_{};
+    std::unique_ptr<Texture> texture_{};
     std::unique_ptr<ShaderProgram> shader_program_{};
 
     /*

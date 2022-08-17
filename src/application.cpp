@@ -13,17 +13,20 @@ Application::Application(int window_width, int window_height, std::string_view t
     create_context(title);
     load_opengl();
     mesh_ = std::make_unique<Mesh>(
-        std::initializer_list<float>
+        std::vector<float>
         {
-            0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
-            -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f,
-            0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f,
-            0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f,
-            -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f,
-            -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f
+            // X     Y     Z     U     V
+            0.5f, 0.5f, 0.0f, 1.0f, 1.0f, // Top-right
+            -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, // Top-left
+            0.5f, -0.5f, 0.0f, 1.0f, 0.0f, // Bottom-right
+            0.5f, -0.5f, 0.0f, 1.0f, 0.0f, // Bottom-right
+            -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, // Top-left
+            -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, // Bottom-left
         }
     );
     
+    texture_ = std::make_unique<Texture>(200, 100);
+    texture_->copy_image("perlin_test_color.png");
     shader_program_ = std::make_unique<ShaderProgram>(
         std::initializer_list<std::pair<std::string_view, Shader::Type>>
         {
@@ -33,7 +36,9 @@ Application::Application(int window_width, int window_height, std::string_view t
     );
                 
     shader_program_->use();
+    shader_program_->set_int_uniform("texture_sampler", 0);
     mesh_->bind();
+    texture_->bind(0);
 }
 
 void Application::create_context(std::string_view title)
@@ -85,6 +90,7 @@ Application::~Application()
 void Application::cleanup()
 {
     shader_program_.reset();
+    texture_.reset();
     mesh_.reset();
 }
 
