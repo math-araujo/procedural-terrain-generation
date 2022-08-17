@@ -1,11 +1,15 @@
 #include "shader.hpp"
 
 #include <array>
+#include <cassert>
 #include <exception>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <vector>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 Shader::Shader(const std::string& shader_source_code, Type type) : identifier_{glCreateShader(to_underlying(type))}
 {
@@ -119,18 +123,18 @@ void check_shader_program_link_status(std::uint32_t shader_program_id, std::init
 void ShaderProgram::retrieve_uniforms()
 {
     int number_of_uniforms{0};
-    glGetProgramInterfaceiv(program_id_, GL_PROGRAM_INPUT, GL_ACTIVE_RESOURCES, &number_of_uniforms);
+    glGetProgramInterfaceiv(program_id_, GL_UNIFORM, GL_ACTIVE_RESOURCES, &number_of_uniforms);
     std::array<GLenum, 2> properties{GL_NAME_LENGTH, GL_LOCATION};
     std::array<GLint, 2> results{};
     std::vector<char> uniform_name(256);
     for (int uniform = 0; uniform < number_of_uniforms; ++uniform)
     {
-        glGetProgramResourceiv(program_id_, GL_PROGRAM_INPUT, uniform, properties.size(), properties.data(),
+        glGetProgramResourceiv(program_id_, GL_UNIFORM, uniform, properties.size(), properties.data(),
                                 results.size(), nullptr, results.data());
         
         // Get resources (uniform name and uniform location)
         uniform_name.resize(results[0]);
-        glGetProgramResourceName(program_id_, GL_PROGRAM_INPUT, uniform, uniform_name.size(), nullptr, 
+        glGetProgramResourceName(program_id_, GL_UNIFORM, uniform, uniform_name.size(), nullptr, 
                                 uniform_name.data());
         std::uint32_t uniform_location = results.back();
 
@@ -158,4 +162,52 @@ ShaderProgram::~ShaderProgram()
 void ShaderProgram::use()
 {
     glUseProgram(program_id_);
+}
+
+void ShaderProgram::set_bool_uniform(const std::string& uniform_name, bool value)
+{
+    assert(uniform_locations.contains(uniform_name));
+    glProgramUniform1i(program_id_, uniform_locations[uniform_name], static_cast<int>(value));
+}
+
+void ShaderProgram::set_int_uniform(const std::string& uniform_name, int value)
+{
+    assert(uniform_locations.contains(uniform_name));
+    glProgramUniform1i(program_id_, uniform_locations[uniform_name], value);
+}
+
+void ShaderProgram::set_float_uniform(const std::string& uniform_name, float value)
+{
+    assert(uniform_locations.contains(uniform_name));
+    glProgramUniform1f(program_id_, uniform_locations[uniform_name], value);
+}
+
+void ShaderProgram::set_vec2_uniform(const std::string& uniform_name, float x, float y)
+{
+    assert(uniform_locations.contains(uniform_name));
+    glProgramUniform2f(program_id_, uniform_locations[uniform_name], x, y);
+}
+
+void ShaderProgram::set_vec2_uniform(const std::string& uniform_name, const glm::vec2& vector)
+{
+    assert(uniform_locations.contains(uniform_name));
+    glProgramUniform2fv(program_id_, uniform_locations[uniform_name], 1, glm::value_ptr(vector));
+}
+
+void ShaderProgram::set_vec3_uniform(const std::string& uniform_name, float x, float y, float z)
+{
+    assert(uniform_locations.contains(uniform_name));
+    glProgramUniform3f(program_id_, uniform_locations[uniform_name], x, y, z);
+}
+
+void ShaderProgram::set_vec3_uniform(const std::string& uniform_name, const glm::vec3& vector)
+{
+    assert(uniform_locations.contains(uniform_name));
+    glProgramUniform3fv(program_id_, uniform_locations[uniform_name], 1, glm::value_ptr(vector));
+}
+
+void ShaderProgram::set_mat4_uniform(const std::string& uniform_name, const glm::mat4& matrix)
+{
+    assert(uniform_locations.contains(uniform_name));
+    glProgramUniformMatrix4fv(program_id_, uniform_locations[uniform_name], 1, GL_FALSE, glm::value_ptr(matrix));
 }
