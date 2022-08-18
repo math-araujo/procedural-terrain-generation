@@ -4,7 +4,9 @@
 #include <string_view>
 #include <memory>
 
+#include "image.hpp"
 #include "mesh.hpp"
+#include "noisegeneration.hpp"
 #include "shader.hpp"
 #include "texture.hpp"
 
@@ -24,7 +26,6 @@ public:
     void process_input();
     void update();
     void render();
-
 private:
     const int width_;
     const int height_;
@@ -33,6 +34,9 @@ private:
     std::unique_ptr<Mesh> mesh_{};
     std::unique_ptr<Texture> texture_{};
     std::unique_ptr<ShaderProgram> shader_program_{};
+    const PerlinNoiseInfo default_perlin_info_{200, 100};
+    PerlinNoiseInfo perlin_info_{200, 100};
+    Image<std::uint8_t> color_map_{200, 100};
 
     /*
     Create a window and OpenGL context. If creation
@@ -41,11 +45,21 @@ private:
     void create_context(std::string_view title);
 
     /*
+    Initializes ImGui
+    */
+    void initialize_imgui();
+
+    /*
     Load OpenGL functions. If loading was unsuccessfull,
     throws a runtime exception.
     */
     void load_opengl();
 
+    /*
+    Load Perlin Noise settings editor
+    */
+    void render_imgui_editor();
+    
     /*
     Manually cleanup OpenGL-related objects. Since Application
     destructor terminates the OpenGL context, it's necessary
