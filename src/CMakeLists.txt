@@ -9,6 +9,8 @@ add_executable(main
 )
 
 target_link_libraries(main PRIVATE glad::glad glfw glm::glm imgui::imgui)
+target_compile_features(main PRIVATE cxx_std_20)
+set_target_properties(main PROPERTIES CXX_EXTENSIONS OFF)
 target_include_directories(main PRIVATE ${STB_INCLUDE_DIRS})
 
 if (MSVC)
