@@ -3,6 +3,9 @@ add_executable(main
     application.hpp application.cpp
     mesh.hpp mesh.cpp
     shader.hpp shader.cpp
+    image.hpp image.inl image.cpp
+    texture.hpp texture.cpp
+    noisegeneration.hpp noisegeneration.cpp
 )
 
 target_link_libraries(main PRIVATE glad::glad glfw glm::glm imgui::imgui)

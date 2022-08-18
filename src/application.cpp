@@ -7,6 +7,8 @@
 #include <exception>
 #include <iostream>
 
+#include "noisegeneration.hpp"
+
 Application::Application(int window_width, int window_height, std::string_view title) :
     width_{window_width}, height_{window_height}
 {
@@ -26,7 +28,11 @@ Application::Application(int window_width, int window_height, std::string_view t
     );
     
     texture_ = std::make_unique<Texture>(200, 100);
-    texture_->copy_image("perlin_test_color.png");
+    PerlinNoiseInfo info{200, 100};
+    auto color_map = perlin_noise_color_map(info);
+    save_image("perlin_noise.png", color_map);
+    //texture_->copy_image("perlin_noise.png");
+    texture_->copy_image(color_map);
     shader_program_ = std::make_unique<ShaderProgram>(
         std::initializer_list<std::pair<std::string_view, Shader::Type>>
         {
@@ -34,7 +40,7 @@ Application::Application(int window_width, int window_height, std::string_view t
             {"fragment_shader.fs", Shader::Type::Fragment},
         }
     );
-                
+    
     shader_program_->use();
     shader_program_->set_int_uniform("texture_sampler", 0);
     mesh_->bind();
