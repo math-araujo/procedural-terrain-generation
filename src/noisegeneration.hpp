@@ -1,6 +1,7 @@
 #ifndef NOISE_GENERATION_HPP
 #define NOISE_GENERATION_HPP
 
+#include <array>
 #include <cstdint>
 #include <glm/glm.hpp>
 
@@ -14,6 +15,7 @@ struct PerlinNoiseInfo
     float lacunarity{2.0f};
     float persistance{0.5f};
     int octaves{8};
+    std::array<float, 2> offset;
     std::uint32_t width{200};
     std::uint32_t height{100};
 };

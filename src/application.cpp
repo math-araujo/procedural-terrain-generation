@@ -157,6 +157,7 @@ void Application::render_imgui_editor()
     ImGui::SliderFloat("Persistance", &perlin_info_.persistance, 0.01f, 1.0f);
     ImGui::SliderInt("Octaves", &perlin_info_.octaves, 1, 16);
     ImGui::SliderFloat("Noise Scale", &perlin_info_.noise_scale, 0.01f, 50.0f);
+    ImGui::SliderFloat2("Offset", perlin_info_.offset.data(), -1000, 1000);
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, 
                 ImGui::GetIO().Framerate);
     if (ImGui::Button("Reset Settings"))
