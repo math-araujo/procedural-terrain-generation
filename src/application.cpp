@@ -38,8 +38,8 @@ Application::Application(int window_width, int window_height, std::string_view t
     shader_program_ = std::make_unique<ShaderProgram>(
         std::initializer_list<std::pair<std::string_view, Shader::Type>>
         {
-            {"vertex_shader.vs", Shader::Type::Vertex},
-            {"fragment_shader.fs", Shader::Type::Fragment},
+            {"shaders/vertex_shader.vs", Shader::Type::Vertex},
+            {"shaders/fragment_shader.fs", Shader::Type::Fragment},
         }
     );
     

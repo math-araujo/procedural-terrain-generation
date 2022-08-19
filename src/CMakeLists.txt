@@ -18,3 +18,10 @@ if (MSVC)
 else()
     target_compile_options(main PRIVATE -Wall -Wextra -Wpedantic)
 endif()
+
+# Copy 'data' directory to 'build' directory after build
+add_custom_command(TARGET main POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_SOURCE_DIR}/data
+    ${CMAKE_CURRENT_BINARY_DIR}/
+)
