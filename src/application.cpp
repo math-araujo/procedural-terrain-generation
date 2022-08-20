@@ -8,6 +8,7 @@
 #include <glad/glad.h>
 
 #include <GLFW/glfw3.h>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include <exception>
 #include <iostream>
@@ -45,6 +46,7 @@ Application::Application(int window_width, int window_height, std::string_view t
     
     shader_program_->use();
     shader_program_->set_int_uniform("texture_sampler", 0);
+    shader_program_->set_mat4_uniform("proj_view_transform", projection_matrix_);
     mesh_->bind();
     texture_->bind(0);
 }

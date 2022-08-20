@@ -4,6 +4,8 @@
 #include <string_view>
 #include <memory>
 
+#include <glm/fwd.hpp>
+
 #include "camera.hpp"
 #include "image.hpp"
 #include "mesh.hpp"
@@ -33,6 +35,7 @@ private:
     GLFWwindow* window_{nullptr};
 
     Camera camera_{};
+    glm::mat4 projection_matrix_{1.0f};
     std::unique_ptr<Mesh> mesh_{};
     std::unique_ptr<Texture> texture_{};
     std::unique_ptr<ShaderProgram> shader_program_{};
