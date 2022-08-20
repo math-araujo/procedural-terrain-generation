@@ -14,7 +14,7 @@
 #include <iostream>
 
 Application::Application(int window_width, int window_height, std::string_view title) :
-    width_{window_width}, height_{window_height}
+    width_{window_width}, height_{window_height}, aspect_ratio_{static_cast<float>(width_) / height_}
 {
     create_context(title);
     initialize_imgui();
@@ -46,7 +46,6 @@ Application::Application(int window_width, int window_height, std::string_view t
     
     shader_program_->use();
     shader_program_->set_int_uniform("texture_sampler", 0);
-    shader_program_->set_mat4_uniform("proj_view_transform", projection_matrix_);
     mesh_->bind();
     texture_->bind(0);
 }
@@ -73,6 +72,50 @@ void Application::create_context(std::string_view title)
     }
 
     glfwMakeContextCurrent(window_);
+    glfwSetWindowSizeCallback(window_, framebuffer_size_callback);
+    glfwSetWindowUserPointer(window_, this);
+    glfwSetCursorPosCallback(window_, mouse_movement_callback);
+    glfwSetScrollCallback(window_, scroll_callback);
+    glfwSetInputMode(window_, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+}
+
+void error_callback(int error, const char* description)
+{
+    std::cerr << "GLFW Error (" << error << "): " << description << std::endl;
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}
+
+void mouse_movement_callback(GLFWwindow* window, double x_pos, double y_pos)
+{
+    Application* application = static_cast<Application*>(glfwGetWindowUserPointer(window));
+    static bool first_mouse{true};
+    static glm::vec2 last_position{0.0f, 0.0f};
+
+    if (first_mouse)
+    {
+        last_position = {static_cast<float>(x_pos), static_cast<float>(y_pos)};
+        first_mouse = false;
+    }
+    
+    const float x_offset{static_cast<float>(x_pos - last_position.x)};
+    const float y_offset{static_cast<float>(last_position.y - y_pos)};
+    last_position = {static_cast<float>(x_pos), static_cast<float>(y_pos)};
+    application->camera().process_mouse_movement(x_offset, y_offset);
+}
+
+FPSCamera& Application::camera()
+{
+    return camera_;
+}
+
+void scroll_callback(GLFWwindow* window, double x_offset, double y_offset)
+{
+    Application* application = static_cast<Application*>(glfwGetWindowUserPointer(window));
+    application->camera().process_mouse_scroll(y_offset);
 }
 
 void Application::initialize_imgui()
@@ -83,11 +126,6 @@ void Application::initialize_imgui()
     ImGui::StyleColorsDark();
     ImGui_ImplGlfw_InitForOpenGL(window_, true);
     ImGui_ImplOpenGL3_Init("# version 450");
-}
-
-void error_callback(int error, const char* description)
-{
-    std::cerr << "GLFW Error (" << error << "): " << description << std::endl;
 }
 
 void Application::load_opengl()
@@ -119,9 +157,16 @@ void Application::cleanup()
 
 void Application::run()
 {
+    float delta_time = 0.0f;
+    float previous_time = 0.0f;
+
     while (!glfwWindowShouldClose(window_))
     {
-        process_input();
+        float current_time = static_cast<float>(glfwGetTime());
+        delta_time = current_time - previous_time;
+        previous_time = current_time;
+
+        process_input(delta_time);
         update();
         render();
         glfwSwapBuffers(window_);
@@ -129,8 +174,34 @@ void Application::run()
     }
 }
 
-void Application::process_input()
-{}
+void Application::process_input(float delta_time)
+{
+    if (glfwGetKey(window_, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    {
+        glfwSetWindowShouldClose(window_, true);
+        return;
+    }
+
+    if (glfwGetKey(window_, GLFW_KEY_W) == GLFW_PRESS)
+    {
+        camera_.process_keyboard_input(CameraMovement::Forward, delta_time);
+    }
+    
+    if (glfwGetKey(window_, GLFW_KEY_S) == GLFW_PRESS)
+    {
+        camera_.process_keyboard_input(CameraMovement::Backward, delta_time);
+    }
+    
+    if (glfwGetKey(window_, GLFW_KEY_D) == GLFW_PRESS)
+    {
+        camera_.process_keyboard_input(CameraMovement::Right, delta_time);
+    }
+
+    if (glfwGetKey(window_, GLFW_KEY_A) == GLFW_PRESS)
+    {
+        camera_.process_keyboard_input(CameraMovement::Left, delta_time);
+    }
+}
 
 void Application::update()
 {}
@@ -140,8 +211,10 @@ void Application::render()
     // Clear window with specified color
     glClearColor(0.0f, 0.1f, 0.4f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
-        
+    
     // Render scene
+    projection_matrix_ = glm::perspective(glm::radians(camera_.zoom()), aspect_ratio_, 0.1f, 100.0f);
+    shader_program_->set_mat4_uniform("proj_view_transform", projection_matrix_ * camera_.view());
     mesh_->render();
 
     // Render GUI

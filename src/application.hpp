@@ -26,15 +26,18 @@ public:
     ~Application();
 
     void run();
-    void process_input();
+    void process_input(float delta_time);
     void update();
     void render();
+
+    FPSCamera& camera();
 private:
     const int width_;
     const int height_;
+    const float aspect_ratio_;
     GLFWwindow* window_{nullptr};
 
-    Camera camera_{};
+    FPSCamera camera_{};
     glm::mat4 projection_matrix_{1.0f};
     std::unique_ptr<Mesh> mesh_{};
     std::unique_ptr<Texture> texture_{};
@@ -75,5 +78,8 @@ private:
 };
 
 void error_callback(int error, const char* description);
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void mouse_movement_callback(GLFWwindow* window, double x_pos, double y_pos);
+void scroll_callback(GLFWwindow* window, double x_offset, double y_offset);
 
 #endif // APPLICATION_HPP
