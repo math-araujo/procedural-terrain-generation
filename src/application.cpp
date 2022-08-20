@@ -74,9 +74,10 @@ void Application::create_context(std::string_view title)
     glfwMakeContextCurrent(window_);
     glfwSetWindowSizeCallback(window_, framebuffer_size_callback);
     glfwSetWindowUserPointer(window_, this);
+    glfwSetKeyCallback(window_, key_callback);
     glfwSetCursorPosCallback(window_, mouse_movement_callback);
+    glfwSetMouseButtonCallback(window_, mouse_button_callback);
     glfwSetScrollCallback(window_, scroll_callback);
-    glfwSetInputMode(window_, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
 void error_callback(int error, const char* description)
@@ -84,9 +85,60 @@ void error_callback(int error, const char* description)
     std::cerr << "GLFW Error (" << error << "): " << description << std::endl;
 }
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+void framebuffer_size_callback(GLFWwindow* /*window*/, int width, int height)
 {
     glViewport(0, 0, width, height);
+}
+
+void key_callback(GLFWwindow* window, int key, int /*scancode*/, int action, int /*mods*/)
+{
+    Application* application = static_cast<Application*>(glfwGetWindowUserPointer(window));
+    
+    if (key == GLFW_KEY_P && action == GLFW_PRESS)
+    {
+        if (application->is_wireframe_mode())
+        {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        }
+        else
+        {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        }
+        application->switch_wireframe_mode();
+    }
+
+    if (key == GLFW_KEY_F && action == GLFW_PRESS)
+    {
+        if (application->is_mouse_movement_free())
+        {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        }
+        else
+        {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        }
+        application->switch_free_mouse_movement();
+    }
+}
+
+bool Application::is_wireframe_mode() const
+{
+    return wireframe_mode_;
+}
+
+void Application::switch_wireframe_mode()
+{
+    wireframe_mode_ = !wireframe_mode_;
+}
+
+bool Application::is_mouse_movement_free() const
+{
+    return free_mouse_move_;
+}
+
+void Application::switch_free_mouse_movement()
+{
+    free_mouse_move_ = !free_mouse_move_;
 }
 
 void mouse_movement_callback(GLFWwindow* window, double x_pos, double y_pos)
@@ -104,7 +156,15 @@ void mouse_movement_callback(GLFWwindow* window, double x_pos, double y_pos)
     const float x_offset{static_cast<float>(x_pos - last_position.x)};
     const float y_offset{static_cast<float>(last_position.y - y_pos)};
     last_position = {static_cast<float>(x_pos), static_cast<float>(y_pos)};
-    application->camera().process_mouse_movement(x_offset, y_offset);
+    if (application->is_mouse_movement_free() || application->mouse_clicking())
+    {
+        application->camera().process_mouse_movement(x_offset, y_offset);
+    }
+}
+
+bool Application::mouse_clicking() const
+{
+    return mouse_click_;
 }
 
 FPSCamera& Application::camera()
@@ -112,7 +172,31 @@ FPSCamera& Application::camera()
     return camera_;
 }
 
-void scroll_callback(GLFWwindow* window, double x_offset, double y_offset)
+void mouse_button_callback(GLFWwindow* window, int button, int action, int /*mods*/)
+{
+    Application* application = static_cast<Application*>(glfwGetWindowUserPointer(window));
+    if (button == GLFW_MOUSE_BUTTON_RIGHT)
+    {
+        switch (action)
+        {
+        case GLFW_PRESS:
+            application->set_mouse_click(true);
+            break;
+        case GLFW_RELEASE:
+            application->set_mouse_click(false);
+            break;
+        default:
+            break;
+        }
+    }
+}
+
+void Application::set_mouse_click(bool mouse_click)
+{
+    mouse_click_ = mouse_click;
+}
+
+void scroll_callback(GLFWwindow* window, double /*x_offset*/, double y_offset)
 {
     Application* application = static_cast<Application*>(glfwGetWindowUserPointer(window));
     application->camera().process_mouse_scroll(y_offset);

@@ -30,12 +30,22 @@ public:
     void update();
     void render();
 
+    // Functions to interact with GLFW callback functions
     FPSCamera& camera();
+    bool is_wireframe_mode() const;
+    void switch_wireframe_mode();
+    void set_mouse_click(bool mouse_click);
+    bool mouse_clicking() const;
+    void switch_free_mouse_movement();
+    bool is_mouse_movement_free() const;
 private:
     const int width_;
     const int height_;
     const float aspect_ratio_;
     GLFWwindow* window_{nullptr};
+    bool wireframe_mode_{false};
+    bool mouse_click_{false};
+    bool free_mouse_move_{false};
 
     FPSCamera camera_{};
     glm::mat4 projection_matrix_{1.0f};
@@ -79,7 +89,9 @@ private:
 
 void error_callback(int error, const char* description);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void mouse_movement_callback(GLFWwindow* window, double x_pos, double y_pos);
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 void scroll_callback(GLFWwindow* window, double x_offset, double y_offset);
 
 #endif // APPLICATION_HPP
