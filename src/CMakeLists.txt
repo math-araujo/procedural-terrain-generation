@@ -6,6 +6,7 @@ add_executable(main
     image.hpp image.inl image.cpp
     texture.hpp texture.cpp
     noisegeneration.hpp noisegeneration.cpp
+    camera.hpp camera.cpp
 )
 
 target_link_libraries(main PRIVATE glad::glad glfw glm::glm imgui::imgui)

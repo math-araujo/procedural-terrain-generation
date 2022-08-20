@@ -4,6 +4,7 @@
 #include <string_view>
 #include <memory>
 
+#include "camera.hpp"
 #include "image.hpp"
 #include "mesh.hpp"
 #include "noisegeneration.hpp"
@@ -31,6 +32,7 @@ private:
     const int height_;
     GLFWwindow* window_{nullptr};
 
+    Camera camera_{};
     std::unique_ptr<Mesh> mesh_{};
     std::unique_ptr<Texture> texture_{};
     std::unique_ptr<ShaderProgram> shader_program_{};
