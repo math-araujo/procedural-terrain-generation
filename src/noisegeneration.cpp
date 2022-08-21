@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cassert>
 #include <limits>
 #include <vector>
 
@@ -12,6 +13,17 @@
 PerlinNoiseInfo::PerlinNoiseInfo(std::uint32_t map_width, std::uint32_t map_height): 
     width{map_width}, height{map_height} 
 {}
+
+void RegionsInfo::compute_uint8_colors()
+{
+    for (std::size_t i = 0; i < size; ++i)
+    {
+        std::transform(colors[i].cbegin(), colors[i].cend(), colors_uint8[i].begin(), [](float channel_value)
+        {
+            return static_cast<std::uint8_t>(255.0f * channel_value);
+        });
+    }
+}
 
 Image<float> perlin_noise_height_map(const PerlinNoiseInfo& info)
 {
@@ -55,25 +67,20 @@ Image<float> perlin_noise_height_map(const PerlinNoiseInfo& info)
     return height_map;
 }
 
-Image<std::uint8_t> perlin_noise_color_map(const PerlinNoiseInfo& info)
+Image<std::uint8_t> perlin_noise_color_map(const PerlinNoiseInfo& info, const RegionsInfo& regions_info)
 {
     const Image<float> height_map = perlin_noise_height_map(info);
     Image<std::uint8_t> color_map{info.width, info.height, 3};
-    const std::array<std::uint8_t, 3> water{67, 115, 208};
-    const std::array<std::uint8_t, 3> land{86, 152, 23};
     for (std::size_t i = 0; i < color_map.height(); ++i)
     {
         for (std::size_t j = 0; j < color_map.width(); ++j)
         {
             const float noise_height = height_map.get(i, j);
-            if (noise_height < 0.4f)
-            {
-                color_map.set(i, j, water.cbegin(), water.cend());
-            }
-            else if (noise_height <= 1.0f)
-            {
-                color_map.set(i, j, land.cbegin(), land.cend());
-            }
+            auto region_iter = noise_height > 0.999f ? (regions_info.height_ranges.cend() - 1) : std::upper_bound(regions_info.height_ranges.cbegin(), regions_info.height_ranges.cend(), noise_height);
+            assert(region_iter != regions_info.height_ranges.cend());
+            std::size_t region_index = region_iter - regions_info.height_ranges.cbegin();
+            const auto& color = regions_info.colors_uint8[region_index];
+            color_map.set(i, j, color.cbegin(), color.cend());
         }
     }
     

@@ -33,7 +33,7 @@ Application::Application(int window_width, int window_height, std::string_view t
     );
     
     texture_ = std::make_unique<Texture>(200, 100);
-    color_map_ = perlin_noise_color_map(perlin_info_);
+    color_map_ = perlin_noise_color_map(perlin_info_, regions_info_);
     save_image("perlin_noise.png", color_map_);
     texture_->copy_image(color_map_);
     shader_program_ = std::make_unique<ShaderProgram>(
@@ -322,13 +322,28 @@ void Application::render_imgui_editor()
     if (ImGui::Button("Reset Settings"))
     {
         perlin_info_ = default_perlin_info_;
-        color_map_ = perlin_noise_color_map(perlin_info_);
+        color_map_ = perlin_noise_color_map(perlin_info_, regions_info_);
         texture_->copy_image(color_map_);
     }
     if (ImGui::Button("Upload"))
     {
-        color_map_ = perlin_noise_color_map(perlin_info_);
+        assert(std::is_sorted(regions_info_.height_ranges.cbegin(), regions_info_.height_ranges.cend()));
+        regions_info_.compute_uint8_colors();
+        color_map_ = perlin_noise_color_map(perlin_info_, regions_info_);
         texture_->copy_image(color_map_);
+    }
+    ImGui::End();
+
+    ImGui::Begin("Regions Settings");
+    ImGui::SliderFloat(regions_info_.names[0].c_str(), regions_info_.height_ranges.data(), 0.05f, 1.0f);
+    ImGui::ColorPicker3(regions_info_.names[0].c_str(), regions_info_.colors[0].data());
+    for (std::size_t i = 1; i < regions_info_.size; ++i)
+    {
+        ImGui::PushID(i);
+        ImGui::SliderFloat(regions_info_.names[i].c_str(), &regions_info_.height_ranges[i], 
+                            regions_info_.height_ranges[i - 1] + 0.01f, 1.0f);
+        ImGui::ColorPicker3("Color", regions_info_.colors[i].data());
+        ImGui::PopID();
     }
     ImGui::End();
 

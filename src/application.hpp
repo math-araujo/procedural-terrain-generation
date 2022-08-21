@@ -54,6 +54,7 @@ private:
     std::unique_ptr<ShaderProgram> shader_program_{};
     const PerlinNoiseInfo default_perlin_info_{200, 100};
     PerlinNoiseInfo perlin_info_{200, 100};
+    RegionsInfo regions_info_{};
     Image<std::uint8_t> color_map_{200, 100};
 
     /*
