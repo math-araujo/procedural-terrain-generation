@@ -19,7 +19,7 @@ Application::Application(int window_width, int window_height, std::string_view t
     create_context(title);
     initialize_imgui();
     load_opengl();
-    mesh_ = std::make_unique<Mesh>(
+    /*mesh_ = std::make_unique<Mesh>(
         std::vector<float>
         {
             // X     Y     Z     U     V
@@ -29,6 +29,21 @@ Application::Application(int window_width, int window_height, std::string_view t
             0.5f, -0.5f, 0.0f, 1.0f, 0.0f, // Bottom-right
             -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, // Top-left
             -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, // Bottom-left
+        }
+    );*/
+    mesh_ = std::make_unique<IndexedMesh>(
+        std::vector<float>
+        {
+            // X     Y     Z     U     V
+            0.5f, 0.5f, 0.0f, 1.0f, 1.0f, // Top-right
+            -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, // Top-left
+            0.5f, -0.5f, 0.0f, 1.0f, 0.0f, // Bottom-right
+            -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, // Bottom-left
+        },
+        std::vector<std::uint32_t>
+        {
+            0, 1, 2,
+            2, 1, 3
         }
     );
     
