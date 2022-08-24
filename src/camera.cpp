@@ -115,27 +115,42 @@ float FPSCamera::zoom() const
 void FPSCamera::process_keyboard_input(CameraMovement direction, float delta_time)
 {
     const float velocity = speed_ * delta_time;
+    glm::vec3 delta_position{0.0f};
     if (direction == CameraMovement::Forward)
     {
-        position_ += gaze_direction_ * velocity;
+        delta_position += gaze_direction_ * velocity;
     }
 
     if (direction == CameraMovement::Backward)
     {
-        position_ -= gaze_direction_ * velocity;
+        delta_position -= gaze_direction_ * velocity;
     }
 
     if (direction == CameraMovement::Right)
     {
-        position_ += right_ * velocity;
+        delta_position += right_ * velocity;
     }
 
     if (direction == CameraMovement::Left)
     {
-        position_ -= right_ * velocity;
+        delta_position -= right_ * velocity;
     }
 
-    position_.y = 0.0f;
+    delta_position.y = 0.0f;
+
+    if (direction == CameraMovement::Up)
+    {
+        delta_position.y += velocity;
+    }
+
+    if (direction == CameraMovement::Down)
+    {
+        delta_position.y -= velocity;
+    }
+
+    position_ += delta_position;
+    position_.y = std::max(position_.y, 0.0f);
+    
     update_view_matrix();
 }
 

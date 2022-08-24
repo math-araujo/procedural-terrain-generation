@@ -14,6 +14,8 @@
 #include <exception>
 #include <iostream>
 
+#include "meshgeneration.hpp"
+
 Application::Application(int window_width, int window_height, std::string_view title) :
     width_{window_width}, height_{window_height}, aspect_ratio_{static_cast<float>(width_) / height_}
 {
@@ -32,6 +34,7 @@ Application::Application(int window_width, int window_height, std::string_view t
             -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, // Bottom-left
         }
     );*/
+    
     mesh_ = std::make_unique<IndexedMesh>(
         std::vector<float>
         {
@@ -48,6 +51,8 @@ Application::Application(int window_width, int window_height, std::string_view t
         }
     );
     
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
     texture_ = std::make_unique<Texture>(200, 200);
     fractal_noise_generator_.update_color_map();
     save_image("perlin_noise.png", fractal_noise_generator_.color_map());
@@ -301,6 +306,16 @@ void Application::process_input(float delta_time)
     {
         camera_.process_keyboard_input(CameraMovement::Left, delta_time);
     }
+
+    if (glfwGetKey(window_, GLFW_KEY_E) == GLFW_PRESS)
+    {
+        camera_.process_keyboard_input(CameraMovement::Up, delta_time);
+    }
+
+    if (glfwGetKey(window_, GLFW_KEY_Q) == GLFW_PRESS)
+    {
+        camera_.process_keyboard_input(CameraMovement::Down, delta_time);
+    }
 }
 
 void Application::update()
@@ -310,7 +325,7 @@ void Application::render()
 {
     // Clear window with specified color
     glClearColor(0.0f, 0.1f, 0.4f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     // Render scene
     projection_matrix_ = glm::perspective(glm::radians(camera_.zoom()), aspect_ratio_, 0.1f, 100.0f);
