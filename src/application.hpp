@@ -7,6 +7,7 @@
 #include <glm/fwd.hpp>
 
 #include "camera.hpp"
+#include "hermite.hpp"
 #include "image.hpp"
 #include "mesh.hpp"
 #include "noisegeneration.hpp"
@@ -51,6 +52,12 @@ private:
     glm::mat4 projection_matrix_{1.0f};
     //std::unique_ptr<Mesh> mesh_{};
     FractalNoiseGenerator fractal_noise_generator_{200, 200};
+    CubicHermiteCurve curve_
+    {
+        std::vector<glm::vec2>{{0.0f, 0.0f}, {0.4f, 0.02f}, {1.0f, 1.0f}},
+        std::vector<glm::vec2>{{1.0f, 0.02f}, {1.0f, 0.02f}, {0.7f, 2.0f}},
+        std::vector<float>{0.0f, 0.4f, 1.0f}
+    };
     std::unique_ptr<IndexedMesh> mesh_{};
     std::unique_ptr<Texture> texture_{};
     std::unique_ptr<ShaderProgram> shader_program_{};

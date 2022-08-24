@@ -51,7 +51,7 @@ Application::Application(int window_width, int window_height, std::string_view t
     );*/
     fractal_noise_generator_.update_color_map();
     save_image("perlin_noise.png", fractal_noise_generator_.color_map());
-    mesh_ = grid_mesh(200, 200, fractal_noise_generator_.height_map());
+    mesh_ = grid_mesh(200, 200, fractal_noise_generator_.height_map(), curve_);
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);

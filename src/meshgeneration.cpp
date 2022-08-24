@@ -2,7 +2,9 @@
 
 #include <cassert>
 
-std::unique_ptr<IndexedMesh> grid_mesh(int width, int height, const Image<float>& height_map)
+#include "hermite.hpp"
+
+std::unique_ptr<IndexedMesh> grid_mesh(int width, int height, const Image<float>& height_map, const CubicHermiteCurve& curve)
 {
     std::vector<float> vertices_data;
     vertices_data.reserve(width * height);
@@ -11,11 +13,12 @@ std::unique_ptr<IndexedMesh> grid_mesh(int width, int height, const Image<float>
         for (int j = 0; j < width; ++j)
         {
             vertices_data.emplace_back(static_cast<float>(j) - static_cast<float>(width) / 2.0f); // x-coordinate
-            //vertices_data.emplace_back(0.25); // y-coordinate // TODO: put height here
             const float map_height = height_map.get(i, j);
             assert(map_height >= 0.0f);
             assert(map_height <= 1.0f);
-            vertices_data.emplace_back(16.0 * map_height); // y-coordinate // TODO: put height here
+            const glm::vec2 hermite_height = curve.evaluate(map_height);
+            assert(hermite_height.y >= 0.0f);
+            vertices_data.emplace_back(15.0 * hermite_height.y); // y-coordinate
             vertices_data.emplace_back(static_cast<float>(i) - static_cast<float>(height) / 2.0f); // z-coordinate
             vertices_data.emplace_back(static_cast<float>(j) / width); // U-texture coordinate
             vertices_data.emplace_back(static_cast<float>(i) / height); // V-texture coordinate

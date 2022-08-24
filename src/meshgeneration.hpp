@@ -6,6 +6,8 @@
 #include "image.hpp"
 #include "mesh.hpp"
 
-std::unique_ptr<IndexedMesh> grid_mesh(int width, int height, const Image<float>& height_map);
+class CubicHermiteCurve;
+
+std::unique_ptr<IndexedMesh> grid_mesh(int width, int height, const Image<float>& height_map, const CubicHermiteCurve& curve);
 
 #endif // MESH_GENERATION_HPP
