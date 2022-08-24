@@ -34,8 +34,7 @@ Application::Application(int window_width, int window_height, std::string_view t
             -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, // Bottom-left
         }
     );*/
-    
-    mesh_ = std::make_unique<IndexedMesh>(
+    /*mesh_ = std::make_unique<IndexedMesh>(
         std::vector<float>
         {
             // X     Y     Z     U     V
@@ -49,8 +48,9 @@ Application::Application(int window_width, int window_height, std::string_view t
             0, 1, 2,
             2, 1, 3
         }
-    );
-    
+    );*/
+    mesh_ = grid_mesh(200, 200);
+
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     texture_ = std::make_unique<Texture>(200, 200);
