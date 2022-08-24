@@ -6,6 +6,6 @@
 #include "image.hpp"
 #include "mesh.hpp"
 
-std::unique_ptr<IndexedMesh> grid_mesh(int width, int height);
+std::unique_ptr<IndexedMesh> grid_mesh(int width, int height, const Image<float>& height_map);
 
 #endif // MESH_GENERATION_HPP

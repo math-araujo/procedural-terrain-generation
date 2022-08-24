@@ -50,10 +50,10 @@ private:
     FPSCamera camera_{};
     glm::mat4 projection_matrix_{1.0f};
     //std::unique_ptr<Mesh> mesh_{};
+    FractalNoiseGenerator fractal_noise_generator_{200, 200};
     std::unique_ptr<IndexedMesh> mesh_{};
     std::unique_ptr<Texture> texture_{};
     std::unique_ptr<ShaderProgram> shader_program_{};
-    FractalNoiseGenerator fractal_noise_generator_{200, 200};
 
     /*
     Create a window and OpenGL context. If creation

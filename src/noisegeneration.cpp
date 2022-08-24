@@ -95,6 +95,11 @@ void FractalNoiseGenerator::reset_settings()
     update_color_map();
 }
 
+const Image<float>& FractalNoiseGenerator::height_map() const
+{
+    return height_map_;
+}
+
 const Image<std::uint8_t>& FractalNoiseGenerator::color_map() const
 {
     return color_map_;

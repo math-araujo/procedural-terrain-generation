@@ -49,13 +49,13 @@ Application::Application(int window_width, int window_height, std::string_view t
             2, 1, 3
         }
     );*/
-    mesh_ = grid_mesh(200, 200);
+    fractal_noise_generator_.update_color_map();
+    save_image("perlin_noise.png", fractal_noise_generator_.color_map());
+    mesh_ = grid_mesh(200, 200, fractal_noise_generator_.height_map());
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     texture_ = std::make_unique<Texture>(200, 200);
-    fractal_noise_generator_.update_color_map();
-    save_image("perlin_noise.png", fractal_noise_generator_.color_map());
     texture_->copy_image(fractal_noise_generator_.color_map());
     shader_program_ = std::make_unique<ShaderProgram>(
         std::initializer_list<std::pair<std::string_view, Shader::Type>>
@@ -328,7 +328,7 @@ void Application::render()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     // Render scene
-    projection_matrix_ = glm::perspective(glm::radians(camera_.zoom()), aspect_ratio_, 0.1f, 100.0f);
+    projection_matrix_ = glm::perspective(glm::radians(camera_.zoom()), aspect_ratio_, 0.1f, 1000.0f);
     shader_program_->set_mat4_uniform("proj_view_transform", projection_matrix_ * camera_.view());
     mesh_->render();
 
