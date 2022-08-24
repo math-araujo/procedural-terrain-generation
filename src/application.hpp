@@ -53,10 +53,7 @@ private:
     std::unique_ptr<IndexedMesh> mesh_{};
     std::unique_ptr<Texture> texture_{};
     std::unique_ptr<ShaderProgram> shader_program_{};
-    const PerlinNoiseInfo default_perlin_info_{200, 100};
-    PerlinNoiseInfo perlin_info_{200, 100};
-    RegionsInfo regions_info_{};
-    Image<std::uint8_t> color_map_{200, 100};
+    FractalNoiseGenerator fractal_noise_generator_{200, 200};
 
     /*
     Create a window and OpenGL context. If creation

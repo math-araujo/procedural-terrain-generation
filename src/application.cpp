@@ -9,6 +9,7 @@
 
 #include <GLFW/glfw3.h>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include <exception>
 #include <iostream>
@@ -47,10 +48,10 @@ Application::Application(int window_width, int window_height, std::string_view t
         }
     );
     
-    texture_ = std::make_unique<Texture>(200, 100);
-    color_map_ = perlin_noise_color_map(perlin_info_, regions_info_);
-    save_image("perlin_noise.png", color_map_);
-    texture_->copy_image(color_map_);
+    texture_ = std::make_unique<Texture>(200, 200);
+    fractal_noise_generator_.update_color_map();
+    save_image("perlin_noise.png", fractal_noise_generator_.color_map());
+    texture_->copy_image(fractal_noise_generator_.color_map());
     shader_program_ = std::make_unique<ShaderProgram>(
         std::initializer_list<std::pair<std::string_view, Shader::Type>>
         {
@@ -327,37 +328,37 @@ void Application::render_imgui_editor()
     ImGui::NewFrame();
 
     ImGui::Begin("Perlin Noise Settings");
-    ImGui::SliderFloat("Lacunarity", &perlin_info_.lacunarity, 0.01f, 10.0f);
-    ImGui::SliderFloat("Persistance", &perlin_info_.persistance, 0.01f, 1.0f);
-    ImGui::SliderInt("Octaves", &perlin_info_.octaves, 1, 16);
-    ImGui::SliderFloat("Noise Scale", &perlin_info_.noise_scale, 0.01f, 50.0f);
-    ImGui::SliderFloat2("Offset", perlin_info_.offset.data(), -1000, 1000);
+    ImGui::SliderFloat("Lacunarity", &fractal_noise_generator_.noise_settings.lacunarity, 0.01f, 10.0f);
+    ImGui::SliderFloat("Persistance", &fractal_noise_generator_.noise_settings.persistance, 0.01f, 1.0f);
+    ImGui::SliderInt("Octaves", &fractal_noise_generator_.noise_settings.octaves, 1, 16);
+    ImGui::SliderFloat("Noise Scale", &fractal_noise_generator_.noise_settings.noise_scale, 0.01f, 50.0f);
+    ImGui::SliderFloat2("Offset", glm::value_ptr(fractal_noise_generator_.noise_settings.offset), -1000, 1000);
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, 
                 ImGui::GetIO().Framerate);
     if (ImGui::Button("Reset Settings"))
     {
-        perlin_info_ = default_perlin_info_;
-        color_map_ = perlin_noise_color_map(perlin_info_, regions_info_);
-        texture_->copy_image(color_map_);
+        fractal_noise_generator_.reset_settings();
+        texture_->copy_image(fractal_noise_generator_.color_map());
     }
     if (ImGui::Button("Upload"))
     {
-        assert(std::is_sorted(regions_info_.height_ranges.cbegin(), regions_info_.height_ranges.cend()));
-        regions_info_.compute_uint8_colors();
-        color_map_ = perlin_noise_color_map(perlin_info_, regions_info_);
-        texture_->copy_image(color_map_);
+        fractal_noise_generator_.update_color_map();
+        texture_->copy_image(fractal_noise_generator_.color_map());
     }
     ImGui::End();
 
     ImGui::Begin("Regions Settings");
-    ImGui::SliderFloat(regions_info_.names[0].c_str(), regions_info_.height_ranges.data(), 0.05f, 1.0f);
-    ImGui::ColorPicker3(regions_info_.names[0].c_str(), regions_info_.colors[0].data());
-    for (std::size_t i = 1; i < regions_info_.size; ++i)
+    ImGui::SliderFloat(fractal_noise_generator_.regions_settings.names[0].c_str(), 
+        fractal_noise_generator_.regions_settings.height_ranges.data(), 0.05f, 1.0f);
+    ImGui::ColorPicker3(fractal_noise_generator_.regions_settings.names[0].c_str(), 
+                        fractal_noise_generator_.regions_settings.colors[0].data());
+    for (std::size_t i = 1; i < fractal_noise_generator_.regions_settings.size; ++i)
     {
         ImGui::PushID(i);
-        ImGui::SliderFloat(regions_info_.names[i].c_str(), &regions_info_.height_ranges[i], 
-                            regions_info_.height_ranges[i - 1] + 0.01f, 1.0f);
-        ImGui::ColorPicker3("Color", regions_info_.colors[i].data());
+        ImGui::SliderFloat(fractal_noise_generator_.regions_settings.names[i].c_str(), 
+            &fractal_noise_generator_.regions_settings.height_ranges[i], 
+            fractal_noise_generator_.regions_settings.height_ranges[i - 1] + 0.01f, 1.0f);
+        ImGui::ColorPicker3("Color", fractal_noise_generator_.regions_settings.colors[i].data());
         ImGui::PopID();
     }
     ImGui::End();
