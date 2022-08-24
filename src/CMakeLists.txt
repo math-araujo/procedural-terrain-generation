@@ -8,6 +8,7 @@ add_executable(main
     noisegeneration.hpp noisegeneration.cpp
     camera.hpp camera.cpp
     meshgeneration.hpp meshgeneration.cpp
+    hermite.hpp hermite.cpp
 )
 
 target_link_libraries(main PRIVATE glad::glad glfw glm::glm imgui::imgui)
