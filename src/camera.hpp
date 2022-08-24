@@ -42,6 +42,7 @@ class FPSCamera
 {
 public:
     FPSCamera();
+    FPSCamera(glm::vec3 position);
     FPSCamera(glm::vec3 position, glm::vec2 pitch_yaw_angles, glm::vec3 up_direction = glm::vec3{0.0f});
 
     glm::vec3& position();

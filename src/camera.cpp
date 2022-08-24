@@ -55,6 +55,11 @@ FPSCamera::FPSCamera()
     update_orientation();
 }
 
+FPSCamera::FPSCamera(glm::vec3 position): position_{position}
+{
+    update_orientation();
+}
+
 FPSCamera::FPSCamera(glm::vec3 position, glm::vec2 pitch_yaw_angles, glm::vec3 up_direction):
     position_{position}, euler_angles_{pitch_yaw_angles}, world_up_{up_direction}
 {

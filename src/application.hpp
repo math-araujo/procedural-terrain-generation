@@ -48,7 +48,7 @@ private:
     bool mouse_click_{false};
     bool free_mouse_move_{false};
 
-    FPSCamera camera_{};
+    FPSCamera camera_{glm::vec3{0.0, 30.0f, 3.0f}};
     glm::mat4 projection_matrix_{1.0f};
     //std::unique_ptr<Mesh> mesh_{};
     FractalNoiseGenerator fractal_noise_generator_{200, 200};
