@@ -350,6 +350,9 @@ void Application::render_imgui_editor()
     ImGui::SliderFloat2("Offset", glm::value_ptr(fractal_noise_generator_.noise_settings.offset), -1000, 1000);
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, 
                 ImGui::GetIO().Framerate);
+    ImTextureID imgui_texture_id = reinterpret_cast<void*>(texture_->id());
+    ImGui::Image(imgui_texture_id, ImVec2{200, 200}, ImVec2{0.0f, 0.0f}, ImVec2{1.0f, 1.0f}, 
+                ImVec4{1.0f, 1.0f, 1.0f, 1.0f}, ImVec4{1.0f, 1.0f, 1.0f, 0.5f});
     if (ImGui::Button("Reset Settings"))
     {
         fractal_noise_generator_.reset_settings();

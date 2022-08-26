@@ -40,6 +40,11 @@ void Texture::bind(std::uint32_t unit)
     glBindTextureUnit(unit, id_);
 }
 
+std::uint32_t Texture::id() const
+{
+    return id_;
+}
+
 void Texture::copy_image(const Image<std::uint8_t>& image)
 {
     copy_image(static_cast<const unsigned char*>(image.data()), image.width(), image.height());

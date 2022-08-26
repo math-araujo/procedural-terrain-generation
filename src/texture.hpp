@@ -21,6 +21,7 @@ public:
     void copy_image(std::string_view filename, bool flip_on_load = true);
     void copy_image(const unsigned char* image_data, std::int32_t width, std::int32_t height);
     void bind(std::uint32_t unit);
+    std::uint32_t id() const;
 private:
     std::uint32_t width_;
     std::uint32_t height_;
