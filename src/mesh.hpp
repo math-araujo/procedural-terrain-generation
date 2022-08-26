@@ -36,6 +36,7 @@ public:
 
     void bind();
     void render();
+    void update_mesh(std::vector<float> vertices_data, std::vector<std::uint32_t> indices);
 private:
     int number_of_vertices_{0};
     int number_of_indices_{0};

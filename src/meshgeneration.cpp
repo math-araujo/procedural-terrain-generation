@@ -3,8 +3,9 @@
 #include <cassert>
 
 #include "hermite.hpp"
+#include "mesh.hpp"
 
-std::unique_ptr<IndexedMesh> grid_mesh(int width, int height, const Image<float>& height_map, const CubicHermiteCurve& curve)
+std::pair<std::vector<float>, std::vector<std::uint32_t>> grid_mesh(int width, int height, const Image<float>& height_map, const CubicHermiteCurve& curve)
 {
     std::vector<float> vertices_data;
     vertices_data.reserve(width * height);
@@ -43,5 +44,11 @@ std::unique_ptr<IndexedMesh> grid_mesh(int width, int height, const Image<float>
         }
     }
 
-    return std::make_unique<IndexedMesh>(std::move(vertices_data), std::move(indices));
+    return {std::move(vertices_data), std::move(indices)};
+}
+
+std::unique_ptr<IndexedMesh> create_indexed_grid_mesh(int width, int height, const Image<float>& height_map, const CubicHermiteCurve& curve)
+{
+    auto grid_mesh_data = grid_mesh(width, height, height_map, curve);
+    return std::make_unique<IndexedMesh>(std::move(grid_mesh_data.first), std::move(grid_mesh_data.second));
 }

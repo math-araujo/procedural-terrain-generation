@@ -80,10 +80,16 @@ private:
     void load_opengl();
 
     /*
-    Load Perlin Noise settings editor
+    Render editor with properties for noise generation and
+    regions colors.
     */
     void render_imgui_editor();
     
+    /*
+    Update height map and mesh.
+    */
+    void update_noise_and_mesh();
+
     /*
     Manually cleanup OpenGL-related objects. Since Application
     destructor terminates the OpenGL context, it's necessary

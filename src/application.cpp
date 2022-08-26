@@ -51,7 +51,7 @@ Application::Application(int window_width, int window_height, std::string_view t
     );*/
     fractal_noise_generator_.update_color_map();
     save_image("perlin_noise.png", fractal_noise_generator_.color_map());
-    mesh_ = grid_mesh(200, 200, fractal_noise_generator_.height_map(), curve_);
+    mesh_ = create_indexed_grid_mesh(200, 200, fractal_noise_generator_.height_map(), curve_);
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
@@ -342,7 +342,7 @@ void Application::render_imgui_editor()
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    ImGui::Begin("Perlin Noise Settings");
+    ImGui::Begin("Fractal Noise Settings");
     ImGui::SliderFloat("Lacunarity", &fractal_noise_generator_.noise_settings.lacunarity, 0.01f, 10.0f);
     ImGui::SliderFloat("Persistance", &fractal_noise_generator_.noise_settings.persistance, 0.01f, 1.0f);
     ImGui::SliderInt("Octaves", &fractal_noise_generator_.noise_settings.octaves, 1, 16);
@@ -356,12 +356,12 @@ void Application::render_imgui_editor()
     if (ImGui::Button("Reset Settings"))
     {
         fractal_noise_generator_.reset_settings();
-        texture_->copy_image(fractal_noise_generator_.color_map());
+        update_noise_and_mesh();
     }
     if (ImGui::Button("Upload"))
     {
         fractal_noise_generator_.update_color_map();
-        texture_->copy_image(fractal_noise_generator_.color_map());
+        update_noise_and_mesh();
     }
     ImGui::End();
 
@@ -383,4 +383,11 @@ void Application::render_imgui_editor()
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
+void Application::update_noise_and_mesh()
+{
+    texture_->copy_image(fractal_noise_generator_.color_map());
+    auto grid_mesh_data = grid_mesh(200, 200, fractal_noise_generator_.height_map(), curve_);
+    mesh_->update_mesh(std::move(grid_mesh_data.first), std::move(grid_mesh_data.second));
 }

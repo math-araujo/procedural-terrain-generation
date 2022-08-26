@@ -110,3 +110,9 @@ void IndexedMesh::render()
 {
     glDrawElements(GL_TRIANGLES, number_of_indices_, GL_UNSIGNED_INT, 0);
 }
+
+void IndexedMesh::update_mesh(std::vector<float> vertices_data, std::vector<std::uint32_t> indices)
+{
+    glBufferSubData(GL_ARRAY_BUFFER, 0, vertices_data.size() * sizeof(float), vertices_data.data());
+    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, indices.size() * sizeof(std::uint32_t), indices.data());
+}
