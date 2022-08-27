@@ -52,3 +52,47 @@ std::unique_ptr<IndexedMesh> create_indexed_grid_mesh(int width, int height, con
     auto grid_mesh_data = grid_mesh(width, height, height_map, curve);
     return std::make_unique<IndexedMesh>(std::move(grid_mesh_data.first), std::move(grid_mesh_data.second));
 }
+
+std::unique_ptr<PatchMesh> create_grid_patch(int width, int height, int number_of_patches)
+{
+    std::vector<float> vertices_data;
+    const float number_of_attributes = 5;
+    const float vertices_per_patch = 4;
+    vertices_data.reserve(number_of_patches * number_of_patches * number_of_attributes * vertices_per_patch);
+    
+    const float half_width = static_cast<float>(width) / 2.0f;
+    const float horizontal_ratio = static_cast<float>(width) / number_of_patches;
+    const float half_height = static_cast<float>(height) / 2.0f;
+    const float vertical_ratio = static_cast<float>(height) / number_of_patches;
+    for (int y = 0; y < number_of_patches; ++y)
+    {
+        for (int x = 0; x < number_of_patches; ++x)
+        {
+            vertices_data.emplace_back(x * horizontal_ratio - half_width); // x-coordinate
+            vertices_data.emplace_back(y * vertical_ratio - half_height); // y-coordinate
+            vertices_data.emplace_back(0.0f); // z-coordinate
+            vertices_data.emplace_back(static_cast<float>(x) / number_of_patches); // u-coordinate
+            vertices_data.emplace_back(static_cast<float>(y) / number_of_patches); // v-coordinate
+
+            vertices_data.emplace_back((x + 1) * horizontal_ratio - half_width); // x-coordinate
+            vertices_data.emplace_back(y * vertical_ratio - half_height); // y-coordinate
+            vertices_data.emplace_back(0.0f); // z-coordinate
+            vertices_data.emplace_back(static_cast<float>(x + 1) / number_of_patches); // u-coordinate
+            vertices_data.emplace_back(static_cast<float>(y) / number_of_patches); // v-coordinate
+
+            vertices_data.emplace_back((x + 1) * horizontal_ratio - half_width); // x-coordinate
+            vertices_data.emplace_back((y + 1) * vertical_ratio - half_height); // y-coordinate
+            vertices_data.emplace_back(0.0f); // z-coordinate
+            vertices_data.emplace_back(static_cast<float>(x + 1) / number_of_patches); // u-coordinate
+            vertices_data.emplace_back(static_cast<float>(y + 1) / number_of_patches); // v-coordinate
+
+            vertices_data.emplace_back(x * horizontal_ratio - half_width); // x-coordinate
+            vertices_data.emplace_back((y + 1) * vertical_ratio - half_height); // y-coordinate
+            vertices_data.emplace_back(0.0f); // z-coordinate
+            vertices_data.emplace_back(static_cast<float>(x) / number_of_patches); // u-coordinate
+            vertices_data.emplace_back(static_cast<float>(y + 1) / number_of_patches); // v-coordinate            
+        }
+    }
+    
+    return std::make_unique<PatchMesh>(vertices_per_patch, std::move(vertices_data));
+}

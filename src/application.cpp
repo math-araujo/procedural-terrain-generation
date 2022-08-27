@@ -14,7 +14,10 @@
 #include <exception>
 #include <iostream>
 
+#include "mesh.hpp"
 #include "meshgeneration.hpp"
+#include "shader.hpp"
+#include "texture.hpp"
 
 Application::Application(int window_width, int window_height, std::string_view title) :
     width_{window_width}, height_{window_height}, aspect_ratio_{static_cast<float>(width_) / height_}
@@ -51,22 +54,32 @@ Application::Application(int window_width, int window_height, std::string_view t
     );*/
     fractal_noise_generator_.update_color_map();
     save_image("perlin_noise.png", fractal_noise_generator_.color_map());
-    mesh_ = create_indexed_grid_mesh(200, 200, fractal_noise_generator_.height_map(), curve_);
+    //mesh_ = create_indexed_grid_mesh(200, 200, fractal_noise_generator_.height_map(), curve_);
+    mesh_ = create_grid_patch(20, 20, 1);
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     texture_ = std::make_unique<Texture>(200, 200);
     texture_->copy_image(fractal_noise_generator_.color_map());
+    /*shader_program_ = std::make_unique<ShaderProgram>(
+        std::initializer_list<std::pair<std::string_view, Shader::Type>>
+        {
+            {"shaders/cpu_terrain/vertex_shader.vs", Shader::Type::Vertex},
+            {"shaders/cpu_terrain/fragment_shader.fs", Shader::Type::Fragment},
+        }
+    );*/
     shader_program_ = std::make_unique<ShaderProgram>(
         std::initializer_list<std::pair<std::string_view, Shader::Type>>
         {
-            {"shaders/vertex_shader.vs", Shader::Type::Vertex},
-            {"shaders/fragment_shader.fs", Shader::Type::Fragment},
+            {"shaders/gpu_terrain/vertex_shader.vs", Shader::Type::Vertex},
+            {"shaders/gpu_terrain/tess_control_shader.tcs", Shader::Type::TessControl},
+            {"shaders/gpu_terrain/tess_eval_shader.tes", Shader::Type::TessEval},
+            {"shaders/gpu_terrain/fragment_shader.fs", Shader::Type::Fragment},
         }
     );
-    
+
     shader_program_->use();
-    shader_program_->set_int_uniform("texture_sampler", 0);
+    //shader_program_->set_int_uniform("texture_sampler", 0);
     mesh_->bind();
     texture_->bind(0);
 }
@@ -389,5 +402,5 @@ void Application::update_noise_and_mesh()
 {
     texture_->copy_image(fractal_noise_generator_.color_map());
     auto grid_mesh_data = grid_mesh(200, 200, fractal_noise_generator_.height_map(), curve_);
-    mesh_->update_mesh(std::move(grid_mesh_data.first), std::move(grid_mesh_data.second));
+    //mesh_->update_mesh(std::move(grid_mesh_data.first), std::move(grid_mesh_data.second));
 }

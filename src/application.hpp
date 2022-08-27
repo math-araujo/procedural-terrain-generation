@@ -9,12 +9,15 @@
 #include "camera.hpp"
 #include "hermite.hpp"
 #include "image.hpp"
-#include "mesh.hpp"
 #include "noisegeneration.hpp"
-#include "shader.hpp"
-#include "texture.hpp"
+
 
 struct GLFWwindow;
+
+class IndexedMesh;
+class Mesh;
+class ShaderProgram;
+class Texture;
 
 class Application
 {
@@ -48,9 +51,9 @@ private:
     bool mouse_click_{false};
     bool free_mouse_move_{false};
 
-    FPSCamera camera_{glm::vec3{0.0, 30.0f, 3.0f}};
+    FPSCamera camera_{glm::vec3{0.0, 1.0f, 15.0f}};
     glm::mat4 projection_matrix_{1.0f};
-    //std::unique_ptr<Mesh> mesh_{};
+    std::unique_ptr<Mesh> mesh_{};
     FractalNoiseGenerator fractal_noise_generator_{200, 200};
     CubicHermiteCurve curve_
     {
@@ -58,7 +61,7 @@ private:
         std::vector<glm::vec2>{{1.0f, 0.02f}, {1.0f, 0.02f}, {0.7f, 2.0f}},
         std::vector<float>{0.0f, 0.4f, 1.0f}
     };
-    std::unique_ptr<IndexedMesh> mesh_{};
+    //std::unique_ptr<IndexedMesh> mesh_{};
     std::unique_ptr<Texture> texture_{};
     std::unique_ptr<ShaderProgram> shader_program_{};
 

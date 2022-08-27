@@ -13,14 +13,31 @@ public:
     Mesh(Mesh&& other) noexcept;
     Mesh& operator=(const Mesh&) = delete;
     Mesh& operator=(Mesh&& other) noexcept;
-    ~Mesh();
+    virtual ~Mesh();
 
     void bind();
-    void render();
+    virtual void render();
 
+    int number_of_vertices() const;
 private:
     int number_of_vertices_{0};
     std::uint32_t vertex_array_identifier_{0};
+};
+
+class PatchMesh: public Mesh
+{
+public:
+    PatchMesh(int vertices_per_patch, std::vector<float> vertices_data);
+
+    PatchMesh(const PatchMesh&) = delete;
+    PatchMesh(PatchMesh&&) = default;
+    PatchMesh& operator=(const PatchMesh&) = delete;
+    PatchMesh& operator=(PatchMesh&&) = default;
+    ~PatchMesh() override = default;
+
+    void render() override;
+private:
+    int vertices_per_patch_{0};
 };
 
 class IndexedMesh

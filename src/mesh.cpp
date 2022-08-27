@@ -49,6 +49,24 @@ void Mesh::render()
 {
     bind();
     glDrawArrays(GL_TRIANGLES, 0, number_of_vertices_);
+    //glDrawArrays(GL_PATCHES, 0, number_of_vertices_);
+}
+
+int Mesh::number_of_vertices() const
+{
+    return number_of_vertices_;
+}
+
+PatchMesh::PatchMesh(int vertices_per_patch, std::vector<float> vertices_data): 
+    Mesh{std::move(vertices_data)}, vertices_per_patch_{vertices_per_patch}
+{
+    glPatchParameteri(GL_PATCH_VERTICES, vertices_per_patch_);
+}
+
+void PatchMesh::render()
+{
+    bind();
+    glDrawArrays(GL_PATCHES, 0, number_of_vertices());
 }
 
 IndexedMesh::IndexedMesh(std::vector<float> vertices_data, std::vector<std::uint32_t> indices): 

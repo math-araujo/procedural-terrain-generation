@@ -59,6 +59,8 @@ const std::string& Shader::shader_typename(Shader::Type type)
 {
     static const std::unordered_map<Shader::Type, std::string> shader_types = {
         {Shader::Type::Vertex, "Vertex"}, 
+        {Shader::Type::TessControl, "Tessellation Control"}, 
+        {Shader::Type::TessEval, "Tessellation Evaluation"}, 
         {Shader::Type::Fragment, "Fragment"}
     };
     return shader_types.at(type);
