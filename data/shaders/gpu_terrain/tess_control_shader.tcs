@@ -2,15 +2,23 @@
 
 layout (vertices = 4) out;
 
+in vec2 vertex_tex_coordinates[]; 
+
+out vec2 tcs_tex_coordinates[];
+
 void main()
 {
     gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
+    tcs_tex_coordinates[gl_InvocationID] = vertex_tex_coordinates[gl_InvocationID];
 
-    gl_TessLevelOuter[0] = 4;
-    gl_TessLevelOuter[1] = 4;
-    gl_TessLevelOuter[2] = 4;
-    gl_TessLevelOuter[3] = 4;
+    if (gl_InvocationID == 0)
+    {
+        gl_TessLevelOuter[0] = 16;
+        gl_TessLevelOuter[1] = 16;
+        gl_TessLevelOuter[2] = 16;
+        gl_TessLevelOuter[3] = 16;
 
-    gl_TessLevelInner[0] = 4;
-    gl_TessLevelInner[1] = 4;
+        gl_TessLevelInner[0] = 16;
+        gl_TessLevelInner[1] = 16;
+    }
 }

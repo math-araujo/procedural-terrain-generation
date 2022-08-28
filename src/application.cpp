@@ -55,11 +55,11 @@ Application::Application(int window_width, int window_height, std::string_view t
     fractal_noise_generator_.update_color_map();
     save_image("perlin_noise.png", fractal_noise_generator_.color_map());
     //mesh_ = create_indexed_grid_mesh(200, 200, fractal_noise_generator_.height_map(), curve_);
-    mesh_ = create_grid_patch(20, 20, 1);
+    mesh_ = create_grid_patch(512, 512, 20);
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
-    texture_ = std::make_unique<Texture>(200, 200);
+    texture_ = std::make_unique<Texture>(512, 512);
     texture_->copy_image(fractal_noise_generator_.color_map());
     /*shader_program_ = std::make_unique<ShaderProgram>(
         std::initializer_list<std::pair<std::string_view, Shader::Type>>
@@ -79,7 +79,7 @@ Application::Application(int window_width, int window_height, std::string_view t
     );
 
     shader_program_->use();
-    //shader_program_->set_int_uniform("texture_sampler", 0);
+    shader_program_->set_int_uniform("texture_sampler", 0);
     mesh_->bind();
     texture_->bind(0);
 }
@@ -364,7 +364,7 @@ void Application::render_imgui_editor()
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, 
                 ImGui::GetIO().Framerate);
     ImTextureID imgui_texture_id = reinterpret_cast<void*>(texture_->id());
-    ImGui::Image(imgui_texture_id, ImVec2{200, 200}, ImVec2{0.0f, 0.0f}, ImVec2{1.0f, 1.0f}, 
+    ImGui::Image(imgui_texture_id, ImVec2{512, 512}, ImVec2{0.0f, 0.0f}, ImVec2{1.0f, 1.0f}, 
                 ImVec4{1.0f, 1.0f, 1.0f, 1.0f}, ImVec4{1.0f, 1.0f, 1.0f, 0.5f});
     if (ImGui::Button("Reset Settings"))
     {
@@ -401,6 +401,6 @@ void Application::render_imgui_editor()
 void Application::update_noise_and_mesh()
 {
     texture_->copy_image(fractal_noise_generator_.color_map());
-    auto grid_mesh_data = grid_mesh(200, 200, fractal_noise_generator_.height_map(), curve_);
+    //auto grid_mesh_data = grid_mesh(512, 512, fractal_noise_generator_.height_map(), curve_);
     //mesh_->update_mesh(std::move(grid_mesh_data.first), std::move(grid_mesh_data.second));
 }

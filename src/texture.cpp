@@ -13,7 +13,7 @@ Texture::Texture(std::uint32_t width, std::uint32_t height):
     glTextureParameteri(id_, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTextureParameteri(id_, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTextureParameteri(id_, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTextureStorage2D(id_, 1, GL_RGB8, width_, height_);
+    glTextureStorage2D(id_, 1, GL_RGBA8, width_, height_);
 }
 
 Texture::Texture(Texture&& other) noexcept: 
@@ -52,7 +52,7 @@ void Texture::copy_image(const Image<std::uint8_t>& image)
 
 void Texture::copy_image(const unsigned char* image_data, std::int32_t width, std::int32_t height)
 {
-    glTextureSubImage2D(id_, 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, image_data);
+    glTextureSubImage2D(id_, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, image_data);
 }
 
 void Texture::copy_image(std::string_view filename, bool flip_on_load)

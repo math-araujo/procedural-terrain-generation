@@ -64,33 +64,45 @@ std::unique_ptr<PatchMesh> create_grid_patch(int width, int height, int number_o
     const float horizontal_ratio = static_cast<float>(width) / number_of_patches;
     const float half_height = static_cast<float>(height) / 2.0f;
     const float vertical_ratio = static_cast<float>(height) / number_of_patches;
-    for (int y = 0; y < number_of_patches; ++y)
+    for (int x = 0; x < number_of_patches; ++x)
     {
-        for (int x = 0; x < number_of_patches; ++x)
+        for (int z = 0; z < number_of_patches; ++z)
         {
+            /*
+            Note:
+            A (input) quad with vertices [0, 1, 2, 3] is mapped to the
+            abstract patch with vertices [p00, p10, p11, p01], respectively.
+            Also that when looking down the Y-axis, Z points down and X points right,
+            while the parametric space has U pointing right and V pointing up.
+            3--------2       p01------p11
+            |        |        |        |
+            |        |   ~    |        |
+            |        |        |        |
+            0--------1       p00------p10
+            */
             vertices_data.emplace_back(x * horizontal_ratio - half_width); // x-coordinate
-            vertices_data.emplace_back(y * vertical_ratio - half_height); // y-coordinate
-            vertices_data.emplace_back(0.0f); // z-coordinate
+            vertices_data.emplace_back(0.0f); // y-coordinate
+            vertices_data.emplace_back((z + 1) * vertical_ratio - half_height); // z-coordinate
             vertices_data.emplace_back(static_cast<float>(x) / number_of_patches); // u-coordinate
-            vertices_data.emplace_back(static_cast<float>(y) / number_of_patches); // v-coordinate
+            vertices_data.emplace_back(static_cast<float>(z + 1) / number_of_patches); // v-coordinate       
 
             vertices_data.emplace_back((x + 1) * horizontal_ratio - half_width); // x-coordinate
-            vertices_data.emplace_back(y * vertical_ratio - half_height); // y-coordinate
-            vertices_data.emplace_back(0.0f); // z-coordinate
+            vertices_data.emplace_back(0.0f); // y-coordinate
+            vertices_data.emplace_back((z + 1) * vertical_ratio - half_height); // z-coordinate
             vertices_data.emplace_back(static_cast<float>(x + 1) / number_of_patches); // u-coordinate
-            vertices_data.emplace_back(static_cast<float>(y) / number_of_patches); // v-coordinate
+            vertices_data.emplace_back(static_cast<float>(z + 1) / number_of_patches); // v-coordinate    
 
             vertices_data.emplace_back((x + 1) * horizontal_ratio - half_width); // x-coordinate
-            vertices_data.emplace_back((y + 1) * vertical_ratio - half_height); // y-coordinate
-            vertices_data.emplace_back(0.0f); // z-coordinate
+            vertices_data.emplace_back(0.0f); // y-coordinate
+            vertices_data.emplace_back(z * vertical_ratio - half_height); // z-coordinate
             vertices_data.emplace_back(static_cast<float>(x + 1) / number_of_patches); // u-coordinate
-            vertices_data.emplace_back(static_cast<float>(y + 1) / number_of_patches); // v-coordinate
+            vertices_data.emplace_back(static_cast<float>(z) / number_of_patches); // v-coordinate
 
             vertices_data.emplace_back(x * horizontal_ratio - half_width); // x-coordinate
-            vertices_data.emplace_back((y + 1) * vertical_ratio - half_height); // y-coordinate
-            vertices_data.emplace_back(0.0f); // z-coordinate
+            vertices_data.emplace_back(0.0f); // y-coordinate
+            vertices_data.emplace_back(z * vertical_ratio - half_height); // z-coordinate
             vertices_data.emplace_back(static_cast<float>(x) / number_of_patches); // u-coordinate
-            vertices_data.emplace_back(static_cast<float>(y + 1) / number_of_patches); // v-coordinate            
+            vertices_data.emplace_back(static_cast<float>(z) / number_of_patches); // v-coordinate
         }
     }
     

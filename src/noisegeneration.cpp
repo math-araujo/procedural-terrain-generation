@@ -11,7 +11,7 @@
 #include <glm/gtc/random.hpp>
 
 FractalNoiseGenerator::FractalNoiseGenerator(std::uint32_t width, std::uint32_t height):
-    width_{width}, height_{height}, height_map_{width, height}, color_map_{width, height, 3}
+    width_{width}, height_{height}, height_map_{width, height}, color_map_{width, height, 4}
 {
     random_offsets_.reserve(4 * noise_settings.octaves);
 }
@@ -71,7 +71,8 @@ void FractalNoiseGenerator::update_color_map()
             auto region_iter = noise_height > 0.999f ? (regions_settings.height_ranges.cend() - 1) : std::upper_bound(regions_settings.height_ranges.cbegin(), regions_settings.height_ranges.cend(), noise_height);
             assert(region_iter != regions_settings.height_ranges.cend());
             std::size_t region_index = region_iter - regions_settings.height_ranges.cbegin();
-            const auto& color = regions_settings.colors_uint8[region_index];
+            auto& color = regions_settings.colors_uint8[region_index];
+            color.back() = static_cast<std::uint8_t>(255.0f * noise_height);
             color_map_.set(i, j, color.cbegin(), color.cend());
         }
     }
