@@ -36,6 +36,16 @@ void Image<T>::set(std::size_t i, std::size_t j, std::size_t k, T value)
 }
 
 template<typename T>
+template<typename RandomAccessIterator, typename Function>
+void Image<T>::set_transform(std::size_t i, std::size_t j, RandomAccessIterator begin, RandomAccessIterator end, Function&& function)
+{
+    assert(static_cast<std::size_t>(end - begin) == depth_);
+    const std::size_t index = ((i * width_) + j) * depth_;
+    auto iterator = image_data_.begin() + index;
+    std::transform(begin, end, iterator, function);
+}
+
+template<typename T>
 const T* Image<T>::data() const
 {
     return image_data_.data();
