@@ -64,6 +64,7 @@ private:
     std::unique_ptr<Mesh> mesh_{};
     //std::unique_ptr<IndexedMesh> mesh_{};
     std::unique_ptr<Texture> texture_{};
+    std::unique_ptr<Texture> normal_map_{};
     std::unique_ptr<ShaderProgram> shader_program_{};
 
     /*

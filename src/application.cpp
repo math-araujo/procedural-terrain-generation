@@ -52,7 +52,7 @@ Application::Application(int window_width, int window_height, std::string_view t
             2, 1, 3
         }
     );*/
-    fractal_noise_generator_.update_color_map();
+    fractal_noise_generator_.update();
     save_image("perlin_noise.png", fractal_noise_generator_.color_map());
     //mesh_ = create_indexed_grid_mesh(200, 200, fractal_noise_generator_.height_map(), curve_);
     mesh_ = create_grid_patch(height_map_dim_.first, height_map_dim_.second, 20);
@@ -61,6 +61,8 @@ Application::Application(int window_width, int window_height, std::string_view t
     glEnable(GL_CULL_FACE);
     texture_ = std::make_unique<Texture>(height_map_dim_.first, height_map_dim_.second);
     texture_->copy_image(fractal_noise_generator_.color_map());
+    normal_map_ = std::make_unique<Texture>(height_map_dim_.first, height_map_dim_.second);
+    normal_map_->copy_image(fractal_noise_generator_.normal_map());
     /*shader_program_ = std::make_unique<ShaderProgram>(
         std::initializer_list<std::pair<std::string_view, Shader::Type>>
         {
@@ -269,6 +271,7 @@ Application::~Application()
 void Application::cleanup()
 {
     shader_program_.reset();
+    normal_map_.reset();
     texture_.reset();
     mesh_.reset();
 }
@@ -367,6 +370,9 @@ void Application::render_imgui_editor()
     ImTextureID imgui_texture_id = reinterpret_cast<void*>(texture_->id());
     ImGui::Image(imgui_texture_id, ImVec2{200, 200}, ImVec2{0.0f, 0.0f}, ImVec2{1.0f, 1.0f}, 
                 ImVec4{1.0f, 1.0f, 1.0f, 1.0f}, ImVec4{1.0f, 1.0f, 1.0f, 0.5f});
+    imgui_texture_id = reinterpret_cast<void*>(normal_map_->id());
+    ImGui::Image(imgui_texture_id, ImVec2{200, 200}, ImVec2{0.0f, 0.0f}, ImVec2{1.0f, 1.0f}, 
+                ImVec4{1.0f, 1.0f, 1.0f, 1.0f}, ImVec4{1.0f, 1.0f, 1.0f, 0.5f});
     if (ImGui::Button("Reset Settings"))
     {
         fractal_noise_generator_.reset_settings();
@@ -374,7 +380,7 @@ void Application::render_imgui_editor()
     }
     if (ImGui::Button("Upload"))
     {
-        fractal_noise_generator_.update_color_map();
+        fractal_noise_generator_.update();
         update_noise_and_mesh();
     }
     ImGui::End();
@@ -402,6 +408,7 @@ void Application::render_imgui_editor()
 void Application::update_noise_and_mesh()
 {
     texture_->copy_image(fractal_noise_generator_.color_map());
+    normal_map_->copy_image(fractal_noise_generator_.normal_map());
     //auto grid_mesh_data = grid_mesh(height_map_dim_.first, height_map_dim.second, fractal_noise_generator_.height_map(), curve_);
     //mesh_->update_mesh(std::move(grid_mesh_data.first), std::move(grid_mesh_data.second));
 }

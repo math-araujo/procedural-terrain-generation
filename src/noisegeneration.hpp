@@ -64,17 +64,24 @@ public:
     FractalNoiseGenerator& operator=(FractalNoiseGenerator&&) = default;
     ~FractalNoiseGenerator() = default;
 
+    void update();
     void update_height_map();
+    void update_normal_map();
     void update_color_map();
     void reset_settings();
     const Image<float>& height_map() const;
     const Image<std::uint8_t>& color_map() const;
+    const Image<std::uint8_t>& normal_map() const;
 private:
     const std::uint32_t width_{0};
     const std::uint32_t height_{0};
     Image<float> height_map_;
     Image<std::uint8_t> color_map_;
+    Image<std::uint8_t> normal_map_;
     std::vector<glm::vec2> random_offsets_;
+
+    float clamp_at_edge_height(int row, int column);
+    glm::vec3 cast_normal_to_rgb(glm::vec3 vector);
 };
 
 #endif // NOISE_GENERATION_HPP
