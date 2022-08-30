@@ -72,8 +72,8 @@ std::unique_ptr<PatchMesh> create_grid_patch(int width, int height, int number_o
             Note:
             A (input) quad with vertices [0, 1, 2, 3] is mapped to the
             abstract patch with vertices [p00, p10, p11, p01], respectively.
-            Also that when looking down the Y-axis, Z points down and X points right,
-            while the parametric space has U pointing right and V pointing up.
+            Also note that when looking down the Y-axis, Z points down and X points
+            right, while the parametric space has U pointing right and V pointing up.
             3--------2       p01------p11
             |        |        |        |
             |        |   ~    |        |

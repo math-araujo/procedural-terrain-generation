@@ -7,6 +7,6 @@ out vec4 frag_color;
 
 void main()
 {
-    float h = tes_height / 15.0;
+    float h = (tes_height)/ 15.0;
     frag_color = vec4(tes_color, 1.0);
 }

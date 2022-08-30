@@ -11,8 +11,10 @@ Texture::Texture(std::uint32_t width, std::uint32_t height):
     glCreateTextures(GL_TEXTURE_2D, 1, &id_);
     glTextureParameteri(id_, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTextureParameteri(id_, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTextureParameteri(id_, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTextureParameteri(id_, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    /*glTextureParameteri(id_, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTextureParameteri(id_, GL_TEXTURE_MAG_FILTER, GL_NEAREST);*/
+    glTextureParameteri(id_, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTextureParameteri(id_, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTextureStorage2D(id_, 1, GL_RGBA8, width_, height_);
 }
 

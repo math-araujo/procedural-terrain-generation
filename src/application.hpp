@@ -53,14 +53,15 @@ private:
 
     FPSCamera camera_{glm::vec3{0.0, 1.0f, 15.0f}};
     glm::mat4 projection_matrix_{1.0f};
-    std::unique_ptr<Mesh> mesh_{};
-    FractalNoiseGenerator fractal_noise_generator_{512, 512};
+    const std::pair<std::uint32_t, std::uint32_t> height_map_dim_{256, 256};
+    FractalNoiseGenerator fractal_noise_generator_{height_map_dim_.first, height_map_dim_.second};
     CubicHermiteCurve curve_
     {
         std::vector<glm::vec2>{{0.0f, 0.0f}, {0.4f, 0.02f}, {1.0f, 1.0f}},
         std::vector<glm::vec2>{{1.0f, 0.02f}, {1.0f, 0.02f}, {0.7f, 2.0f}},
         std::vector<float>{0.0f, 0.4f, 1.0f}
     };
+    std::unique_ptr<Mesh> mesh_{};
     //std::unique_ptr<IndexedMesh> mesh_{};
     std::unique_ptr<Texture> texture_{};
     std::unique_ptr<ShaderProgram> shader_program_{};
