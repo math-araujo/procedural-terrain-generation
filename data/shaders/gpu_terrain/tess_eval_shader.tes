@@ -6,6 +6,8 @@ in vec2 tcs_tex_coordinates[];
 
 out float tes_height;
 out vec3 tes_color;
+out vec2 tes_tex_coords;
+out vec3 frag_pos;
 
 uniform sampler2D texture_sampler;
 uniform mat4 proj_view_transform;
@@ -43,5 +45,7 @@ void main()
     tes_color = texel.rgb;
     position.y += tes_height;
 
+    tes_tex_coords = interpolated_tex_coordinates;
+    frag_pos = position.xyz;
     gl_Position = proj_view_transform * position;
 }

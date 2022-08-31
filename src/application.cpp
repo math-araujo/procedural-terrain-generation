@@ -53,9 +53,11 @@ Application::Application(int window_width, int window_height, std::string_view t
         }
     );*/
     fractal_noise_generator_.update();
-    save_image("perlin_noise.png", fractal_noise_generator_.color_map());
+    save_image("heightmap.png", from_float_to_uint8(fractal_noise_generator_.height_map()));
+    save_image("normalmap.png", fractal_noise_generator_.normal_map());
+    save_image("biomemap.png", fractal_noise_generator_.color_map());
     //mesh_ = create_indexed_grid_mesh(200, 200, fractal_noise_generator_.height_map(), curve_);
-    mesh_ = create_grid_patch(height_map_dim_.first, height_map_dim_.second, 20);
+    mesh_ = create_grid_patch(height_map_dim_.first, height_map_dim_.second, 32);
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
@@ -82,8 +84,10 @@ Application::Application(int window_width, int window_height, std::string_view t
 
     shader_program_->use();
     shader_program_->set_int_uniform("texture_sampler", 0);
+    shader_program_->set_int_uniform("normal_map_sampler", 1);
     mesh_->bind();
     texture_->bind(0);
+    normal_map_->bind(1);
 }
 
 void Application::create_context(std::string_view title)

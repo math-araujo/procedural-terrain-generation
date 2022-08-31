@@ -88,7 +88,7 @@ void FractalNoiseGenerator::update_normal_map()
             const float dx = (top_right + 2 * right + bottom_right) - (top_left + 2 * left + bottom_left);
             const float dy = (bottom_left + 2 * bottom + bottom_right) - (top_left + 2 * top + top_right);
             const glm::vec3 rgb_normal = cast_normal_to_rgb(glm::normalize(glm::vec3{dx, dy, dz}));
-            const glm::vec4 rgba_normal{rgb_normal, 255.0};            
+            const glm::vec4 rgba_normal = glm::vec4{rgb_normal, 255.0};            
             normal_map_.set_transform(i, j, glm::value_ptr(rgba_normal), glm::value_ptr(rgba_normal) + 4, 
                                     float_to_uint);
         }

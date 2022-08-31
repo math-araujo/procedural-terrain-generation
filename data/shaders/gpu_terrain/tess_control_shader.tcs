@@ -7,7 +7,7 @@ in vec2 vertex_tex_coordinates[];
 out vec2 tcs_tex_coordinates[];
 
 const int min_tess_level = 4;
-const int max_tess_level = 64;
+const int max_tess_level = 32;
 const float min_distance = 20.0;
 const float max_distance = 100.0;
 
