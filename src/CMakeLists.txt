@@ -9,6 +9,7 @@ add_executable(main
     camera.hpp camera.cpp
     meshgeneration.hpp meshgeneration.cpp
     hermite.hpp hermite.cpp
+    light.hpp
 )
 
 target_link_libraries(main PRIVATE glad::glad glfw glm::glm imgui::imgui)

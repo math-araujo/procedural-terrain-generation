@@ -339,7 +339,15 @@ void Application::process_input(float delta_time)
 }
 
 void Application::update()
-{}
+{
+    if (light_.to_update)
+    {
+        shader_program_->set_vec3_uniform("light.direction", light_.direction);    
+        shader_program_->set_vec3_uniform("light.ambient", light_.ambient);
+        shader_program_->set_vec3_uniform("light.diffuse", light_.diffuse);
+        light_.to_update = false;
+    }
+}
 
 void Application::render()
 {
@@ -403,6 +411,18 @@ void Application::render_imgui_editor()
         ImGui::ColorPicker3("Color", fractal_noise_generator_.regions_settings.colors[i].data());
         ImGui::PopID();
     }
+    ImGui::End();
+
+    ImGui::Begin("Light Settings");
+    light_.to_update = ImGui::SliderFloat3("Direction", glm::value_ptr(light_.direction), -20.0f, 20.0f);
+    light_.to_update |= ImGui::SliderFloat3("Ambient", glm::value_ptr(light_.ambient), 0.0f, 1.0f);
+    light_.to_update |= ImGui::SliderFloat3("Diffuse", glm::value_ptr(light_.diffuse), 0.0f, 1.0f);
+    if (ImGui::Button("Reset Light"))
+    {
+        light_ = start_light_;
+        light_.to_update = true;
+    }
+
     ImGui::End();
 
     ImGui::Render();

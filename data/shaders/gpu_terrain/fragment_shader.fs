@@ -14,8 +14,7 @@ struct Light
     vec3 diffuse;
 };
 
-//uniform Light light;
-
+uniform Light light;
 uniform sampler2D normal_map_sampler;
 
 void main()
@@ -23,11 +22,6 @@ void main()
     float h = (tes_height)/ 15.0;
     vec4 color = vec4(tes_color, 1.0);
     
-    Light light;
-    light.direction = vec3(-15.0, -15.0, -15.0);
-    light.ambient = vec3(0.2, 0.2, 0.2);
-    light.diffuse = vec3(0.85, 0.85, 0.85);
-
     // Ambient Light Component
     vec3 ambient_color = light.ambient * color.rgb;
 

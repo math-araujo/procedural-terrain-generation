@@ -9,6 +9,7 @@
 #include "camera.hpp"
 #include "hermite.hpp"
 #include "image.hpp"
+#include "light.hpp"
 #include "noisegeneration.hpp"
 
 
@@ -46,6 +47,7 @@ private:
     const int width_;
     const int height_;
     const float aspect_ratio_;
+    
     GLFWwindow* window_{nullptr};
     bool wireframe_mode_{false};
     bool mouse_click_{false};
@@ -66,7 +68,13 @@ private:
     std::unique_ptr<Texture> texture_{};
     std::unique_ptr<Texture> normal_map_{};
     std::unique_ptr<ShaderProgram> shader_program_{};
-
+    
+    const DirectionalLight start_light_
+    { 
+        glm::vec3{-15.0f, -15.0f, -15.0f}, glm::vec3{0.2f, 0.2f, 0.2f}, 
+        glm::vec3{0.85f, 0.85f, 0.85f}, true
+    };
+    DirectionalLight light_{start_light_};
     /*
     Create a window and OpenGL context. If creation
     was unsuccesfull, throws a runtime exception.
