@@ -11,8 +11,6 @@ Texture::Texture(std::uint32_t width, std::uint32_t height):
     glCreateTextures(GL_TEXTURE_2D, 1, &id_);
     glTextureParameteri(id_, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTextureParameteri(id_, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    /*glTextureParameteri(id_, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTextureParameteri(id_, GL_TEXTURE_MAG_FILTER, GL_NEAREST);*/
     glTextureParameteri(id_, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTextureParameteri(id_, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTextureStorage2D(id_, 1, GL_RGBA8, width_, height_);
@@ -45,16 +43,6 @@ void Texture::bind(std::uint32_t unit)
 std::uint32_t Texture::id() const
 {
     return id_;
-}
-
-void Texture::copy_image(const Image<std::uint8_t>& image)
-{
-    copy_image(static_cast<const unsigned char*>(image.data()), image.width(), image.height());
-}
-
-void Texture::copy_image(const unsigned char* image_data, std::int32_t width, std::int32_t height)
-{
-    glTextureSubImage2D(id_, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, image_data);
 }
 
 void Texture::copy_image(std::string_view filename, bool flip_on_load)
