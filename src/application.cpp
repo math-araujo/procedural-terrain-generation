@@ -385,6 +385,7 @@ void Application::render_imgui_editor()
     imgui_texture_id = reinterpret_cast<void*>(normal_map_->id());
     ImGui::Image(imgui_texture_id, ImVec2{200, 200}, ImVec2{0.0f, 0.0f}, ImVec2{1.0f, 1.0f}, 
                 ImVec4{1.0f, 1.0f, 1.0f, 1.0f}, ImVec4{1.0f, 1.0f, 1.0f, 0.5f});
+
     if (ImGui::Button("Reset Settings"))
     {
         fractal_noise_generator_.reset_settings();

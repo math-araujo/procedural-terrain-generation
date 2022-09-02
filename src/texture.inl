@@ -9,5 +9,5 @@ void Texture::copy_image(const Image<T>& image)
 template<typename T>
 void Texture::copy_image(const T* image_data, std::int32_t width, std::int32_t height)
 {
-    glTextureSubImage2D(id_, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, image_data);
+    glTextureSubImage2D(id_, 0, 0, 0, width, height, attributes_.pixel_data_format, attributes_.pixel_data_type, image_data);
 }

@@ -71,10 +71,11 @@ private:
     
     const DirectionalLight start_light_
     { 
-        glm::vec3{-15.0f, -15.0f, -15.0f}, glm::vec3{0.2f, 0.2f, 0.2f}, 
+        glm::vec3{-1.0f, -1.0f, -1.0f}, glm::vec3{0.2f, 0.2f, 0.2f}, 
         glm::vec3{0.85f, 0.85f, 0.85f}, true
     };
     DirectionalLight light_{start_light_};
+
     /*
     Create a window and OpenGL context. If creation
     was unsuccesfull, throws a runtime exception.

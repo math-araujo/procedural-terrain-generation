@@ -5,15 +5,26 @@
 #include <glad/glad.h>
 #include <stb_image.h>
 
+Texture::Texture(std::uint32_t width, std::uint32_t height, Attributes attributes):
+    width_{width}, height_{height}, attributes_{attributes}
+{
+    initialize();
+}
+
+void Texture::initialize()
+{
+    glCreateTextures(GL_TEXTURE_2D, 1, &id_);
+    glTextureParameteri(id_, GL_TEXTURE_WRAP_S, attributes_.wrap_s);
+    glTextureParameteri(id_, GL_TEXTURE_WRAP_T, attributes_.wrap_t);
+    glTextureParameteri(id_, GL_TEXTURE_MIN_FILTER, attributes_.min_filter);
+    glTextureParameteri(id_, GL_TEXTURE_MAG_FILTER, attributes_.mag_filter);
+    glTextureStorage2D(id_, 1, attributes_.internal_format, width_, height_);
+}
+
 Texture::Texture(std::uint32_t width, std::uint32_t height): 
     width_{width}, height_{height}
 {
-    glCreateTextures(GL_TEXTURE_2D, 1, &id_);
-    glTextureParameteri(id_, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTextureParameteri(id_, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTextureParameteri(id_, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTextureParameteri(id_, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTextureStorage2D(id_, 1, GL_RGBA8, width_, height_);
+    initialize();
 }
 
 Texture::Texture(Texture&& other) noexcept: 

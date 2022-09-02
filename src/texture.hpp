@@ -11,6 +11,18 @@
 class Texture
 {
 public:
+    struct Attributes
+    {
+        GLint wrap_s{GL_CLAMP_TO_EDGE};
+        GLint wrap_t{GL_CLAMP_TO_EDGE};
+        GLint min_filter{GL_LINEAR};
+        GLint mag_filter{GL_LINEAR};
+        GLenum internal_format{GL_RGBA8};
+        GLenum pixel_data_format{GL_RGBA};
+        GLenum pixel_data_type{GL_UNSIGNED_BYTE};
+    };
+
+    Texture(std::uint32_t width, std::uint32_t height, Attributes attributes);
     Texture(std::uint32_t width, std::uint32_t height);
 
     Texture(const Texture&) = delete;
@@ -31,7 +43,10 @@ public:
 private:
     std::uint32_t width_;
     std::uint32_t height_;
+    Attributes attributes_{};
     std::uint32_t id_{0};
+
+    void initialize();
 };
 
 #include "texture.inl"
