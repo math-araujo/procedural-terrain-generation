@@ -57,7 +57,7 @@ Application::Application(int window_width, int window_height, std::string_view t
     save_image("normalmap.png", fractal_noise_generator_.normal_map());
     save_image("biomemap.png", fractal_noise_generator_.color_map());
     //mesh_ = create_indexed_grid_mesh(200, 200, fractal_noise_generator_.height_map(), curve_);
-    mesh_ = create_grid_patch(height_map_dim_.first, height_map_dim_.second, 32);
+    mesh_ = create_grid_patch(height_map_dim_.first, height_map_dim_.second, 64);
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
@@ -65,6 +65,23 @@ Application::Application(int window_width, int window_height, std::string_view t
     texture_->copy_image(fractal_noise_generator_.color_map());
     normal_map_ = std::make_unique<Texture>(height_map_dim_.first, height_map_dim_.second);
     normal_map_->copy_image(fractal_noise_generator_.normal_map());
+    albedos_.reserve(5);
+    for (int i = 0; i < 5; ++i)
+    {
+        albedos_.emplace_back(std::make_unique<Texture>(
+            height_map_dim_.first, height_map_dim_.second, 
+            Texture::Attributes{.pixel_data_format=GL_RGB}
+        ));
+    }
+    std::array<std::string, 5> names
+    {
+        "textures/water.png", "textures/sand.png", "textures/grass.png",
+        "textures/rock.png", "textures/snow.png",
+    };
+    for (std::size_t i = 0; i < albedos_.size(); ++i)
+    {
+        albedos_[i]->copy_image(names[i]);
+    }
     /*shader_program_ = std::make_unique<ShaderProgram>(
         std::initializer_list<std::pair<std::string_view, Shader::Type>>
         {
@@ -85,9 +102,16 @@ Application::Application(int window_width, int window_height, std::string_view t
     shader_program_->use();
     shader_program_->set_int_uniform("texture_sampler", 0);
     shader_program_->set_int_uniform("normal_map_sampler", 1);
+
+    shader_program_->set_int_uniform("water_sampler", 2);
+    shader_program_->set_int_uniform("sand_sampler", 3);
+    shader_program_->set_int_uniform("grass_sampler", 4);
+    shader_program_->set_int_uniform("rock_sampler", 5);
+    shader_program_->set_int_uniform("snow_sampler", 6);
     mesh_->bind();
     texture_->bind(0);
     normal_map_->bind(1);
+    for (std::size_t i = 0; i < albedos_.size(); ++i) albedos_[i]->bind(2 + i);
 }
 
 void Application::create_context(std::string_view title)
@@ -275,6 +299,10 @@ Application::~Application()
 void Application::cleanup()
 {
     shader_program_.reset();
+    for (auto& albedo: albedos_)
+    {
+        albedo.reset();
+    }
     normal_map_.reset();
     texture_.reset();
     mesh_.reset();

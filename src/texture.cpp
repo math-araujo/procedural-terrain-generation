@@ -64,6 +64,10 @@ void Texture::copy_image(std::string_view filename, bool flip_on_load)
     stbi_set_flip_vertically_on_load(flip_on_load);
     unsigned char* data = stbi_load(filename.data(), &width, &height, &number_of_channels, 0);
     assert(data != nullptr);
+    if (number_of_channels == 3)
+    {
+        attributes_.pixel_data_format = GL_RGB;
+    }
     copy_image(data, width, height);
     stbi_image_free(data);
 }

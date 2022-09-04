@@ -5,7 +5,6 @@ layout (quads, fractional_odd_spacing, ccw) in;
 in vec2 tcs_tex_coordinates[];
 
 out float tes_height;
-out vec3 tes_color;
 out vec2 tes_tex_coords;
 out vec3 frag_pos;
 
@@ -41,8 +40,7 @@ void main()
     
     vec4 texel = texture(texture_sampler, interpolated_tex_coordinates);
     float height = texel.a;
-    tes_height = 15.0 * height;
-    tes_color = texel.rgb;
+    tes_height = 30.0 * height;
     position.y += tes_height;
 
     tes_tex_coords = interpolated_tex_coordinates;
