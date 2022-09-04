@@ -178,10 +178,22 @@ void ShaderProgram::set_int_uniform(const std::string& uniform_name, int value)
     glProgramUniform1i(program_id_, uniform_locations[uniform_name], value);
 }
 
+void ShaderProgram::set_int_array_uniform(const std::string& uniform_name, const int* value, std::size_t count)
+{
+    assert(uniform_locations.contains(uniform_name));
+    glProgramUniform1iv(program_id_, uniform_locations[uniform_name], count, value);
+}
+
 void ShaderProgram::set_float_uniform(const std::string& uniform_name, float value)
 {
     assert(uniform_locations.contains(uniform_name));
     glProgramUniform1f(program_id_, uniform_locations[uniform_name], value);
+}
+
+void ShaderProgram::set_float_array_uniform(const std::string& uniform_name, const float* value, std::size_t count)
+{
+    assert(uniform_locations.contains(uniform_name));
+    glProgramUniform1fv(program_id_, uniform_locations[uniform_name], count, value);
 }
 
 void ShaderProgram::set_vec2_uniform(const std::string& uniform_name, float x, float y)

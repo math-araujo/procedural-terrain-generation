@@ -16,50 +16,40 @@ struct Light
 uniform Light light;
 uniform sampler2D normal_map_sampler;
 
-uniform sampler2D water_sampler;
-uniform sampler2D sand_sampler;
-uniform sampler2D grass_sampler;
-uniform sampler2D rock_sampler;
-uniform sampler2D snow_sampler;
+const int size = 5;
+uniform sampler2D albedos[size];
+const float heights[size] = float[size](0.3, 0.35, 0.4, 0.85, 0.9);
 
 void main()
 {
     float h = (tes_height)/ 30.0;
     vec3 color = vec3(1.0);
     
-    vec3 water_color = texture(water_sampler, tes_tex_coords).rgb;
-    vec3 sand_color = texture(sand_sampler, tes_tex_coords).rgb;
-    vec3 grass_color = texture(grass_sampler, tes_tex_coords).rgb;
-    vec3 rock_color = texture(rock_sampler, tes_tex_coords).rgb;
-    vec3 snow_color = texture(snow_sampler, tes_tex_coords).rgb;
+    vec3 colors[size];
+    for (int i = 0; i < size; ++i)
+    {
+        colors[i] = texture(albedos[i], tes_tex_coords).rgb;
+    }
     
-    if (h < 0.3)
+    if (h < heights[0])
     {
-        color = water_color;
+        color = colors[0];
     }
-    else if (h < 0.35)
+    else if (h >= heights[size - 1])
     {
-        float param = smoothstep(0.3, 0.35, h);
-        color = mix(water_color, sand_color, param);
-    }
-    else if (h < 0.4)
-    {
-        float param = smoothstep(0.35, 0.4, h);
-        color = mix(sand_color, grass_color, param);
-    }
-    else if (h < 0.85)
-    {
-        float param = smoothstep(0.4, 0.85, h);
-        color = mix(grass_color, rock_color, param);
-    }
-    else if (h < 0.9)
-    {
-        float param = smoothstep(0.85, 0.9, h);
-        color = mix(rock_color, snow_color, param);
+        color = colors[size - 1];
     }
     else
     {
-        color = snow_color;
+        for (int i = 1; i < size; ++i)
+        {
+            if (h < heights[i])
+            {
+                float param = smoothstep(heights[i - 1], heights[i], h);
+                color = mix(colors[i - 1], colors[i], param);
+                break;
+            }
+        }
     }
     
     // Ambient Light Component

@@ -13,6 +13,7 @@
 
 #include <exception>
 #include <iostream>
+#include <string> 
 
 #include "mesh.hpp"
 #include "meshgeneration.hpp"
@@ -68,10 +69,7 @@ Application::Application(int window_width, int window_height, std::string_view t
     albedos_.reserve(5);
     for (int i = 0; i < 5; ++i)
     {
-        albedos_.emplace_back(std::make_unique<Texture>(
-            height_map_dim_.first, height_map_dim_.second, 
-            Texture::Attributes{.pixel_data_format=GL_RGB}
-        ));
+        albedos_.emplace_back(std::make_unique<Texture>(height_map_dim_.first, height_map_dim_.second));
     }
     std::array<std::string, 5> names
     {
@@ -103,15 +101,15 @@ Application::Application(int window_width, int window_height, std::string_view t
     shader_program_->set_int_uniform("texture_sampler", 0);
     shader_program_->set_int_uniform("normal_map_sampler", 1);
 
-    shader_program_->set_int_uniform("water_sampler", 2);
-    shader_program_->set_int_uniform("sand_sampler", 3);
-    shader_program_->set_int_uniform("grass_sampler", 4);
-    shader_program_->set_int_uniform("rock_sampler", 5);
-    shader_program_->set_int_uniform("snow_sampler", 6);
     mesh_->bind();
     texture_->bind(0);
     normal_map_->bind(1);
-    for (std::size_t i = 0; i < albedos_.size(); ++i) albedos_[i]->bind(2 + i);
+    const std::array<int, 5> uniforms{2, 3, 4, 5, 6};
+    shader_program_->set_int_array_uniform("albedos[0]", uniforms.data(), uniforms.size());
+    for (std::size_t i = 0; i < albedos_.size(); ++i)
+    { 
+        albedos_[i]->bind(i + 2);
+    }
 }
 
 void Application::create_context(std::string_view title)
