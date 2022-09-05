@@ -18,7 +18,11 @@ uniform sampler2D normal_map_sampler;
 
 const int size = 5;
 uniform sampler2D albedos[size];
-const float heights[size] = float[size](0.3, 0.35, 0.4, 0.85, 0.9);
+//Water Sand Grass Rock Snow
+                                                   // Water Sand Grass Rock Snow
+const float start_heights[size + 1] = float[size + 1](0.0, 0.3, 0.35, 0.5, 0.85, 1.1);
+                                      // Water  Sand Grass Rock Snow
+const float blend_end[size] = float[size](0.31, 0.38, 0.7, 0.9, 1.1);
 
 void main()
 {
@@ -30,22 +34,18 @@ void main()
     {
         colors[i] = texture(albedos[i], tes_tex_coords).rgb;
     }
-    
-    if (h < heights[0])
+
+    if (h < start_heights[1])
     {
         color = colors[0];
-    }
-    else if (h >= heights[size - 1])
-    {
-        color = colors[size - 1];
     }
     else
     {
         for (int i = 1; i < size; ++i)
         {
-            if (h < heights[i])
+            if (h >= start_heights[i] && h < start_heights[i + 1])
             {
-                float param = smoothstep(heights[i - 1], heights[i], h);
+                float param = smoothstep(start_heights[i], blend_end[i - 1], h);
                 color = mix(colors[i - 1], colors[i], param);
                 break;
             }
