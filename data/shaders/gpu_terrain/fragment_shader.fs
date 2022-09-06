@@ -22,7 +22,7 @@ uniform sampler2D albedos[size];
                                                    // Water Sand Grass Rock Snow
 const float start_heights[size + 1] = float[size + 1](0.0, 0.3, 0.35, 0.5, 0.85, 1.1);
                                       // Water  Sand Grass Rock Snow
-const float blend_end[size] = float[size](0.31, 0.38, 0.7, 0.9, 1.1);
+const float blend_end[size] = float[size](0.32, 0.4, 0.6, 0.9, 1.1);
 
 const float triplanar_scale = 10.56;
 
@@ -46,6 +46,7 @@ void main()
     
     // Compute fragment normal
     vec3 unit_normal = normalize(tes_normal);
+    float slope = 1.0 - unit_normal.y; // slope == 0.0 -> flat plane; slope == 1.0 -> vertical plane
 
     vec4 colors[size];
     for (int i = 0; i < size; ++i)
@@ -68,6 +69,12 @@ void main()
                 break;
             }
         }
+    }
+
+    if (slope >= 0.15 && h > start_heights[1])
+    {
+        float param = smoothstep(0.15, 0.3, slope);
+        color = mix(color, colors[3], param);
     }
     
     // Ambient Light Component
