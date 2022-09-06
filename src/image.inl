@@ -46,6 +46,13 @@ void Image<T>::set_transform(std::size_t i, std::size_t j, RandomAccessIterator 
 }
 
 template<typename T>
+template<typename Function>
+void Image<T>::transform(Function&& function)
+{
+    std::transform(image_data_.begin(), image_data_.end(), image_data_.begin(), function);
+}
+
+template<typename T>
 const T* Image<T>::data() const
 {
     return image_data_.data();

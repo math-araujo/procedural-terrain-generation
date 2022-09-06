@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <glm/glm.hpp>
 
+#include "hermite.hpp"
 #include "image.hpp"
 
 /*
@@ -64,8 +65,8 @@ public:
     FractalNoiseGenerator& operator=(FractalNoiseGenerator&&) = default;
     ~FractalNoiseGenerator() = default;
 
-    void update();
-    void update_height_map();
+    void update(bool apply_hermite_interpolation = false);
+    void update_height_map(bool apply_hermite_interpolation = false);
     void update_normal_map();
     void update_color_map();
     void reset_settings();
@@ -79,6 +80,12 @@ private:
     Image<std::uint8_t> color_map_;
     Image<std::uint8_t> normal_map_;
     std::vector<glm::vec2> random_offsets_;
+    CubicHermiteCurve curve_
+    {
+        std::vector<glm::vec2>{{0.0f, 0.0f}, {0.4f, 0.1f}, {1.0f, 1.0f}},
+        std::vector<glm::vec2>{{1.0f, 0.1f}, {1.0f, 0.1f}, {0.7f, 2.0f}},
+        std::vector<float>{0.0f, 0.4f, 1.0f}
+    };
 
     float clamp_at_edge_height(int row, int column);
     glm::vec3 cast_normal_to_rgb(glm::vec3 vector);

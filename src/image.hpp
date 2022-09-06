@@ -29,6 +29,9 @@ public:
     template<typename RandomAccessIterator, typename Function>
     void set_transform(std::size_t i, std::size_t j, RandomAccessIterator begin, RandomAccessIterator end, Function&& function);
     
+    template<typename Function>
+    void transform(Function && function);
+    
     const T* data() const;
     auto begin();
     auto end();

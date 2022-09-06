@@ -18,14 +18,14 @@ FractalNoiseGenerator::FractalNoiseGenerator(std::uint32_t width, std::uint32_t 
     random_offsets_.reserve(4 * noise_settings.octaves);
 }
 
-void FractalNoiseGenerator::update()
+void FractalNoiseGenerator::update(bool apply_hermite_interpolation)
 {
-    update_height_map();
+    update_height_map(apply_hermite_interpolation);
     update_normal_map();
     update_color_map();
 }
 
-void FractalNoiseGenerator::update_height_map()
+void FractalNoiseGenerator::update_height_map(bool apply_hermite_interpolation)
 {
     random_offsets_.clear();
     random_offsets_.resize(noise_settings.octaves);
@@ -64,6 +64,14 @@ void FractalNoiseGenerator::update_height_map()
     }
 
     normalize_image(height_map_, max_height, min_height);
+
+    if (apply_hermite_interpolation)
+    {
+        height_map_.transform([&curve=curve_](float noise_height)
+        {
+            return curve.evaluate(noise_height).y;
+        });
+    }
 }
 
 void FractalNoiseGenerator::update_normal_map()
