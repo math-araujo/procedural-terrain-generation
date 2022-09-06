@@ -2,7 +2,7 @@
 
 #include <algorithm>
 #include <cassert>
-#include <glad/glad.h>
+#include <glm/glm.hpp>
 #include <stb_image.h>
 
 Texture::Texture(std::uint32_t width, std::uint32_t height, Attributes attributes):
@@ -18,7 +18,19 @@ void Texture::initialize()
     glTextureParameteri(id_, GL_TEXTURE_WRAP_T, attributes_.wrap_t);
     glTextureParameteri(id_, GL_TEXTURE_MIN_FILTER, attributes_.min_filter);
     glTextureParameteri(id_, GL_TEXTURE_MAG_FILTER, attributes_.mag_filter);
-    glTextureStorage2D(id_, 1, attributes_.internal_format, width_, height_);
+    
+    std::uint32_t mipmap_levels{1};
+    if (attributes_.generate_mipmap)
+    {
+        const float min_dimension{static_cast<float>(std::min(width_, height_))};
+        mipmap_levels = static_cast<std::uint32_t>(glm::ceil(glm::log2(min_dimension)));
+    }
+    glTextureStorage2D(id_, mipmap_levels, attributes_.internal_format, width_, height_);
+
+    if (attributes_.generate_mipmap)
+    {
+        glGenerateTextureMipmap(id_);
+    }
 }
 
 Texture::Texture(std::uint32_t width, std::uint32_t height): 
@@ -68,6 +80,11 @@ void Texture::copy_image(std::string_view filename, bool flip_on_load)
     {
         attributes_.pixel_data_format = GL_RGB;
     }
+    else if (number_of_channels == 1)
+    {
+        attributes_.pixel_data_format = GL_RED;
+    }
+
     copy_image(data, width, height);
     stbi_image_free(data);
 }

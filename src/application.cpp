@@ -71,7 +71,10 @@ Application::Application(int window_width, int window_height, std::string_view t
     {
         albedos_.emplace_back(std::make_unique<Texture>(
             height_map_dim_.first, height_map_dim_.second,
-            Texture::Attributes{.wrap_s = GL_REPEAT, .wrap_t = GL_REPEAT}
+            Texture::Attributes
+            {
+                .wrap_s = GL_REPEAT, .wrap_t = GL_REPEAT, .generate_mipmap = true,
+            }
         ));
     }
     std::array<std::string, 5> names

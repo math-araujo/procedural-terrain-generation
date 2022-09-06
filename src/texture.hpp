@@ -20,6 +20,7 @@ public:
         GLenum internal_format{GL_RGBA8};
         GLenum pixel_data_format{GL_RGBA};
         GLenum pixel_data_type{GL_UNSIGNED_BYTE};
+        bool generate_mipmap{false};
     };
 
     Texture(std::uint32_t width, std::uint32_t height, Attributes attributes);
