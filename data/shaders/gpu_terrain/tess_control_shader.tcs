@@ -11,7 +11,7 @@ const int max_tess_level = 32;
 const float min_distance = 20.0;
 const float max_distance = 100.0;
 
-uniform mat4 view;
+uniform mat4 model_view;
 
 float clamp_distance(float distance)
 {
@@ -25,10 +25,10 @@ void main()
 
     if (gl_InvocationID == 0)
     {
-        vec4 view_p00 = view * gl_in[0].gl_Position;
-        vec4 view_p10 = view * gl_in[1].gl_Position;
-        vec4 view_p11 = view * gl_in[2].gl_Position;
-        vec4 view_p01 = view * gl_in[3].gl_Position;
+        vec4 view_p00 = model_view * gl_in[0].gl_Position;
+        vec4 view_p10 = model_view * gl_in[1].gl_Position;
+        vec4 view_p11 = model_view * gl_in[2].gl_Position;
+        vec4 view_p01 = model_view * gl_in[3].gl_Position;
 
         float distance_p00 = clamp_distance(view_p00.z);
         float distance_p10 = clamp_distance(view_p10.z);

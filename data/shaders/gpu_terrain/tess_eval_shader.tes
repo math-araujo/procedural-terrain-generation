@@ -11,7 +11,8 @@ out vec3 tes_normal;
 
 uniform sampler2D texture_sampler;
 uniform sampler2D normal_map_sampler;
-uniform mat4 proj_view_transform;
+uniform mat4 model;
+uniform mat4 mvp;
 
 void main()
 {
@@ -46,12 +47,12 @@ void main()
     position.y += tes_height;
 
     tes_tex_coords = interpolated_tex_coordinates;
-    tes_frag_pos = position.xyz;
+    tes_frag_pos = (model * position).xyz;
     
     // Fetch normal vector from normal map
     vec3 normal_rgb = texture(normal_map_sampler, tes_tex_coords).rgb;
     vec3 normal = normal_rgb * 2.0 - 1.0;
     tes_normal = normal.rbg; // Swap B and G, because our height is on Y-axis, not Z-axis
 
-    gl_Position = proj_view_transform * position;
+    gl_Position = mvp * position;
 }

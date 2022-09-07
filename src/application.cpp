@@ -388,9 +388,11 @@ void Application::render()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     // Render scene
-    projection_matrix_ = glm::perspective(glm::radians(camera_.zoom()), aspect_ratio_, 0.1f, 1000.0f);
-    shader_program_->set_mat4_uniform("view", camera_.view());
-    shader_program_->set_mat4_uniform("proj_view_transform", projection_matrix_ * camera_.view());
+    glm::mat4 model{glm::scale(glm::mat4{1.0f}, glm::vec3{1.0f, 1.0f, 1.0f})};
+    projection_matrix_ = glm::perspective(glm::radians(camera_.zoom()), aspect_ratio_, 0.1f, 10000.0f);
+    shader_program_->set_mat4_uniform("model", model);
+    shader_program_->set_mat4_uniform("model_view", camera_.view() * model);
+    shader_program_->set_mat4_uniform("mvp", projection_matrix_ * camera_.view() * model);
     mesh_->render();
 
     // Render GUI

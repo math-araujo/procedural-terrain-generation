@@ -66,7 +66,7 @@ private:
     glm::mat4 view_{1.0f};
 
     // Mouse movement settings
-    float speed_{2.5f};
+    float speed_{5.0f};
     float mouse_sensitivity_{0.1f};
     float zoom_{45.0f};
 
