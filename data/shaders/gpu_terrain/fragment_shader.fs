@@ -15,6 +15,7 @@ struct Light
 };
 
 uniform Light light;
+uniform bool use_triplanar_texturing;
 
 const int size = 5;
 uniform sampler2D albedos[size];
@@ -33,15 +34,15 @@ vec4 triplanar_texture_mapping(vec3 frag_normal, sampler2D sampler)
     float sum = abs_normal.x + abs_normal.y + abs_normal.z;
     abs_normal /= sum;
     
-    vec4 x_axis = texture(sampler, tes_frag_pos.yz / triplanar_scale);
-    vec4 y_axis = texture(sampler, tes_frag_pos.xz / triplanar_scale);
-    vec4 z_axis = texture(sampler, tes_frag_pos.xy / triplanar_scale);
-    return x_axis * abs_normal.x + y_axis * abs_normal.y + z_axis * abs_normal.z;
+    vec3 x_axis = texture(sampler, tes_frag_pos.yz / triplanar_scale).rgb;
+    vec3 y_axis = texture(sampler, tes_frag_pos.xz / triplanar_scale).rgb;
+    vec3 z_axis = texture(sampler, tes_frag_pos.xy / triplanar_scale).rgb;
+    return vec4(x_axis * abs_normal.x + y_axis * abs_normal.y + z_axis * abs_normal.z, 1.0);
 }
 
 void main()
 {
-    float h = (tes_height)/ 30.0;
+    float height = tes_height;
     vec4 color = vec4(1.0);
     
     // Compute fragment normal
@@ -51,10 +52,17 @@ void main()
     vec4 colors[size];
     for (int i = 0; i < size; ++i)
     {
-        colors[i] = triplanar_texture_mapping(unit_normal, albedos[i]);
+        if (use_triplanar_texturing)
+        {
+            colors[i] = triplanar_texture_mapping(unit_normal, albedos[i]);
+        }
+        else
+        {
+            colors[i] = texture(albedos[i], tes_frag_pos.xz / triplanar_scale);;
+        }
     }
 
-    if (h < start_heights[1])
+    if (height < start_heights[1])
     {
         color = colors[0];
     }
@@ -62,16 +70,16 @@ void main()
     {
         for (int i = 1; i < size; ++i)
         {
-            if (h >= start_heights[i] && h < start_heights[i + 1])
+            if (height >= start_heights[i] && height < start_heights[i + 1])
             {
-                float param = smoothstep(start_heights[i], blend_end[i - 1], h);
+                float param = smoothstep(start_heights[i], blend_end[i - 1], height);
                 color = mix(colors[i - 1], colors[i], param);
                 break;
             }
         }
     }
 
-    if (slope >= 0.15 && h > start_heights[1])
+    if (slope >= 0.15 && height > start_heights[1])
     {
         float param = smoothstep(0.15, 0.3, slope);
         color = mix(color, colors[3], param);

@@ -70,7 +70,8 @@ private:
         glm::vec3{0.85f, 0.85f, 0.85f}, true
     };
     DirectionalLight light_{start_light_};
-
+    bool use_triplanar_texturing_{true};
+    
     /*
     Create a window and OpenGL context. If creation
     was unsuccesfull, throws a runtime exception.

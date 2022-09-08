@@ -116,6 +116,8 @@ Application::Application(int window_width, int window_height, std::string_view t
     { 
         albedos_[i]->bind(i + 2);
     }
+
+    shader_program_->set_int_uniform("use_triplanar_texturing", static_cast<int>(use_triplanar_texturing_));
 }
 
 void Application::create_context(std::string_view title)
@@ -388,7 +390,7 @@ void Application::render()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     // Render scene
-    glm::mat4 model{glm::scale(glm::mat4{1.0f}, glm::vec3{1.0f, 1.0f, 1.0f})};
+    glm::mat4 model{glm::scale(glm::mat4{1.0f}, glm::vec3{1.0f, 30.0f, 1.0f})};
     projection_matrix_ = glm::perspective(glm::radians(camera_.zoom()), aspect_ratio_, 0.1f, 10000.0f);
     shader_program_->set_mat4_uniform("model", model);
     shader_program_->set_mat4_uniform("model_view", camera_.view() * model);
@@ -457,7 +459,13 @@ void Application::render_imgui_editor()
         light_ = start_light_;
         light_.to_update = true;
     }
+    ImGui::End();
 
+    ImGui::Begin("Texturing");
+    if (ImGui::Checkbox("Use triplanar texture mapping", &use_triplanar_texturing_))
+    {
+        shader_program_->set_int_uniform("use_triplanar_texturing", static_cast<int>(use_triplanar_texturing_));
+    }
     ImGui::End();
 
     ImGui::Render();

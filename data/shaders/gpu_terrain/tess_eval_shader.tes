@@ -42,8 +42,7 @@ void main()
     vec2 interpolated_tex_coordinates = mix(t0, t1, v);
     
     vec4 texel = texture(texture_sampler, interpolated_tex_coordinates);
-    float height = texel.a;
-    tes_height = 30.0 * height;
+    tes_height = texel.a;
     position.y += tes_height;
 
     tes_tex_coords = interpolated_tex_coordinates;
