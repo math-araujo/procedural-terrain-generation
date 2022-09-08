@@ -106,6 +106,7 @@ Application::Application(int window_width, int window_height, std::string_view t
     terrain_program_->use();
     terrain_program_->set_int_uniform("texture_sampler", 0);
     terrain_program_->set_int_uniform("normal_map_sampler", 1);
+    terrain_program_->set_float_uniform("elevation", elevation_);
 
     texture_->bind(0);
     normal_map_->bind(1);
@@ -416,17 +417,17 @@ void Application::render()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     // Render scene
-    glm::mat4 model{glm::scale(glm::mat4{1.0f}, glm::vec3{1.0f, 30.0f, 1.0f})};
     projection_matrix_ = glm::perspective(glm::radians(camera_.zoom()), aspect_ratio_, 0.1f, 10000.0f);
     terrain_program_->use();
-    terrain_program_->set_mat4_uniform("model", model);
-    terrain_program_->set_mat4_uniform("model_view", camera_.view() * model);
-    terrain_program_->set_mat4_uniform("mvp", projection_matrix_ * camera_.view() * model);
+    terrain_scale_ = glm::scale(glm::mat4{1.0f}, glm::vec3{1.0f, 1.0f, 1.0f});
+    terrain_program_->set_mat4_uniform("model", terrain_scale_);
+    terrain_program_->set_mat4_uniform("model_view", camera_.view() * terrain_scale_);
+    terrain_program_->set_mat4_uniform("mvp", projection_matrix_ * camera_.view() * terrain_scale_);
     mesh_->render();
 
     // Render water
     water_program_->use();
-    model = glm::translate(glm::mat4{1.0f}, glm::vec3{0.0f, 10.0f, 0.0f});
+    glm::mat4 model = glm::translate(glm::mat4{1.0f}, glm::vec3{0.0f, 10.0f, 0.0f});
     model = glm::rotate(model, glm::radians(-90.0f), glm::vec3{1.0f, 0.0f, 0.0f});
     model = glm::scale(model, glm::vec3{100.0f, 100.0f, 100.0f});
     water_program_->set_mat4_uniform("mvp", projection_matrix_ * camera_.view() * model);
@@ -500,6 +501,13 @@ void Application::render_imgui_editor()
     if (ImGui::Checkbox("Use triplanar texture mapping", &use_triplanar_texturing_))
     {
         terrain_program_->set_int_uniform("use_triplanar_texturing", static_cast<int>(use_triplanar_texturing_));
+    }
+    ImGui::End();
+
+    ImGui::Begin("Terrain");
+    if (ImGui::SliderFloat("Elevation", &elevation_, 1.0f, 300.0f))
+    {
+        terrain_program_->set_float_uniform("elevation", elevation_);
     }
     ImGui::End();
 

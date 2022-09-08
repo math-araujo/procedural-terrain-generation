@@ -13,6 +13,7 @@ uniform sampler2D texture_sampler;
 uniform sampler2D normal_map_sampler;
 uniform mat4 model;
 uniform mat4 mvp;
+uniform float elevation;
 
 void main()
 {
@@ -43,7 +44,7 @@ void main()
     
     vec4 texel = texture(texture_sampler, interpolated_tex_coordinates);
     tes_height = texel.a;
-    position.y += tes_height;
+    position.y = elevation * tes_height;
 
     tes_tex_coords = interpolated_tex_coordinates;
     tes_frag_pos = (model * position).xyz;
