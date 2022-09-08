@@ -126,6 +126,7 @@ void IndexedMesh::bind()
 
 void IndexedMesh::render()
 {
+    bind();
     glDrawElements(GL_TRIANGLES, number_of_indices_, GL_UNSIGNED_INT, 0);
 }
 

@@ -86,14 +86,14 @@ Application::Application(int window_width, int window_height, std::string_view t
     {
         albedos_[i]->copy_image(names[i]);
     }
-    /*shader_program_ = std::make_unique<ShaderProgram>(
+    /*terrain_program_ = std::make_unique<ShaderProgram>(
         std::initializer_list<std::pair<std::string_view, Shader::Type>>
         {
             {"shaders/cpu_terrain/vertex_shader.vs", Shader::Type::Vertex},
             {"shaders/cpu_terrain/fragment_shader.fs", Shader::Type::Fragment},
         }
     );*/
-    shader_program_ = std::make_unique<ShaderProgram>(
+    terrain_program_ = std::make_unique<ShaderProgram>(
         std::initializer_list<std::pair<std::string_view, Shader::Type>>
         {
             {"shaders/gpu_terrain/vertex_shader.vs", Shader::Type::Vertex},
@@ -103,21 +103,43 @@ Application::Application(int window_width, int window_height, std::string_view t
         }
     );
 
-    shader_program_->use();
-    shader_program_->set_int_uniform("texture_sampler", 0);
-    shader_program_->set_int_uniform("normal_map_sampler", 1);
+    terrain_program_->use();
+    terrain_program_->set_int_uniform("texture_sampler", 0);
+    terrain_program_->set_int_uniform("normal_map_sampler", 1);
 
-    mesh_->bind();
     texture_->bind(0);
     normal_map_->bind(1);
     const std::array<int, 5> uniforms{2, 3, 4, 5, 6};
-    shader_program_->set_int_array_uniform("albedos[0]", uniforms.data(), uniforms.size());
+    terrain_program_->set_int_array_uniform("albedos[0]", uniforms.data(), uniforms.size());
     for (std::size_t i = 0; i < albedos_.size(); ++i)
     { 
         albedos_[i]->bind(i + 2);
     }
 
-    shader_program_->set_int_uniform("use_triplanar_texturing", static_cast<int>(use_triplanar_texturing_));
+    terrain_program_->set_int_uniform("use_triplanar_texturing", static_cast<int>(use_triplanar_texturing_));
+
+    water_mesh_ = std::make_unique<IndexedMesh>(
+        std::vector<float>
+        {
+            // X     Y     Z     U     V
+            0.5f, 0.5f, 0.0f, 1.0f, 1.0f, // Top-right
+            -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, // Top-left
+            0.5f, -0.5f, 0.0f, 1.0f, 0.0f, // Bottom-right
+            -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, // Bottom-left
+        },
+        std::vector<std::uint32_t>
+        {
+            0, 1, 2,
+            2, 1, 3
+        }
+    );
+    water_program_ = std::make_unique<ShaderProgram>(
+        std::initializer_list<std::pair<std::string_view, Shader::Type>>
+        {
+            {"shaders/water/vertex_shader.vs", Shader::Type::Vertex},
+            {"shaders/water/fragment_shader.fs", Shader::Type::Fragment},
+        }
+    );
 }
 
 void Application::create_context(std::string_view title)
@@ -304,7 +326,10 @@ Application::~Application()
 
 void Application::cleanup()
 {
-    shader_program_.reset();
+    water_program_.reset();
+    water_mesh_.reset();
+
+    terrain_program_.reset();
     for (auto& albedo: albedos_)
     {
         albedo.reset();
@@ -376,9 +401,9 @@ void Application::update()
 {
     if (light_.to_update)
     {
-        shader_program_->set_vec3_uniform("light.direction", light_.direction);    
-        shader_program_->set_vec3_uniform("light.ambient", light_.ambient);
-        shader_program_->set_vec3_uniform("light.diffuse", light_.diffuse);
+        terrain_program_->set_vec3_uniform("light.direction", light_.direction);    
+        terrain_program_->set_vec3_uniform("light.ambient", light_.ambient);
+        terrain_program_->set_vec3_uniform("light.diffuse", light_.diffuse);
         light_.to_update = false;
     }
 }
@@ -386,16 +411,26 @@ void Application::update()
 void Application::render()
 {
     // Clear window with specified color
-    glClearColor(0.0f, 0.1f, 0.4f, 1.0f);
+    //glClearColor(0.0f, 0.1f, 0.4f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     // Render scene
     glm::mat4 model{glm::scale(glm::mat4{1.0f}, glm::vec3{1.0f, 30.0f, 1.0f})};
     projection_matrix_ = glm::perspective(glm::radians(camera_.zoom()), aspect_ratio_, 0.1f, 10000.0f);
-    shader_program_->set_mat4_uniform("model", model);
-    shader_program_->set_mat4_uniform("model_view", camera_.view() * model);
-    shader_program_->set_mat4_uniform("mvp", projection_matrix_ * camera_.view() * model);
+    terrain_program_->use();
+    terrain_program_->set_mat4_uniform("model", model);
+    terrain_program_->set_mat4_uniform("model_view", camera_.view() * model);
+    terrain_program_->set_mat4_uniform("mvp", projection_matrix_ * camera_.view() * model);
     mesh_->render();
+
+    // Render water
+    water_program_->use();
+    model = glm::translate(glm::mat4{1.0f}, glm::vec3{0.0f, 10.0f, 0.0f});
+    model = glm::rotate(model, glm::radians(-90.0f), glm::vec3{1.0f, 0.0f, 0.0f});
+    model = glm::scale(model, glm::vec3{100.0f, 100.0f, 100.0f});
+    water_program_->set_mat4_uniform("mvp", projection_matrix_ * camera_.view() * model);
+    water_mesh_->render();
 
     // Render GUI
     render_imgui_editor();
@@ -464,7 +499,7 @@ void Application::render_imgui_editor()
     ImGui::Begin("Texturing");
     if (ImGui::Checkbox("Use triplanar texture mapping", &use_triplanar_texturing_))
     {
-        shader_program_->set_int_uniform("use_triplanar_texturing", static_cast<int>(use_triplanar_texturing_));
+        terrain_program_->set_int_uniform("use_triplanar_texturing", static_cast<int>(use_triplanar_texturing_));
     }
     ImGui::End();
 

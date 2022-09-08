@@ -62,7 +62,7 @@ private:
     std::unique_ptr<Texture> normal_map_{};
 
     std::vector<std::unique_ptr<Texture>> albedos_;
-    std::unique_ptr<ShaderProgram> shader_program_{};
+    std::unique_ptr<ShaderProgram> terrain_program_{};
     
     const DirectionalLight start_light_
     { 
@@ -71,7 +71,9 @@ private:
     };
     DirectionalLight light_{start_light_};
     bool use_triplanar_texturing_{true};
-    
+
+    std::unique_ptr<IndexedMesh> water_mesh_{};
+    std::unique_ptr<ShaderProgram> water_program_{};
     /*
     Create a window and OpenGL context. If creation
     was unsuccesfull, throws a runtime exception.
