@@ -11,13 +11,13 @@
 #include "light.hpp"
 #include "noisegeneration.hpp"
 
-
 struct GLFWwindow;
 
 class IndexedMesh;
 class Mesh;
 class ShaderProgram;
 class Texture;
+class Framebuffer;
 
 class Application
 {
@@ -72,10 +72,13 @@ private:
         glm::vec3{0.85f, 0.85f, 0.85f}, true
     };
     DirectionalLight light_{start_light_};
-    bool use_triplanar_texturing_{true};
+    bool use_triplanar_texturing_{false};
 
     std::unique_ptr<IndexedMesh> water_mesh_{};
     std::unique_ptr<ShaderProgram> water_program_{};
+
+    std::unique_ptr<Framebuffer> fbo_;
+
     /*
     Create a window and OpenGL context. If creation
     was unsuccesfull, throws a runtime exception.
@@ -92,6 +95,11 @@ private:
     throws a runtime exception.
     */
     void load_opengl();
+
+    /*
+    Reset viewport to the Application's width and height values
+    */
+    void reset_viewport();
 
     /*
     Render editor with properties for noise generation and

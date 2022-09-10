@@ -20,6 +20,9 @@
 #include "shader.hpp"
 #include "texture.hpp"
 
+#include "framebuffer.hpp"
+#include "renderbuffer.hpp"
+
 Application::Application(int window_width, int window_height, std::string_view title) :
     width_{window_width}, height_{window_height}, aspect_ratio_{static_cast<float>(width_) / height_}
 {
@@ -140,6 +143,12 @@ Application::Application(int window_width, int window_height, std::string_view t
             {"shaders/water/vertex_shader.vs", Shader::Type::Vertex},
             {"shaders/water/fragment_shader.fs", Shader::Type::Fragment},
         }
+    );
+
+    fbo_ = std::make_unique<Framebuffer>(
+        1024, 768,
+        Renderbuffer{width_, height_, GL_DEPTH_COMPONENT32F},
+        Texture{width_, height_}
     );
 }
 
@@ -327,6 +336,7 @@ Application::~Application()
 
 void Application::cleanup()
 {
+    fbo_.reset();
     water_program_.reset();
     water_mesh_.reset();
 
@@ -411,6 +421,18 @@ void Application::update()
 
 void Application::render()
 {
+    fbo_->bind();
+    // Render scene
+    projection_matrix_ = glm::perspective(glm::radians(camera_.zoom()), aspect_ratio_, 0.1f, 10000.0f);
+    terrain_program_->use();
+    terrain_scale_ = glm::scale(glm::mat4{1.0f}, glm::vec3{1.0f, 1.0f, 1.0f});
+    terrain_program_->set_mat4_uniform("model", terrain_scale_);
+    terrain_program_->set_mat4_uniform("model_view", camera_.view() * terrain_scale_);
+    terrain_program_->set_mat4_uniform("mvp", projection_matrix_ * camera_.view() * terrain_scale_);
+    mesh_->render();
+    fbo_->unbind();
+    reset_viewport();
+
     // Clear window with specified color
     //glClearColor(0.0f, 0.1f, 0.4f, 1.0f);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -429,12 +451,19 @@ void Application::render()
     water_program_->use();
     glm::mat4 model = glm::translate(glm::mat4{1.0f}, glm::vec3{0.0f, 10.0f, 0.0f});
     model = glm::rotate(model, glm::radians(-90.0f), glm::vec3{1.0f, 0.0f, 0.0f});
-    model = glm::scale(model, glm::vec3{100.0f, 100.0f, 100.0f});
+    model = glm::scale(model, glm::vec3{height_map_dim_.first, height_map_dim_.second, 1.0f});
     water_program_->set_mat4_uniform("mvp", projection_matrix_ * camera_.view() * model);
     water_mesh_->render();
 
     // Render GUI
     render_imgui_editor();
+}
+
+void Application::reset_viewport()
+{
+    std::array<GLint, 4> viewport;
+    glGetIntegerv(GL_VIEWPORT, viewport.data());
+    glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
 }
 
 void Application::render_imgui_editor()
@@ -470,7 +499,7 @@ void Application::render_imgui_editor()
     }
     ImGui::End();
 
-    ImGui::Begin("Regions Settings");
+    /*ImGui::Begin("Regions Settings");
     ImGui::SliderFloat(fractal_noise_generator_.regions_settings.names[0].c_str(), 
         fractal_noise_generator_.regions_settings.height_ranges.data(), 0.05f, 1.0f);
     ImGui::ColorPicker3(fractal_noise_generator_.regions_settings.names[0].c_str(), 
@@ -484,7 +513,7 @@ void Application::render_imgui_editor()
         ImGui::ColorPicker3("Color", fractal_noise_generator_.regions_settings.colors[i].data());
         ImGui::PopID();
     }
-    ImGui::End();
+    ImGui::End();*/
 
     ImGui::Begin("Light Settings");
     light_.to_update = ImGui::SliderFloat3("Direction", glm::value_ptr(light_.direction), -20.0f, 20.0f);
@@ -509,6 +538,12 @@ void Application::render_imgui_editor()
     {
         terrain_program_->set_float_uniform("elevation", elevation_);
     }
+    ImGui::End();
+
+    ImGui::Begin("Water");
+    imgui_texture_id = reinterpret_cast<void*>(fbo_->color_id());
+    ImGui::Image(imgui_texture_id, ImVec2{200, 200}, ImVec2{0.0f, 0.0f}, ImVec2{1.0f, 1.0f}, 
+                ImVec4{1.0f, 1.0f, 1.0f, 1.0f}, ImVec4{1.0f, 1.0f, 1.0f, 0.5f});
     ImGui::End();
 
     ImGui::Render();

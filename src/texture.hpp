@@ -40,7 +40,10 @@ public:
 
     void copy_image(std::string_view filename, bool flip_on_load = true);
     void bind(std::uint32_t unit);
+    
     std::uint32_t id() const;
+    std::uint32_t width() const;
+    std::uint32_t height() const;
 private:
     std::uint32_t width_;
     std::uint32_t height_;

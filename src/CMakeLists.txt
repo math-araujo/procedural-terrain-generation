@@ -5,10 +5,13 @@ add_executable(main
     shader.hpp shader.cpp
     image.hpp image.inl image.cpp
     texture.hpp texture.cpp
+    framebuffer.hpp framebuffer.cpp
+    renderbuffer.hpp renderbuffer.cpp
     noisegeneration.hpp noisegeneration.cpp
     camera.hpp camera.cpp
     meshgeneration.hpp meshgeneration.cpp
     hermite.hpp hermite.cpp
+    water.hpp water.cpp
     light.hpp
 )
 
