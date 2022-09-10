@@ -14,6 +14,7 @@ uniform sampler2D normal_map_sampler;
 uniform mat4 model;
 uniform mat4 mvp;
 uniform float elevation;
+uniform vec4 clip_plane;
 
 void main()
 {
@@ -47,8 +48,12 @@ void main()
     position.y = elevation * tes_height;
 
     tes_tex_coords = interpolated_tex_coordinates;
-    tes_frag_pos = (model * position).xyz;
+    vec4 world_position = model * position;
     
+    gl_ClipDistance[0] = dot(world_position, clip_plane);
+
+    tes_frag_pos = (world_position).xyz;
+
     // Fetch normal vector from normal map
     vec3 normal_rgb = texture(normal_map_sampler, tes_tex_coords).rgb;
     vec3 normal = normal_rgb * 2.0 - 1.0;

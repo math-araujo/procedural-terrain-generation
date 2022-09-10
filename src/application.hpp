@@ -99,6 +99,11 @@ private:
     void load_opengl();
 
     /*
+    Render procedural terrain on GPU
+    */
+    void render_terrain();
+    
+    /*
     Reset viewport to the Application's width and height values
     */
     void reset_viewport();

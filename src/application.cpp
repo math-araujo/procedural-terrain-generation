@@ -60,10 +60,11 @@ Application::Application(int window_width, int window_height, std::string_view t
     save_image("normalmap.png", fractal_noise_generator_.normal_map());
     save_image("biomemap.png", fractal_noise_generator_.color_map());
     //mesh_ = create_indexed_grid_mesh(200, 200, fractal_noise_generator_.height_map(), curve_);
-    mesh_ = create_grid_patch(height_map_dim_.first, height_map_dim_.second, 64);
+    mesh_ = create_grid_patch(height_map_dim_.first, height_map_dim_.second, 32);
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
+    glEnable(GL_CLIP_DISTANCE0);
     texture_ = std::make_unique<Texture>(height_map_dim_.first, height_map_dim_.second);
     texture_->copy_image(fractal_noise_generator_.color_map());
     normal_map_ = std::make_unique<Texture>(height_map_dim_.first, height_map_dim_.second);
@@ -109,6 +110,7 @@ Application::Application(int window_width, int window_height, std::string_view t
     terrain_program_->set_int_uniform("texture_sampler", 0);
     terrain_program_->set_int_uniform("normal_map_sampler", 1);
     terrain_program_->set_float_uniform("elevation", elevation_);
+    terrain_program_->set_vec4_uniform("clip_plane", glm::vec4{0.0f, -1.0f, 0.0f, 15.0f});
 
     texture_->bind(0);
     normal_map_->bind(1);
@@ -418,15 +420,19 @@ void Application::render()
 {
     glGetIntegerv(GL_VIEWPORT, current_viewport_.data());
 
+    // Render scene to the reflection framebuffer
+    // The clip plane must be above water surface
+    terrain_program_->set_vec4_uniform("clip_plane", water_fbo_->reflection_clip_plane());
     water_fbo_->bind_reflection();
-    // Render scene
-    projection_matrix_ = glm::perspective(glm::radians(camera_.zoom()), aspect_ratio_, 0.1f, 10000.0f);
-    terrain_program_->use();
-    terrain_scale_ = glm::scale(glm::mat4{1.0f}, glm::vec3{1.0f, 1.0f, 1.0f});
-    terrain_program_->set_mat4_uniform("model", terrain_scale_);
-    terrain_program_->set_mat4_uniform("model_view", camera_.view() * terrain_scale_);
-    terrain_program_->set_mat4_uniform("mvp", projection_matrix_ * camera_.view() * terrain_scale_);
-    mesh_->render();
+    render_terrain();
+
+    // Render scene to the refraction
+    // The clip plane must be below water surface
+    terrain_program_->set_vec4_uniform("clip_plane", water_fbo_->refraction_clip_plane());
+    water_fbo_->bind_refraction();
+    render_terrain();
+
+    // Reset viewport and bind default framebuffer
     water_fbo_->unbind();
     reset_viewport();
 
@@ -436,17 +442,12 @@ void Application::render()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     // Render scene
-    projection_matrix_ = glm::perspective(glm::radians(camera_.zoom()), aspect_ratio_, 0.1f, 10000.0f);
-    terrain_program_->use();
-    terrain_scale_ = glm::scale(glm::mat4{1.0f}, glm::vec3{1.0f, 1.0f, 1.0f});
-    terrain_program_->set_mat4_uniform("model", terrain_scale_);
-    terrain_program_->set_mat4_uniform("model_view", camera_.view() * terrain_scale_);
-    terrain_program_->set_mat4_uniform("mvp", projection_matrix_ * camera_.view() * terrain_scale_);
-    mesh_->render();
+    terrain_program_->set_vec4_uniform("clip_plane", glm::vec4{0.0f, 0.0f, 0.0f, 0.0f});
+    render_terrain();
 
     // Render water
     water_program_->use();
-    glm::mat4 model = glm::translate(glm::mat4{1.0f}, glm::vec3{0.0f, 10.0f, 0.0f});
+    glm::mat4 model = glm::translate(glm::mat4{1.0f}, glm::vec3{0.0f, water_fbo_->height(), 0.0f});
     model = glm::rotate(model, glm::radians(-90.0f), glm::vec3{1.0f, 0.0f, 0.0f});
     model = glm::scale(model, glm::vec3{height_map_dim_.first, height_map_dim_.second, 1.0f});
     water_program_->set_mat4_uniform("mvp", projection_matrix_ * camera_.view() * model);
@@ -455,6 +456,17 @@ void Application::render()
     // Render GUI
     render_imgui_editor();
 }
+
+void Application::render_terrain()
+{
+    projection_matrix_ = glm::perspective(glm::radians(camera_.zoom()), aspect_ratio_, 0.1f, 1000.0f);
+    terrain_program_->use();
+    terrain_program_->set_mat4_uniform("model", terrain_scale_);
+    terrain_program_->set_mat4_uniform("model_view", camera_.view() * terrain_scale_);
+    terrain_program_->set_mat4_uniform("mvp", projection_matrix_ * camera_.view() * terrain_scale_);
+    mesh_->render();
+}
+
 
 void Application::reset_viewport()
 {
@@ -537,6 +549,9 @@ void Application::render_imgui_editor()
 
     ImGui::Begin("Water");
     imgui_texture_id = reinterpret_cast<void*>(water_fbo_->reflection_color_attachment());
+    ImGui::Image(imgui_texture_id, ImVec2{200, 200}, ImVec2{0.0f, 0.0f}, ImVec2{1.0f, 1.0f}, 
+                ImVec4{1.0f, 1.0f, 1.0f, 1.0f}, ImVec4{1.0f, 1.0f, 1.0f, 0.5f});
+    imgui_texture_id = reinterpret_cast<void*>(water_fbo_->refraction_color_attachment());
     ImGui::Image(imgui_texture_id, ImVec2{200, 200}, ImVec2{0.0f, 0.0f}, ImVec2{1.0f, 1.0f}, 
                 ImVec4{1.0f, 1.0f, 1.0f, 1.0f}, ImVec4{1.0f, 1.0f, 1.0f, 0.5f});
     ImGui::End();

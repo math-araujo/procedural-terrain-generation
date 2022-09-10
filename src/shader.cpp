@@ -220,6 +220,12 @@ void ShaderProgram::set_vec3_uniform(const std::string& uniform_name, const glm:
     glProgramUniform3fv(program_id_, uniform_locations[uniform_name], 1, glm::value_ptr(vector));
 }
 
+void ShaderProgram::set_vec4_uniform(const std::string& uniform_name, const glm::vec4& vector)
+{
+    assert(uniform_locations.contains(uniform_name));
+    glProgramUniform4fv(program_id_, uniform_locations[uniform_name], 1, glm::value_ptr(vector));
+}
+
 void ShaderProgram::set_mat4_uniform(const std::string& uniform_name, const glm::mat4& matrix)
 {
     assert(uniform_locations.contains(uniform_name));

@@ -42,6 +42,21 @@ void Water::unbind()
     reflection_fbo_->unbind();
 }
 
+float Water::height() const
+{
+    return height_;
+}
+
+const glm::vec4& Water::reflection_clip_plane() const
+{
+    return reflection_clip_plane_;
+}
+
+const glm::vec4& Water::refraction_clip_plane() const
+{
+    return refraction_clip_plane_;
+}
+
 std::uint32_t Water::reflection_color_attachment() const
 {
     return reflection_fbo_->color_id();
