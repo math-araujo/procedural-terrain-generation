@@ -109,3 +109,8 @@ std::uint32_t Framebuffer::color_id() const
 {
     return color_.value().id();
 }
+
+std::uint32_t Framebuffer::depth_id() const
+{
+    return std::visit([](const auto& depth) { return depth.id(); }, depth_);
+}

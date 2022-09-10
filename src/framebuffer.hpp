@@ -30,6 +30,7 @@ public:
     std::uint32_t height() const;
     std::uint32_t id() const;
     std::uint32_t color_id() const;
+    std::uint32_t depth_id() const;
 private:
     inline static const std::array<float, 4> clear_color_{0.0f, 0.0f, 0.0f, 1.0f};
     inline static const float clear_depth_{1.0f};

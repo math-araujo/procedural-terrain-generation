@@ -51,3 +51,8 @@ std::uint32_t Water::refraction_color_attachment() const
 {
     return refraction_fbo_->color_id();
 }
+
+std::uint32_t Water::refraction_depth_texture() const
+{
+    return refraction_fbo_->depth_id();
+}

@@ -26,6 +26,7 @@ public:
 
     std::uint32_t reflection_color_attachment() const;
     std::uint32_t refraction_color_attachment() const;
+    std::uint32_t refraction_depth_texture() const;
 private:
     const std::uint32_t reflection_width_{320};
     const std::uint32_t reflection_height_{180};
