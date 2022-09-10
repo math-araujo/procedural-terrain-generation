@@ -15,13 +15,12 @@
 #include <iostream>
 #include <string> 
 
+#include "framebuffer.hpp"
 #include "mesh.hpp"
 #include "meshgeneration.hpp"
 #include "shader.hpp"
 #include "texture.hpp"
-
-#include "framebuffer.hpp"
-#include "renderbuffer.hpp"
+#include "water.hpp"
 
 Application::Application(int window_width, int window_height, std::string_view title) :
     width_{window_width}, height_{window_height}, aspect_ratio_{static_cast<float>(width_) / height_}
@@ -145,11 +144,7 @@ Application::Application(int window_width, int window_height, std::string_view t
         }
     );
 
-    fbo_ = std::make_unique<Framebuffer>(
-        1024, 768,
-        Renderbuffer{width_, height_, GL_DEPTH_COMPONENT32F},
-        Texture{width_, height_}
-    );
+    water_fbo_ = std::make_unique<Water>();
 }
 
 void Application::create_context(std::string_view title)
@@ -336,7 +331,7 @@ Application::~Application()
 
 void Application::cleanup()
 {
-    fbo_.reset();
+    water_fbo_.reset();
     water_program_.reset();
     water_mesh_.reset();
 
@@ -421,7 +416,9 @@ void Application::update()
 
 void Application::render()
 {
-    fbo_->bind();
+    glGetIntegerv(GL_VIEWPORT, current_viewport_.data());
+
+    water_fbo_->bind_reflection();
     // Render scene
     projection_matrix_ = glm::perspective(glm::radians(camera_.zoom()), aspect_ratio_, 0.1f, 10000.0f);
     terrain_program_->use();
@@ -430,7 +427,7 @@ void Application::render()
     terrain_program_->set_mat4_uniform("model_view", camera_.view() * terrain_scale_);
     terrain_program_->set_mat4_uniform("mvp", projection_matrix_ * camera_.view() * terrain_scale_);
     mesh_->render();
-    fbo_->unbind();
+    water_fbo_->unbind();
     reset_viewport();
 
     // Clear window with specified color
@@ -461,9 +458,7 @@ void Application::render()
 
 void Application::reset_viewport()
 {
-    std::array<GLint, 4> viewport;
-    glGetIntegerv(GL_VIEWPORT, viewport.data());
-    glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
+    glViewport(current_viewport_[0], current_viewport_[1], current_viewport_[2], current_viewport_[3]);
 }
 
 void Application::render_imgui_editor()
@@ -541,7 +536,7 @@ void Application::render_imgui_editor()
     ImGui::End();
 
     ImGui::Begin("Water");
-    imgui_texture_id = reinterpret_cast<void*>(fbo_->color_id());
+    imgui_texture_id = reinterpret_cast<void*>(water_fbo_->reflection_color_attachment());
     ImGui::Image(imgui_texture_id, ImVec2{200, 200}, ImVec2{0.0f, 0.0f}, ImVec2{1.0f, 1.0f}, 
                 ImVec4{1.0f, 1.0f, 1.0f, 1.0f}, ImVec4{1.0f, 1.0f, 1.0f, 0.5f});
     ImGui::End();

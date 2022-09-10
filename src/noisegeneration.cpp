@@ -31,7 +31,7 @@ void FractalNoiseGenerator::update_height_map(bool apply_hermite_interpolation)
     random_offsets_.resize(noise_settings.octaves);
     for (int i = 0; i < noise_settings.octaves; ++i)
     {
-        const glm::vec2 random_sample{glm::linearRand(-10000.0f, 10000.0f), glm::linearRand(-10000.0f, 10000.0f)};
+        const glm::vec2 random_sample{glm::linearRand(-10000.0f, 10000.0f), -glm::linearRand(-10000.0f, 10000.0f)};
         random_offsets_[i] = noise_settings.offset + random_sample;
     }
 
@@ -51,7 +51,7 @@ void FractalNoiseGenerator::update_height_map(bool apply_hermite_interpolation)
             for (int octave = 0; octave < noise_settings.octaves; ++octave)
             {
                 auto sample_point = (frequency / noise_settings.noise_scale) * glm::vec2{j - half_width, i - half_height};
-                sample_point += random_offsets_[octave];
+                sample_point += frequency * random_offsets_[octave];
                 noise_height += amplitude * glm::perlin(sample_point);
                 frequency *= noise_settings.lacunarity;
                 amplitude *= noise_settings.persistance;

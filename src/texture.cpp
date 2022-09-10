@@ -68,6 +68,16 @@ std::uint32_t Texture::id() const
     return id_;
 }
 
+std::uint32_t Texture::width() const
+{
+    return width_;
+}
+
+std::uint32_t Texture::height() const
+{
+    return height_;
+}
+
 void Texture::copy_image(std::string_view filename, bool flip_on_load)
 {
     int width{0};

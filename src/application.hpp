@@ -1,6 +1,7 @@
 #ifndef APPLICATION_HPP
 #define APPLICATION_HPP
 
+#include <array>
 #include <string_view>
 #include <memory>
 
@@ -17,7 +18,7 @@ class IndexedMesh;
 class Mesh;
 class ShaderProgram;
 class Texture;
-class Framebuffer;
+class Water;
 
 class Application
 {
@@ -47,6 +48,7 @@ private:
     const int height_;
     const float aspect_ratio_;
     
+    std::array<int, 4> current_viewport_{};
     GLFWwindow* window_{nullptr};
     bool wireframe_mode_{false};
     bool mouse_click_{false};
@@ -77,7 +79,7 @@ private:
     std::unique_ptr<IndexedMesh> water_mesh_{};
     std::unique_ptr<ShaderProgram> water_program_{};
 
-    std::unique_ptr<Framebuffer> fbo_;
+    std::unique_ptr<Water> water_fbo_;
 
     /*
     Create a window and OpenGL context. If creation
