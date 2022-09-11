@@ -422,12 +422,19 @@ void Application::render()
 
     // Render scene to the reflection framebuffer
     // The clip plane must be above water surface
+    // Camera must be positioned below water surface
     terrain_program_->set_vec4_uniform("clip_plane", water_fbo_->reflection_clip_plane());
+    const float underwater_distance{2.0f * (camera_.position().y - water_fbo_->height())};
+    camera_.move_position(glm::vec3{0.0f, -underwater_distance, 0.0f});
+    camera_.invert_pitch();
     water_fbo_->bind_reflection();
     render_terrain();
 
     // Render scene to the refraction
     // The clip plane must be below water surface
+    // Camera position and orientation is restored to the previous values
+    camera_.move_position(glm::vec3{0.0f, underwater_distance, 0.0f});
+    camera_.invert_pitch();
     terrain_program_->set_vec4_uniform("clip_plane", water_fbo_->refraction_clip_plane());
     water_fbo_->bind_refraction();
     render_terrain();
@@ -548,9 +555,11 @@ void Application::render_imgui_editor()
     ImGui::End();
 
     ImGui::Begin("Water");
+    ImGui::Text("Reflection:");
     imgui_texture_id = reinterpret_cast<void*>(water_fbo_->reflection_color_attachment());
     ImGui::Image(imgui_texture_id, ImVec2{200, 200}, ImVec2{0.0f, 0.0f}, ImVec2{1.0f, 1.0f}, 
                 ImVec4{1.0f, 1.0f, 1.0f, 1.0f}, ImVec4{1.0f, 1.0f, 1.0f, 0.5f});
+    ImGui::Text("Refraction:");
     imgui_texture_id = reinterpret_cast<void*>(water_fbo_->refraction_color_attachment());
     ImGui::Image(imgui_texture_id, ImVec2{200, 200}, ImVec2{0.0f, 0.0f}, ImVec2{1.0f, 1.0f}, 
                 ImVec4{1.0f, 1.0f, 1.0f, 1.0f}, ImVec4{1.0f, 1.0f, 1.0f, 0.5f});

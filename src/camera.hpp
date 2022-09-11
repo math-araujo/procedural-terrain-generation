@@ -45,10 +45,12 @@ public:
     FPSCamera(glm::vec3 position);
     FPSCamera(glm::vec3 position, glm::vec2 pitch_yaw_angles, glm::vec3 up_direction = glm::vec3{0.0f});
 
-    glm::vec3& position();
     const glm::vec3& position() const;
-    glm::mat4& view();
-    const glm::mat4& view() const;
+    void set_position(float x, float y, float z);
+    void set_position(glm::vec3 new_position);
+    void move_position(glm::vec3 delta_position);
+    void invert_pitch();
+    const glm::mat4& view();
     float zoom() const;
     void process_keyboard_input(CameraMovement direction, float delta_time);
     void process_mouse_movement(float xoffset, float yoffset);
@@ -64,7 +66,8 @@ private:
     glm::vec3 gaze_direction_{0.0f, 0.0f, -1.0f}; // Parallel but opposite of the w-basis of the camera's coordinate system i.e. gaze_direction_ = -w
     
     glm::mat4 view_{1.0f};
-
+    bool orientation_update_{false};
+    bool position_update_{false};
     // Mouse movement settings
     float speed_{5.0f};
     float mouse_sensitivity_{0.1f};

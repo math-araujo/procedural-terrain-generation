@@ -92,23 +92,51 @@ void FPSCamera::update_view_matrix()
     view_ = glm::lookAt(position_, position_ + gaze_direction_, world_up_);
 }
 
-glm::vec3& FPSCamera::position()
-{
-    return position_;
-}
-
 const glm::vec3& FPSCamera::position() const
 {
     return position_;
 }
 
-glm::mat4& FPSCamera::view()
+void FPSCamera::set_position(float x, float y, float z)
 {
-    return view_;
+    position_.x = x;
+    position_.y = y;
+    position_.z = z;
+    position_update_ = true;
 }
 
-const glm::mat4& FPSCamera::view() const
+void FPSCamera::set_position(glm::vec3 new_position)
 {
+    position_ = new_position;
+    position_update_ = true;
+}
+
+void FPSCamera::move_position(glm::vec3 delta_position)
+{
+    position_ += delta_position;
+    position_update_ = true;
+}
+
+void FPSCamera::invert_pitch()
+{
+    euler_angles_.y = -euler_angles_.y;
+    orientation_update_= true;
+}
+
+const glm::mat4& FPSCamera::view()
+{
+    if (orientation_update_)
+    {
+        update_orientation();
+        orientation_update_ = false;
+        position_update_ = false;
+    }
+    else if (position_update_)
+    {
+        update_view_matrix();
+        position_update_ = false;
+    }
+
     return view_;
 }
 
