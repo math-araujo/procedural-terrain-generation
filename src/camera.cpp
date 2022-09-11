@@ -119,7 +119,7 @@ void FPSCamera::move_position(glm::vec3 delta_position)
 
 void FPSCamera::invert_pitch()
 {
-    euler_angles_.y = -euler_angles_.y;
+    euler_angles_.x = -euler_angles_.x;
     orientation_update_= true;
 }
 

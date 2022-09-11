@@ -114,3 +114,8 @@ std::uint32_t Framebuffer::depth_id() const
 {
     return std::visit([](const auto& depth) { return depth.id(); }, depth_);
 }
+
+void Framebuffer::bind_color(std::uint32_t texture_unit)
+{
+    color_.value().bind(texture_unit);
+}

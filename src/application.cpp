@@ -423,6 +423,7 @@ void Application::render()
     // Render scene to the reflection framebuffer
     // The clip plane must be above water surface
     // Camera must be positioned below water surface
+    terrain_program_->use();
     terrain_program_->set_vec4_uniform("clip_plane", water_fbo_->reflection_clip_plane());
     const float underwater_distance{2.0f * (camera_.position().y - water_fbo_->height())};
     camera_.move_position(glm::vec3{0.0f, -underwater_distance, 0.0f});
@@ -458,6 +459,7 @@ void Application::render()
     model = glm::rotate(model, glm::radians(-90.0f), glm::vec3{1.0f, 0.0f, 0.0f});
     model = glm::scale(model, glm::vec3{height_map_dim_.first, height_map_dim_.second, 1.0f});
     water_program_->set_mat4_uniform("mvp", projection_matrix_ * camera_.view() * model);
+    water_fbo_->bind_color_textures();
     water_mesh_->render();
 
     // Render GUI
@@ -468,6 +470,12 @@ void Application::render_terrain()
 {
     projection_matrix_ = glm::perspective(glm::radians(camera_.zoom()), aspect_ratio_, 0.1f, 1000.0f);
     terrain_program_->use();
+    texture_->bind(0);
+    normal_map_->bind(1);
+    for (std::size_t i = 0; i < albedos_.size(); ++i)
+    { 
+        albedos_[i]->bind(i + 2);
+    }
     terrain_program_->set_mat4_uniform("model", terrain_scale_);
     terrain_program_->set_mat4_uniform("model_view", camera_.view() * terrain_scale_);
     terrain_program_->set_mat4_uniform("mvp", projection_matrix_ * camera_.view() * terrain_scale_);
