@@ -32,7 +32,7 @@ public:
 
     void run();
     void process_input(float delta_time);
-    void update();
+    void update(float delta_time);
     void render();
 
     // Functions to interact with GLFW callback functions
@@ -78,8 +78,8 @@ private:
 
     std::unique_ptr<IndexedMesh> water_mesh_{};
     std::unique_ptr<ShaderProgram> water_program_{};
-
-    std::unique_ptr<Water> water_fbo_;
+    std::unique_ptr<Texture> water_dudv_map_{};
+    std::unique_ptr<Water> water_{};
 
     /*
     Create a window and OpenGL context. If creation

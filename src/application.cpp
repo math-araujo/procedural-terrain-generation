@@ -138,6 +138,7 @@ Application::Application(int window_width, int window_height, std::string_view t
             2, 1, 3
         }
     );
+    
     water_program_ = std::make_unique<ShaderProgram>(
         std::initializer_list<std::pair<std::string_view, Shader::Type>>
         {
@@ -146,7 +147,10 @@ Application::Application(int window_width, int window_height, std::string_view t
         }
     );
 
-    water_fbo_ = std::make_unique<Water>();
+    water_dudv_map_ = std::make_unique<Texture>(512, 512, Texture::Attributes{.wrap_s = GL_REPEAT, .wrap_t = GL_REPEAT});
+    water_dudv_map_->copy_image("textures/water/dudv.png");
+
+    water_ = std::make_unique<Water>();
 }
 
 void Application::create_context(std::string_view title)
@@ -333,7 +337,8 @@ Application::~Application()
 
 void Application::cleanup()
 {
-    water_fbo_.reset();
+    water_.reset();
+    water_dudv_map_.reset();
     water_program_.reset();
     water_mesh_.reset();
 
@@ -359,7 +364,7 @@ void Application::run()
         previous_time = current_time;
 
         process_input(delta_time);
-        update();
+        update(delta_time);
         render();
         glfwSwapBuffers(window_);
         glfwPollEvents();
@@ -405,7 +410,7 @@ void Application::process_input(float delta_time)
     }
 }
 
-void Application::update()
+void Application::update(float delta_time)
 {
     if (light_.to_update)
     {
@@ -414,6 +419,8 @@ void Application::update()
         terrain_program_->set_vec3_uniform("light.diffuse", light_.diffuse);
         light_.to_update = false;
     }
+
+    water_->update(delta_time);
 }
 
 void Application::render()
@@ -424,11 +431,11 @@ void Application::render()
     // The clip plane must be above water surface
     // Camera must be positioned below water surface
     terrain_program_->use();
-    terrain_program_->set_vec4_uniform("clip_plane", water_fbo_->reflection_clip_plane());
-    const float underwater_distance{2.0f * (camera_.position().y - water_fbo_->height())};
+    terrain_program_->set_vec4_uniform("clip_plane", water_->reflection_clip_plane());
+    const float underwater_distance{2.0f * (camera_.position().y - water_->height())};
     camera_.move_position(glm::vec3{0.0f, -underwater_distance, 0.0f});
     camera_.invert_pitch();
-    water_fbo_->bind_reflection();
+    water_->bind_reflection();
     render_terrain();
 
     // Render scene to the refraction
@@ -436,12 +443,12 @@ void Application::render()
     // Camera position and orientation is restored to the previous values
     camera_.move_position(glm::vec3{0.0f, underwater_distance, 0.0f});
     camera_.invert_pitch();
-    terrain_program_->set_vec4_uniform("clip_plane", water_fbo_->refraction_clip_plane());
-    water_fbo_->bind_refraction();
+    terrain_program_->set_vec4_uniform("clip_plane", water_->refraction_clip_plane());
+    water_->bind_refraction();
     render_terrain();
 
     // Reset viewport and bind default framebuffer
-    water_fbo_->unbind();
+    water_->unbind();
     reset_viewport();
 
     // Clear window with specified color
@@ -455,11 +462,13 @@ void Application::render()
 
     // Render water
     water_program_->use();
-    glm::mat4 model = glm::translate(glm::mat4{1.0f}, glm::vec3{0.0f, water_fbo_->height(), 0.0f});
+    glm::mat4 model = glm::translate(glm::mat4{1.0f}, glm::vec3{0.0f, water_->height(), 0.0f});
     model = glm::rotate(model, glm::radians(-90.0f), glm::vec3{1.0f, 0.0f, 0.0f});
     model = glm::scale(model, glm::vec3{height_map_dim_.first, height_map_dim_.second, 1.0f});
     water_program_->set_mat4_uniform("mvp", projection_matrix_ * camera_.view() * model);
-    water_fbo_->bind_color_textures();
+    water_program_->set_float_uniform("dudv_offset", water_->dudv_offset());
+    water_->bind_color_textures();
+    water_dudv_map_->bind(2);
     water_mesh_->render();
 
     // Render GUI
@@ -564,11 +573,11 @@ void Application::render_imgui_editor()
 
     ImGui::Begin("Water");
     ImGui::Text("Reflection:");
-    imgui_texture_id = reinterpret_cast<void*>(water_fbo_->reflection_color_attachment());
+    imgui_texture_id = reinterpret_cast<void*>(water_->reflection_color_attachment());
     ImGui::Image(imgui_texture_id, ImVec2{200, 200}, ImVec2{0.0f, 0.0f}, ImVec2{1.0f, 1.0f}, 
                 ImVec4{1.0f, 1.0f, 1.0f, 1.0f}, ImVec4{1.0f, 1.0f, 1.0f, 0.5f});
     ImGui::Text("Refraction:");
-    imgui_texture_id = reinterpret_cast<void*>(water_fbo_->refraction_color_attachment());
+    imgui_texture_id = reinterpret_cast<void*>(water_->refraction_color_attachment());
     ImGui::Image(imgui_texture_id, ImVec2{200, 200}, ImVec2{0.0f, 0.0f}, ImVec2{1.0f, 1.0f}, 
                 ImVec4{1.0f, 1.0f, 1.0f, 1.0f}, ImVec4{1.0f, 1.0f, 1.0f, 0.5f});
     ImGui::End();

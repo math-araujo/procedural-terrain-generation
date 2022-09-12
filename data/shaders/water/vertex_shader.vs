@@ -6,9 +6,13 @@ layout (location = 1) in vec2 input_tex_coordinates;
 uniform mat4 mvp;
 
 out vec4 clip_space_position;
+out vec2 vertex_tex_coordinates;
+
+const float tiling = 6.0;
 
 void main()
 {
     clip_space_position = mvp * vec4(input_vertex_position, 1.0);
+    vertex_tex_coordinates = input_tex_coordinates * tiling;
     gl_Position = clip_space_position;
 }
