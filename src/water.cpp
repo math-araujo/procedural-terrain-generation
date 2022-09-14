@@ -10,7 +10,7 @@ Water::Water()
 {
     reflection_fbo_ = std::make_unique<Framebuffer>(
         reflection_width_, reflection_height_,
-        Renderbuffer{reflection_width_, reflection_height_, GL_DEPTH_COMPONENT32F},
+        Renderbuffer{reflection_width_, reflection_height_, GL_DEPTH_COMPONENT32},
         Texture
         {
             reflection_width_, reflection_height_,
@@ -24,7 +24,7 @@ Water::Water()
         {refraction_width_, refraction_height_, 
         Texture::Attributes
         {
-            .internal_format = GL_DEPTH_COMPONENT32F, 
+            .internal_format = GL_DEPTH_COMPONENT32, 
             .pixel_data_format = GL_DEPTH_COMPONENT,
             .pixel_data_type = GL_FLOAT
         }

@@ -34,14 +34,14 @@ public:
     std::uint32_t refraction_depth_texture() const;
     void bind_textures();
 private:
-    const std::uint32_t reflection_width_{320};
-    const std::uint32_t reflection_height_{180};
-    const std::uint32_t refraction_width_{1280};
-    const std::uint32_t refraction_height_{720};
+    const std::uint32_t reflection_width_{1024};
+    const std::uint32_t reflection_height_{768};
+    const std::uint32_t refraction_width_{1024};
+    const std::uint32_t refraction_height_{768};
     const float height_{10.0f};
     const float wave_speed_{.03f};
     const glm::vec4 reflection_clip_plane_{0.0f, 1.0f, 0.0f, -height_ + 0.1f};
-    const glm::vec4 refraction_clip_plane_{0.0f, -1.0f, 0.0f, height_};
+    const glm::vec4 refraction_clip_plane_{0.0f, -1.0f, 0.0f, height_ + 0.2f};
     std::unique_ptr<Framebuffer> reflection_fbo_{};
     std::unique_ptr<Framebuffer> refraction_fbo_{};
     float dudv_offset_{0.0f};

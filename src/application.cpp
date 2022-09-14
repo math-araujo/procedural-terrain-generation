@@ -510,7 +510,6 @@ void Application::render_terrain()
     mesh_->render();
 }
 
-
 void Application::reset_viewport()
 {
     glViewport(current_viewport_[0], current_viewport_[1], current_viewport_[2], current_viewport_[3]);
