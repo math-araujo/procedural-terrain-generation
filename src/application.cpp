@@ -466,6 +466,8 @@ void Application::render()
     model = glm::rotate(model, glm::radians(-90.0f), glm::vec3{1.0f, 0.0f, 0.0f});
     model = glm::scale(model, glm::vec3{height_map_dim_.first, height_map_dim_.second, 1.0f});
     water_program_->set_mat4_uniform("mvp", projection_matrix_ * camera_.view() * model);
+    water_program_->set_mat4_uniform("model", model);
+    water_program_->set_vec3_uniform("camera_position", camera_.position());
     water_program_->set_float_uniform("dudv_offset", water_->dudv_offset());
     water_->bind_color_textures();
     water_dudv_map_->bind(2);

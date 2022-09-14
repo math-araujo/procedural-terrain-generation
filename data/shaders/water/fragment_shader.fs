@@ -2,6 +2,7 @@
 
 in vec4 clip_space_position;
 in vec2 vertex_tex_coordinates;
+in vec3 vertex_to_camera_vector;
 
 out vec4 frag_color;
 
@@ -9,7 +10,7 @@ layout (binding = 0) uniform sampler2D reflection_texture;
 layout (binding = 1) uniform sampler2D refraction_texture;
 layout (binding = 2) uniform sampler2D dudv_map;
 
-const float wave_strength = 0.02;
+const float wave_strength = 0.01;
 
 uniform float dudv_offset;
 
@@ -32,5 +33,8 @@ void main()
 
     vec4 reflection_color = texture(reflection_texture, reflection_tex_coordinates);
     vec4 refraction_color = texture(refraction_texture, refraction_tex_coordinates);
-    frag_color = mix(reflection_color, refraction_color, 0.5);
+    vec3 view_vector = normalize(vertex_to_camera_vector);
+    vec3 water_normal = vec3(0.0, 1.0, 0.0);
+    float refraction_factor = clamp(dot(view_vector, water_normal), 0.0, 1.0);
+    frag_color = mix(reflection_color, refraction_color, refraction_factor);
 }
