@@ -473,6 +473,8 @@ void Application::render()
 
     // Render water
     water_program_->use();
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glm::mat4 model = glm::translate(glm::mat4{1.0f}, glm::vec3{0.0f, water_->height(), 0.0f});
     model = glm::rotate(model, glm::radians(-90.0f), glm::vec3{1.0f, 0.0f, 0.0f});
     model = glm::scale(model, glm::vec3{height_map_dim_.first, height_map_dim_.second, 1.0f});
@@ -480,10 +482,13 @@ void Application::render()
     water_program_->set_mat4_uniform("model", model);
     water_program_->set_vec3_uniform("camera_position", camera_.position());
     water_program_->set_float_uniform("dudv_offset", water_->dudv_offset());
-    water_->bind_color_textures();
+    water_program_->set_float_uniform("near_plane", 0.1f);
+    water_program_->set_float_uniform("far_plane", 1000.0f);
+    water_->bind_textures();
     water_dudv_map_->bind(2);
     water_normal_map_->bind(3);
     water_mesh_->render();
+    glDisable(GL_BLEND);
 
     // Render GUI
     render_imgui_editor();

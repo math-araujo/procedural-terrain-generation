@@ -10,6 +10,7 @@ layout (binding = 0) uniform sampler2D reflection_texture;
 layout (binding = 1) uniform sampler2D refraction_texture;
 layout (binding = 2) uniform sampler2D dudv_map;
 layout (binding = 3) uniform sampler2D normal_map;
+layout (binding = 4) uniform sampler2D depth_map;
 
 const float wave_strength = 0.01;
 
@@ -23,6 +24,14 @@ struct Light
 
 uniform Light light;
 uniform float dudv_offset;
+uniform float near_plane;
+uniform float far_plane;
+
+float linearize_depth(float depth)
+{
+    float ndc_depth = (2.0 * depth) - 1.0;
+    return (2.0 * near_plane * far_plane) / (near_plane + far_plane - ndc_depth * (far_plane - near_plane));
+}
 
 void main()
 {
@@ -31,9 +40,16 @@ void main()
     vec2 reflection_tex_coordinates = vec2(screen_coordinates.x, -screen_coordinates.y);
     vec2 refraction_tex_coordinates = screen_coordinates;
     
+    float ground_depth = texture(depth_map, refraction_tex_coordinates).r;
+    float linear_ground_depth = linearize_depth(ground_depth);
+    float water_surface_depth = gl_FragCoord.z;
+    float linear_water_surface_depth = linearize_depth(water_surface_depth);
+    float water_depth = linear_ground_depth - linear_water_surface_depth;
+
     vec2 distorted_tex_coordinates = 0.1 * (texture(dudv_map, vec2(vertex_tex_coordinates.x + dudv_offset, vertex_tex_coordinates.y)).rg);
     distorted_tex_coordinates = vertex_tex_coordinates + vec2(distorted_tex_coordinates.x, distorted_tex_coordinates.y + dudv_offset);
     vec2 total_distortion = wave_strength * ((2.0 * (texture(dudv_map, distorted_tex_coordinates).rg)) - 1.0);
+    total_distortion *= clamp(water_depth / 20.0, 0.0, 1.0);
 
     reflection_tex_coordinates += total_distortion;
     refraction_tex_coordinates += total_distortion;
@@ -54,8 +70,9 @@ void main()
     // Add specular highlights
     vec3 reflect_direction = reflect(normalize(light.direction), normal_vector);
     float specular_coefficient = pow(max(dot(reflect_direction, view_vector), 0.0), 20.0);
-    vec3 specular_color = light.specular * specular_coefficient * 0.3;
+    vec3 specular_color = light.specular * specular_coefficient * 0.3 * clamp(water_depth / 5.0, 0.0, 1.0);
     reflection_color += vec4(specular_color, 0.0);
 
     frag_color = mix(reflection_color, refraction_color, refraction_factor);
+    frag_color.a = clamp(water_depth / 5.0, 0.0, 1.0);
 }

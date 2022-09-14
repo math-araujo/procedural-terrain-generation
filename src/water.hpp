@@ -32,7 +32,7 @@ public:
     std::uint32_t reflection_color_attachment() const;
     std::uint32_t refraction_color_attachment() const;
     std::uint32_t refraction_depth_texture() const;
-    void bind_color_textures();
+    void bind_textures();
 private:
     const std::uint32_t reflection_width_{320};
     const std::uint32_t reflection_height_{180};
@@ -40,7 +40,7 @@ private:
     const std::uint32_t refraction_height_{720};
     const float height_{10.0f};
     const float wave_speed_{.03f};
-    const glm::vec4 reflection_clip_plane_{0.0f, 1.0f, 0.0f, -height_};
+    const glm::vec4 reflection_clip_plane_{0.0f, 1.0f, 0.0f, -height_ + 0.1f};
     const glm::vec4 refraction_clip_plane_{0.0f, -1.0f, 0.0f, height_};
     std::unique_ptr<Framebuffer> reflection_fbo_{};
     std::unique_ptr<Framebuffer> refraction_fbo_{};

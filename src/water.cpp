@@ -93,8 +93,9 @@ std::uint32_t Water::refraction_depth_texture() const
     return refraction_fbo_->depth_id();
 }
 
-void Water::bind_color_textures()
+void Water::bind_textures()
 {
     reflection_fbo_->bind_color(0);
     refraction_fbo_->bind_color(1);
+    refraction_fbo_->bind_depth_texture(4);
 }

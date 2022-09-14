@@ -119,3 +119,8 @@ void Framebuffer::bind_color(std::uint32_t texture_unit)
 {
     color_.value().bind(texture_unit);
 }
+
+void Framebuffer::bind_depth_texture(std::uint32_t texture_unit)
+{
+    std::get<0>(depth_).bind(texture_unit);
+}
