@@ -149,6 +149,8 @@ Application::Application(int window_width, int window_height, std::string_view t
 
     water_dudv_map_ = std::make_unique<Texture>(512, 512, Texture::Attributes{.wrap_s = GL_REPEAT, .wrap_t = GL_REPEAT});
     water_dudv_map_->copy_image("textures/water/dudv.png");
+    water_normal_map_ = std::make_unique<Texture>(512, 512, Texture::Attributes{.wrap_s = GL_REPEAT, .wrap_t = GL_REPEAT});
+    water_normal_map_->copy_image("textures/water/normal.png");
 
     water_ = std::make_unique<Water>();
 }
@@ -338,6 +340,7 @@ Application::~Application()
 void Application::cleanup()
 {
     water_.reset();
+    water_normal_map_.reset();
     water_dudv_map_.reset();
     water_program_.reset();
     water_mesh_.reset();
@@ -414,9 +417,17 @@ void Application::update(float delta_time)
 {
     if (light_.to_update)
     {
+        water_program_->use();
+        water_program_->set_vec3_uniform("light.direction", light_.direction);    
+        water_program_->set_vec3_uniform("light.ambient", light_.ambient);
+        water_program_->set_vec3_uniform("light.diffuse", light_.diffuse);
+        water_program_->set_vec3_uniform("light.specular", light_.specular);
+
+        terrain_program_->use();
         terrain_program_->set_vec3_uniform("light.direction", light_.direction);    
         terrain_program_->set_vec3_uniform("light.ambient", light_.ambient);
         terrain_program_->set_vec3_uniform("light.diffuse", light_.diffuse);
+        terrain_program_->set_vec3_uniform("light.specular", light_.specular);
         light_.to_update = false;
     }
 
@@ -471,6 +482,7 @@ void Application::render()
     water_program_->set_float_uniform("dudv_offset", water_->dudv_offset());
     water_->bind_color_textures();
     water_dudv_map_->bind(2);
+    water_normal_map_->bind(3);
     water_mesh_->render();
 
     // Render GUI

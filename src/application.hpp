@@ -71,7 +71,7 @@ private:
     const DirectionalLight start_light_
     { 
         glm::vec3{-1.0f, -1.0f, -1.0f}, glm::vec3{0.2f, 0.2f, 0.2f}, 
-        glm::vec3{0.85f, 0.85f, 0.85f}, true
+        glm::vec3{0.85f, 0.85f, 0.85f}, glm::vec3{0.85f, 0.85f, 0.85f}, true
     };
     DirectionalLight light_{start_light_};
     bool use_triplanar_texturing_{false};
@@ -79,6 +79,7 @@ private:
     std::unique_ptr<IndexedMesh> water_mesh_{};
     std::unique_ptr<ShaderProgram> water_program_{};
     std::unique_ptr<Texture> water_dudv_map_{};
+    std::unique_ptr<Texture> water_normal_map_{};
     std::unique_ptr<Water> water_{};
 
     /*
