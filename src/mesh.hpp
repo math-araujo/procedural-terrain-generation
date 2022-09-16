@@ -7,8 +7,8 @@
 class Mesh
 {
 public:
-    Mesh() = default;
-    explicit Mesh(std::vector<float> vertices);
+    // Default vertex attributes: position (3) + texture coordinates (2)
+    explicit Mesh(std::vector<float> vertices_data, std::vector<int> attributes_sizes = {3, 2});
     Mesh(const Mesh&) = delete;
     Mesh(Mesh&& other) noexcept;
     Mesh& operator=(const Mesh&) = delete;
@@ -19,7 +19,10 @@ public:
     virtual void render();
 
     int number_of_vertices() const;
+    int number_of_attributes() const;
 private:
+    std::vector<int> attributes_sizes_{};
+    int stride_{0};
     int number_of_vertices_{0};
     std::uint32_t vertex_array_identifier_{0};
 };

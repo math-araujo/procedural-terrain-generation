@@ -1,8 +1,13 @@
-#include "mesh.hpp"
+#include <numeric>
 
 #include <glad/glad.h>
 
-Mesh::Mesh(std::vector<float> vertices) : number_of_vertices_{static_cast<int>(vertices.size()) / 5}
+#include "mesh.hpp"
+
+Mesh::Mesh(std::vector<float> vertices_data, std::vector<int> attributes_sizes) : 
+    attributes_sizes_{std::move(attributes_sizes)},
+    stride_{std::accumulate(attributes_sizes_.cbegin(), attributes_sizes_.cend(), 0)},
+    number_of_vertices_{static_cast<int>(vertices_data.size()) / stride_}
 {
     glGenVertexArrays(1, &vertex_array_identifier_);
     glBindVertexArray(vertex_array_identifier_);
@@ -11,14 +16,17 @@ Mesh::Mesh(std::vector<float> vertices) : number_of_vertices_{static_cast<int>(v
     std::uint32_t vertex_buffer_identifier{0};
     glGenBuffers(1, &vertex_buffer_identifier);
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_identifier);
-    glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizei>(vertices.size() * sizeof(float)), vertices.data(),
+    glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizei>(vertices_data.size() * sizeof(float)), vertices_data.data(),
                  GL_STATIC_DRAW);
 
-    // Specify vertex format containing position and texture coordinates, respectively
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), reinterpret_cast<void*>(0));
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
+    // Specify vertex format (default: position and texture coordinates)
+    int offset = 0;
+    for (std::size_t index = 0; index < attributes_sizes_.size(); ++index)
+    {
+        glVertexAttribPointer(index, attributes_sizes_[index], GL_FLOAT, GL_FALSE, stride_ * sizeof(float), reinterpret_cast<void*>(offset * sizeof(float)));
+        glEnableVertexAttribArray(index);
+        offset += attributes_sizes_[index];
+    }
 }
 
 Mesh::Mesh(Mesh&& other) noexcept :
@@ -49,12 +57,16 @@ void Mesh::render()
 {
     bind();
     glDrawArrays(GL_TRIANGLES, 0, number_of_vertices_);
-    //glDrawArrays(GL_PATCHES, 0, number_of_vertices_);
 }
 
 int Mesh::number_of_vertices() const
 {
     return number_of_vertices_;
+}
+
+int Mesh::number_of_attributes() const
+{
+    return static_cast<int>(attributes_sizes_.size());
 }
 
 PatchMesh::PatchMesh(int vertices_per_patch, std::vector<float> vertices_data): 
