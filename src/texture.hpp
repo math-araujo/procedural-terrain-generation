@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <string_view>
+#include <vector>
 
 #include <glad/glad.h>
 
@@ -13,8 +14,10 @@ class Texture
 public:
     struct Attributes
     {
+        GLenum target{GL_TEXTURE_2D};
         GLint wrap_s{GL_CLAMP_TO_EDGE};
         GLint wrap_t{GL_CLAMP_TO_EDGE};
+        GLint wrap_r{GL_CLAMP_TO_EDGE};
         GLint min_filter{GL_LINEAR};
         GLint mag_filter{GL_LINEAR};
         GLenum internal_format{GL_RGBA8};
@@ -39,6 +42,7 @@ public:
     void copy_image(const T* image_data, std::int32_t width, std::int32_t height);
 
     void copy_image(std::string_view filename, bool flip_on_load = true);
+    void load_cubemap(const std::vector<std::string_view>& filenames, bool flip_on_load = true);
     void bind(std::uint32_t unit);
     
     std::uint32_t id() const;
