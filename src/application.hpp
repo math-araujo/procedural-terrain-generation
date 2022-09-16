@@ -17,6 +17,7 @@ struct GLFWwindow;
 class IndexedMesh;
 class Mesh;
 class ShaderProgram;
+class Skybox;
 class Texture;
 class Water;
 
@@ -54,7 +55,7 @@ private:
     bool mouse_click_{false};
     bool free_mouse_move_{false};
 
-    FPSCamera camera_{glm::vec3{0.0, 30.0f, 30.0f}};
+    FPSCamera camera_{glm::vec3{0.0, 30.0f, 3.0f}};
     glm::mat4 projection_matrix_{1.0f};
     const std::pair<std::uint32_t, std::uint32_t> height_map_dim_{256, 256};
     FractalNoiseGenerator fractal_noise_generator_{height_map_dim_.first, height_map_dim_.second};
@@ -81,6 +82,7 @@ private:
     std::unique_ptr<Texture> water_dudv_map_{};
     std::unique_ptr<Texture> water_normal_map_{};
     std::unique_ptr<Water> water_{};
+    std::unique_ptr<Skybox> skybox_{};
 
     /*
     Create a window and OpenGL context. If creation

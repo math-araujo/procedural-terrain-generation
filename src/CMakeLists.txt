@@ -12,6 +12,7 @@ add_executable(main
     meshgeneration.hpp meshgeneration.cpp
     hermite.hpp hermite.cpp
     water.hpp water.cpp
+    skybox.hpp skybox.cpp
     light.hpp
 )
 

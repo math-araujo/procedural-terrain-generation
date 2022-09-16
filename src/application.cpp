@@ -19,6 +19,7 @@
 #include "mesh.hpp"
 #include "meshgeneration.hpp"
 #include "shader.hpp"
+#include "skybox.hpp"
 #include "texture.hpp"
 #include "water.hpp"
 
@@ -153,6 +154,8 @@ Application::Application(int window_width, int window_height, std::string_view t
     water_normal_map_->copy_image("textures/water/normal.png");
 
     water_ = std::make_unique<Water>();
+
+    skybox_ = std::make_unique<Skybox>();
 }
 
 void Application::create_context(std::string_view title)
@@ -339,6 +342,7 @@ Application::~Application()
 
 void Application::cleanup()
 {
+    skybox_.reset();
     water_.reset();
     water_normal_map_.reset();
     water_dudv_map_.reset();
@@ -489,7 +493,7 @@ void Application::render()
     water_normal_map_->bind(3);
     water_mesh_->render();
     glDisable(GL_BLEND);
-
+    
     // Render GUI
     render_imgui_editor();
 }
@@ -508,6 +512,7 @@ void Application::render_terrain()
     terrain_program_->set_mat4_uniform("model_view", camera_.view() * terrain_scale_);
     terrain_program_->set_mat4_uniform("mvp", projection_matrix_ * camera_.view() * terrain_scale_);
     mesh_->render();
+    skybox_->render(projection_matrix_, camera_.view());
 }
 
 void Application::reset_viewport()
