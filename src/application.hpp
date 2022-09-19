@@ -83,6 +83,9 @@ private:
     std::unique_ptr<Texture> water_normal_map_{};
     std::unique_ptr<Water> water_{};
     std::unique_ptr<Skybox> skybox_{};
+    float fog_height_{20.0f};
+    float fog_density_{0.001f};
+    bool apply_fog_{true};
 
     /*
     Create a window and OpenGL context. If creation

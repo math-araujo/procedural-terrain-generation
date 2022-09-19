@@ -122,7 +122,9 @@ Application::Application(int window_width, int window_height, std::string_view t
         albedos_[i]->bind(i + 2);
     }
 
-    terrain_program_->set_int_uniform("use_triplanar_texturing", static_cast<int>(use_triplanar_texturing_));
+    terrain_program_->set_bool_uniform("use_triplanar_texturing", use_triplanar_texturing_);
+    terrain_program_->set_float_uniform("fog.height", fog_height_);
+    terrain_program_->set_float_uniform("fog.density", fog_density_);
 
     water_mesh_ = std::make_unique<IndexedMesh>(
         std::vector<float>
@@ -147,7 +149,6 @@ Application::Application(int window_width, int window_height, std::string_view t
             {"shaders/water/fragment_shader.fs", Shader::Type::Fragment},
         }
     );
-
     water_dudv_map_ = std::make_unique<Texture>(512, 512, Texture::Attributes{.wrap_s = GL_REPEAT, .wrap_t = GL_REPEAT});
     water_dudv_map_->copy_image("textures/water/dudv.png");
     water_normal_map_ = std::make_unique<Texture>(512, 512, Texture::Attributes{.wrap_s = GL_REPEAT, .wrap_t = GL_REPEAT});
@@ -447,6 +448,7 @@ void Application::render()
     // Camera must be positioned below water surface
     terrain_program_->use();
     terrain_program_->set_vec4_uniform("clip_plane", water_->reflection_clip_plane());
+    //terrain_program_->set_bool_uniform("apply_fog", false);
     const float underwater_distance{2.0f * (camera_.position().y - water_->height())};
     camera_.move_position(glm::vec3{0.0f, -underwater_distance, 0.0f});
     camera_.invert_pitch();
@@ -472,6 +474,7 @@ void Application::render()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     // Render scene
+    terrain_program_->set_bool_uniform("apply_fog", apply_fog_);
     terrain_program_->set_vec4_uniform("clip_plane", glm::vec4{0.0f, 0.0f, 0.0f, 0.0f});
     render_terrain();
 
@@ -509,6 +512,7 @@ void Application::render_terrain()
         albedos_[i]->bind(i + 2);
     }
     terrain_program_->set_mat4_uniform("model", terrain_scale_);
+    terrain_program_->set_vec3_uniform("camera_position", camera_.position());
     terrain_program_->set_mat4_uniform("model_view", camera_.view() * terrain_scale_);
     terrain_program_->set_mat4_uniform("mvp", projection_matrix_ * camera_.view() * terrain_scale_);
     mesh_->render();
@@ -591,6 +595,21 @@ void Application::render_imgui_editor()
     if (ImGui::SliderFloat("Elevation", &elevation_, 1.0f, 300.0f))
     {
         terrain_program_->set_float_uniform("elevation", elevation_);
+    }
+    ImGui::End();
+
+    ImGui::Begin("Fog");
+    ImGui::Checkbox("Apply Halfspace Fog", &apply_fog_);
+    if (apply_fog_)
+    {
+        if (ImGui::SliderFloat("Fog Height", &fog_height_, 0.0f, 40.0f))
+        {
+            terrain_program_->set_float_uniform("fog.height", fog_height_);
+        }
+        if (ImGui::SliderFloat("Fog Density", &fog_density_, 0.001f, 0.1f))
+        {
+            terrain_program_->set_float_uniform("fog.density", fog_density_);
+        }
     }
     ImGui::End();
 
