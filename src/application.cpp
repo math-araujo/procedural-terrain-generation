@@ -448,7 +448,6 @@ void Application::render()
     // Camera must be positioned below water surface
     terrain_program_->use();
     terrain_program_->set_vec4_uniform("clip_plane", water_->reflection_clip_plane());
-    //terrain_program_->set_bool_uniform("apply_fog", false);
     const float underwater_distance{2.0f * (camera_.position().y - water_->height())};
     camera_.move_position(glm::vec3{0.0f, -underwater_distance, 0.0f});
     camera_.invert_pitch();

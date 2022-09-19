@@ -73,6 +73,7 @@ void main()
     vec3 specular_color = light.specular * specular_coefficient * 0.3 * clamp(water_depth / 5.0, 0.0, 1.0);
 
     frag_color = mix(reflection_color, refraction_color, refraction_factor);
+    frag_color = mix(frag_color, vec4(0.0, 0.3, 0.5, 1.0), 0.2);
     frag_color += vec4(specular_color, 0.0);
     frag_color.a = clamp(water_depth / 5.0, 0.0, 1.0);
 }
