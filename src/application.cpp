@@ -61,7 +61,7 @@ Application::Application(int window_width, int window_height, std::string_view t
     save_image("normalmap.png", fractal_noise_generator_.normal_map());
     save_image("biomemap.png", fractal_noise_generator_.color_map());
     //mesh_ = create_indexed_grid_mesh(200, 200, fractal_noise_generator_.height_map(), curve_);
-    mesh_ = create_grid_patch(height_map_dim_.first, height_map_dim_.second, 32);
+    mesh_ = create_grid_patch(height_map_dim_.first, height_map_dim_.second, 64);
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
