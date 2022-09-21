@@ -2,8 +2,8 @@
 #define APPLICATION_HPP
 
 #include <array>
-#include <string_view>
 #include <memory>
+#include <string_view>
 
 #include <glm/fwd.hpp>
 
@@ -44,11 +44,12 @@ public:
     bool mouse_clicking() const;
     void switch_free_mouse_movement();
     bool is_mouse_movement_free() const;
+
 private:
     const int width_;
     const int height_;
     const float aspect_ratio_;
-    
+
     std::array<int, 4> current_viewport_{};
     GLFWwindow* window_{nullptr};
     bool wireframe_mode_{false};
@@ -60,20 +61,18 @@ private:
     const std::pair<std::uint32_t, std::uint32_t> height_map_dim_{256, 256};
     FractalNoiseGenerator fractal_noise_generator_{height_map_dim_.first, height_map_dim_.second};
     std::unique_ptr<Mesh> mesh_{};
-    //std::unique_ptr<IndexedMesh> mesh_{};
+    // std::unique_ptr<IndexedMesh> mesh_{};
     std::unique_ptr<Texture> texture_{};
     std::unique_ptr<Texture> normal_map_{};
 
     std::vector<std::unique_ptr<Texture>> albedos_;
     std::unique_ptr<ShaderProgram> terrain_program_{};
     float elevation_{30.0f};
+    float texture_scale_{1.0f / 10.0f};
     glm::mat4 terrain_scale_{1.0f};
-    
-    const DirectionalLight start_light_
-    { 
-        glm::vec3{-1.0f, -1.0f, -1.0f}, glm::vec3{0.2f, 0.2f, 0.2f}, 
-        glm::vec3{0.85f, 0.85f, 0.85f}, glm::vec3{0.85f, 0.85f, 0.85f}, true
-    };
+
+    const DirectionalLight start_light_{glm::vec3{-1.0f, -1.0f, -1.0f}, glm::vec3{0.2f, 0.2f, 0.2f},
+                                        glm::vec3{0.85f, 0.85f, 0.85f}, glm::vec3{0.85f, 0.85f, 0.85f}, true};
     DirectionalLight light_{start_light_};
     bool use_triplanar_texturing_{false};
 
@@ -108,7 +107,7 @@ private:
     Render procedural terrain on GPU
     */
     void render_terrain();
-    
+
     /*
     Reset viewport to the Application's width and height values
     */
@@ -119,7 +118,7 @@ private:
     regions colors.
     */
     void render_imgui_editor();
-    
+
     /*
     Update height map and mesh.
     */
@@ -128,7 +127,7 @@ private:
     /*
     Manually cleanup OpenGL-related objects. Since Application
     destructor terminates the OpenGL context, it's necessary
-    to manually cleanup all OpenGL-related objects prior to 
+    to manually cleanup all OpenGL-related objects prior to
     the termination of the context.
     */
     void cleanup();

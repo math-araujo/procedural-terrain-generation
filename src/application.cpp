@@ -13,7 +13,7 @@
 
 #include <exception>
 #include <iostream>
-#include <string> 
+#include <string>
 
 #include "framebuffer.hpp"
 #include "mesh.hpp"
@@ -60,7 +60,7 @@ Application::Application(int window_width, int window_height, std::string_view t
     save_image("heightmap.png", from_float_to_uint8(fractal_noise_generator_.height_map()));
     save_image("normalmap.png", fractal_noise_generator_.normal_map());
     save_image("biomemap.png", fractal_noise_generator_.color_map());
-    //mesh_ = create_indexed_grid_mesh(200, 200, fractal_noise_generator_.height_map(), curve_);
+    // mesh_ = create_indexed_grid_mesh(200, 200, fractal_noise_generator_.height_map(), curve_);
     mesh_ = create_grid_patch(height_map_dim_.first, height_map_dim_.second, 64);
 
     glEnable(GL_DEPTH_TEST);
@@ -73,18 +73,15 @@ Application::Application(int window_width, int window_height, std::string_view t
     albedos_.reserve(5);
     for (int i = 0; i < 5; ++i)
     {
-        albedos_.emplace_back(std::make_unique<Texture>(
-            height_map_dim_.first, height_map_dim_.second,
-            Texture::Attributes
-            {
-                .wrap_s = GL_REPEAT, .wrap_t = GL_REPEAT, .generate_mipmap = true,
-            }
-        ));
+        albedos_.emplace_back(std::make_unique<Texture>(height_map_dim_.first, height_map_dim_.second,
+                                                        Texture::Attributes{
+                                                            .wrap_s = GL_REPEAT,
+                                                            .wrap_t = GL_REPEAT,
+                                                            .generate_mipmap = true,
+                                                        }));
     }
-    std::array<std::string, 5> names
-    {
-        "textures/water.png", "textures/sand.png", "textures/grass.png",
-        "textures/rock.png", "textures/snow.png",
+    std::array<std::string, 5> names{
+        "textures/water.png", "textures/sand.png", "textures/grass.png", "textures/rock.png", "textures/snow.png",
     };
     for (std::size_t i = 0; i < albedos_.size(); ++i)
     {
@@ -97,28 +94,26 @@ Application::Application(int window_width, int window_height, std::string_view t
             {"shaders/cpu_terrain/fragment_shader.fs", Shader::Type::Fragment},
         }
     );*/
-    terrain_program_ = std::make_unique<ShaderProgram>(
-        std::initializer_list<std::pair<std::string_view, Shader::Type>>
-        {
-            {"shaders/gpu_terrain/vertex_shader.vs", Shader::Type::Vertex},
-            {"shaders/gpu_terrain/tess_control_shader.tcs", Shader::Type::TessControl},
-            {"shaders/gpu_terrain/tess_eval_shader.tes", Shader::Type::TessEval},
-            {"shaders/gpu_terrain/fragment_shader.fs", Shader::Type::Fragment},
-        }
-    );
+    terrain_program_ = std::make_unique<ShaderProgram>(std::initializer_list<std::pair<std::string_view, Shader::Type>>{
+        {"shaders/gpu_terrain/vertex_shader.vs", Shader::Type::Vertex},
+        {"shaders/gpu_terrain/tess_control_shader.tcs", Shader::Type::TessControl},
+        {"shaders/gpu_terrain/tess_eval_shader.tes", Shader::Type::TessEval},
+        {"shaders/gpu_terrain/fragment_shader.fs", Shader::Type::Fragment},
+    });
 
     terrain_program_->use();
     terrain_program_->set_int_uniform("texture_sampler", 0);
     terrain_program_->set_int_uniform("normal_map_sampler", 1);
     terrain_program_->set_float_uniform("elevation", elevation_);
-    terrain_program_->set_vec4_uniform("clip_plane", glm::vec4{0.0f, -1.0f, 0.0f, 15.0f});
+    terrain_program_->set_float_uniform("triplanar_scale", texture_scale_);
+    terrain_program_->set_vec4_uniform("clip_plane", glm::vec4{0.0f, 0.0f, 0.0f, 15.0f});
 
     texture_->bind(0);
     normal_map_->bind(1);
     const std::array<int, 5> uniforms{2, 3, 4, 5, 6};
     terrain_program_->set_int_array_uniform("albedos[0]", uniforms.data(), uniforms.size());
     for (std::size_t i = 0; i < albedos_.size(); ++i)
-    { 
+    {
         albedos_[i]->bind(i + 2);
     }
 
@@ -127,31 +122,24 @@ Application::Application(int window_width, int window_height, std::string_view t
     terrain_program_->set_float_uniform("fog.density", fog_density_);
 
     water_mesh_ = std::make_unique<IndexedMesh>(
-        std::vector<float>
-        {
+        std::vector<float>{
             // X     Y     Z     U     V
-            0.5f, 0.5f, 0.0f, 1.0f, 1.0f, // Top-right
-            -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, // Top-left
-            0.5f, -0.5f, 0.0f, 1.0f, 0.0f, // Bottom-right
+            0.5f,  0.5f,  0.0f, 1.0f, 1.0f, // Top-right
+            -0.5f, 0.5f,  0.0f, 0.0f, 1.0f, // Top-left
+            0.5f,  -0.5f, 0.0f, 1.0f, 0.0f, // Bottom-right
             -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, // Bottom-left
         },
-        std::vector<std::uint32_t>
-        {
-            0, 1, 2,
-            2, 1, 3
-        }
-    );
-    
-    water_program_ = std::make_unique<ShaderProgram>(
-        std::initializer_list<std::pair<std::string_view, Shader::Type>>
-        {
-            {"shaders/water/vertex_shader.vs", Shader::Type::Vertex},
-            {"shaders/water/fragment_shader.fs", Shader::Type::Fragment},
-        }
-    );
-    water_dudv_map_ = std::make_unique<Texture>(512, 512, Texture::Attributes{.wrap_s = GL_REPEAT, .wrap_t = GL_REPEAT});
+        std::vector<std::uint32_t>{0, 1, 2, 2, 1, 3});
+
+    water_program_ = std::make_unique<ShaderProgram>(std::initializer_list<std::pair<std::string_view, Shader::Type>>{
+        {"shaders/water/vertex_shader.vs", Shader::Type::Vertex},
+        {"shaders/water/fragment_shader.fs", Shader::Type::Fragment},
+    });
+    water_dudv_map_ =
+        std::make_unique<Texture>(512, 512, Texture::Attributes{.wrap_s = GL_REPEAT, .wrap_t = GL_REPEAT});
     water_dudv_map_->copy_image("textures/water/dudv.png");
-    water_normal_map_ = std::make_unique<Texture>(512, 512, Texture::Attributes{.wrap_s = GL_REPEAT, .wrap_t = GL_REPEAT});
+    water_normal_map_ =
+        std::make_unique<Texture>(512, 512, Texture::Attributes{.wrap_s = GL_REPEAT, .wrap_t = GL_REPEAT});
     water_normal_map_->copy_image("textures/water/normal.png");
 
     water_ = std::make_unique<Water>();
@@ -202,7 +190,7 @@ void framebuffer_size_callback(GLFWwindow* /*window*/, int width, int height)
 void key_callback(GLFWwindow* window, int key, int /*scancode*/, int action, int /*mods*/)
 {
     Application* application = static_cast<Application*>(glfwGetWindowUserPointer(window));
-    
+
     if (key == GLFW_KEY_P && action == GLFW_PRESS)
     {
         if (application->is_wireframe_mode())
@@ -261,7 +249,7 @@ void mouse_movement_callback(GLFWwindow* window, double x_pos, double y_pos)
         last_position = {static_cast<float>(x_pos), static_cast<float>(y_pos)};
         first_mouse = false;
     }
-    
+
     const float x_offset{static_cast<float>(x_pos - last_position.x)};
     const float y_offset{static_cast<float>(last_position.y - y_pos)};
     last_position = {static_cast<float>(x_pos), static_cast<float>(y_pos)};
@@ -315,7 +303,8 @@ void Application::initialize_imgui()
 {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void) io; // Use io in a statement to avoid unused variable warning
+    ImGuiIO& io = ImGui::GetIO();
+    (void)io; // Use io in a statement to avoid unused variable warning
     ImGui::StyleColorsDark();
     ImGui_ImplGlfw_InitForOpenGL(window_, true);
     ImGui_ImplOpenGL3_Init("# version 450");
@@ -351,7 +340,7 @@ void Application::cleanup()
     water_mesh_.reset();
 
     terrain_program_.reset();
-    for (auto& albedo: albedos_)
+    for (auto& albedo : albedos_)
     {
         albedo.reset();
     }
@@ -391,12 +380,12 @@ void Application::process_input(float delta_time)
     {
         camera_.process_keyboard_input(CameraMovement::Forward, delta_time);
     }
-    
+
     if (glfwGetKey(window_, GLFW_KEY_S) == GLFW_PRESS)
     {
         camera_.process_keyboard_input(CameraMovement::Backward, delta_time);
     }
-    
+
     if (glfwGetKey(window_, GLFW_KEY_D) == GLFW_PRESS)
     {
         camera_.process_keyboard_input(CameraMovement::Right, delta_time);
@@ -423,13 +412,13 @@ void Application::update(float delta_time)
     if (light_.to_update)
     {
         water_program_->use();
-        water_program_->set_vec3_uniform("light.direction", light_.direction);    
+        water_program_->set_vec3_uniform("light.direction", light_.direction);
         water_program_->set_vec3_uniform("light.ambient", light_.ambient);
         water_program_->set_vec3_uniform("light.diffuse", light_.diffuse);
         water_program_->set_vec3_uniform("light.specular", light_.specular);
 
         terrain_program_->use();
-        terrain_program_->set_vec3_uniform("light.direction", light_.direction);    
+        terrain_program_->set_vec3_uniform("light.direction", light_.direction);
         terrain_program_->set_vec3_uniform("light.ambient", light_.ambient);
         terrain_program_->set_vec3_uniform("light.diffuse", light_.diffuse);
         terrain_program_->set_vec3_uniform("light.specular", light_.specular);
@@ -468,10 +457,10 @@ void Application::render()
     reset_viewport();
 
     // Clear window with specified color
-    //glClearColor(0.0f, 0.1f, 0.4f, 1.0f);
+    // glClearColor(0.0f, 0.1f, 0.4f, 1.0f);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
+
     // Render scene
     terrain_program_->set_bool_uniform("apply_fog", apply_fog_);
     terrain_program_->set_vec4_uniform("clip_plane", glm::vec4{0.0f, 0.0f, 0.0f, 0.0f});
@@ -495,7 +484,7 @@ void Application::render()
     water_normal_map_->bind(3);
     water_mesh_->render();
     glDisable(GL_BLEND);
-    
+
     // Render GUI
     render_imgui_editor();
 }
@@ -507,7 +496,7 @@ void Application::render_terrain()
     texture_->bind(0);
     normal_map_->bind(1);
     for (std::size_t i = 0; i < albedos_.size(); ++i)
-    { 
+    {
         albedos_[i]->bind(i + 2);
     }
     terrain_program_->set_mat4_uniform("model", terrain_scale_);
@@ -535,14 +524,14 @@ void Application::render_imgui_editor()
     ImGui::SliderInt("Octaves", &fractal_noise_generator_.noise_settings.octaves, 1, 16);
     ImGui::SliderFloat("Noise Scale", &fractal_noise_generator_.noise_settings.noise_scale, 0.01f, 50.0f);
     ImGui::SliderFloat2("Offset", glm::value_ptr(fractal_noise_generator_.noise_settings.offset), -1000, 1000);
-    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, 
+    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
                 ImGui::GetIO().Framerate);
     ImTextureID imgui_texture_id = reinterpret_cast<void*>(texture_->id());
-    ImGui::Image(imgui_texture_id, ImVec2{200, 200}, ImVec2{0.0f, 0.0f}, ImVec2{1.0f, 1.0f}, 
-                ImVec4{1.0f, 1.0f, 1.0f, 1.0f}, ImVec4{1.0f, 1.0f, 1.0f, 0.5f});
+    ImGui::Image(imgui_texture_id, ImVec2{200, 200}, ImVec2{0.0f, 0.0f}, ImVec2{1.0f, 1.0f},
+                 ImVec4{1.0f, 1.0f, 1.0f, 1.0f}, ImVec4{1.0f, 1.0f, 1.0f, 0.5f});
     imgui_texture_id = reinterpret_cast<void*>(normal_map_->id());
-    ImGui::Image(imgui_texture_id, ImVec2{200, 200}, ImVec2{0.0f, 0.0f}, ImVec2{1.0f, 1.0f}, 
-                ImVec4{1.0f, 1.0f, 1.0f, 1.0f}, ImVec4{1.0f, 1.0f, 1.0f, 0.5f});
+    ImGui::Image(imgui_texture_id, ImVec2{200, 200}, ImVec2{0.0f, 0.0f}, ImVec2{1.0f, 1.0f},
+                 ImVec4{1.0f, 1.0f, 1.0f, 1.0f}, ImVec4{1.0f, 1.0f, 1.0f, 0.5f});
 
     if (ImGui::Button("Reset Settings"))
     {
@@ -557,15 +546,15 @@ void Application::render_imgui_editor()
     ImGui::End();
 
     /*ImGui::Begin("Regions Settings");
-    ImGui::SliderFloat(fractal_noise_generator_.regions_settings.names[0].c_str(), 
+    ImGui::SliderFloat(fractal_noise_generator_.regions_settings.names[0].c_str(),
         fractal_noise_generator_.regions_settings.height_ranges.data(), 0.05f, 1.0f);
-    ImGui::ColorPicker3(fractal_noise_generator_.regions_settings.names[0].c_str(), 
+    ImGui::ColorPicker3(fractal_noise_generator_.regions_settings.names[0].c_str(),
                         fractal_noise_generator_.regions_settings.colors[0].data());
     for (std::size_t i = 1; i < fractal_noise_generator_.regions_settings.size; ++i)
     {
         ImGui::PushID(i);
-        ImGui::SliderFloat(fractal_noise_generator_.regions_settings.names[i].c_str(), 
-            &fractal_noise_generator_.regions_settings.height_ranges[i], 
+        ImGui::SliderFloat(fractal_noise_generator_.regions_settings.names[i].c_str(),
+            &fractal_noise_generator_.regions_settings.height_ranges[i],
             fractal_noise_generator_.regions_settings.height_ranges[i - 1] + 0.01f, 1.0f);
         ImGui::ColorPicker3("Color", fractal_noise_generator_.regions_settings.colors[i].data());
         ImGui::PopID();
@@ -587,6 +576,10 @@ void Application::render_imgui_editor()
     if (ImGui::Checkbox("Use triplanar texture mapping", &use_triplanar_texturing_))
     {
         terrain_program_->set_int_uniform("use_triplanar_texturing", static_cast<int>(use_triplanar_texturing_));
+    }
+    if (ImGui::SliderFloat("Texture scale", &texture_scale_, 0.02f, 1.1f))
+    {
+        terrain_program_->set_float_uniform("triplanar_scale", texture_scale_);
     }
     ImGui::End();
 
@@ -615,12 +608,12 @@ void Application::render_imgui_editor()
     ImGui::Begin("Water");
     ImGui::Text("Reflection:");
     imgui_texture_id = reinterpret_cast<void*>(water_->reflection_color_attachment());
-    ImGui::Image(imgui_texture_id, ImVec2{200, 200}, ImVec2{0.0f, 0.0f}, ImVec2{1.0f, 1.0f}, 
-                ImVec4{1.0f, 1.0f, 1.0f, 1.0f}, ImVec4{1.0f, 1.0f, 1.0f, 0.5f});
+    ImGui::Image(imgui_texture_id, ImVec2{200, 200}, ImVec2{0.0f, 0.0f}, ImVec2{1.0f, 1.0f},
+                 ImVec4{1.0f, 1.0f, 1.0f, 1.0f}, ImVec4{1.0f, 1.0f, 1.0f, 0.5f});
     ImGui::Text("Refraction:");
     imgui_texture_id = reinterpret_cast<void*>(water_->refraction_color_attachment());
-    ImGui::Image(imgui_texture_id, ImVec2{200, 200}, ImVec2{0.0f, 0.0f}, ImVec2{1.0f, 1.0f}, 
-                ImVec4{1.0f, 1.0f, 1.0f, 1.0f}, ImVec4{1.0f, 1.0f, 1.0f, 0.5f});
+    ImGui::Image(imgui_texture_id, ImVec2{200, 200}, ImVec2{0.0f, 0.0f}, ImVec2{1.0f, 1.0f},
+                 ImVec4{1.0f, 1.0f, 1.0f, 1.0f}, ImVec4{1.0f, 1.0f, 1.0f, 0.5f});
     ImGui::End();
 
     ImGui::Render();
@@ -631,6 +624,7 @@ void Application::update_noise_and_mesh()
 {
     texture_->copy_image(fractal_noise_generator_.color_map());
     normal_map_->copy_image(fractal_noise_generator_.normal_map());
-    //auto grid_mesh_data = grid_mesh(height_map_dim_.first, height_map_dim.second, fractal_noise_generator_.height_map(), curve_);
-    //mesh_->update_mesh(std::move(grid_mesh_data.first), std::move(grid_mesh_data.second));
+    // auto grid_mesh_data = grid_mesh(height_map_dim_.first, height_map_dim.second,
+    // fractal_noise_generator_.height_map(), curve_); mesh_->update_mesh(std::move(grid_mesh_data.first),
+    // std::move(grid_mesh_data.second));
 }
