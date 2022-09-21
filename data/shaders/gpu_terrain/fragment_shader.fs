@@ -26,9 +26,10 @@ uniform bool use_triplanar_texturing;
 uniform vec3 camera_position;
 uniform Fog fog;
 uniform bool apply_fog;
-uniform float triplanar_scale;
+//uniform float triplanar_scale;
 
 const int size = 5;
+uniform float triplanar_scale[size];
 uniform sampler2D albedos[size];
 //Water Sand Grass Rock Snow
                                                    // Water Sand Grass Rock Snow
@@ -36,7 +37,7 @@ const float start_heights[size + 1] = float[size + 1](0.0, 0.3, 0.35, 0.5, 0.85,
                                       // Water  Sand Grass Rock Snow
 const float blend_end[size] = float[size](0.32, 0.4, 0.6, 0.9, 1.1);
 
-vec4 triplanar_texture_mapping(vec3 frag_normal, sampler2D sampler)
+vec4 triplanar_texture_mapping(vec3 frag_normal, sampler2D sampler, float triplanar_scale)
 {
     vec3 abs_normal = abs(frag_normal);
     abs_normal = normalize(max(abs_normal, 0.00001));
@@ -86,11 +87,11 @@ void main()
     {
         if (use_triplanar_texturing)
         {
-            colors[i] = triplanar_texture_mapping(unit_normal, albedos[i]);
+            colors[i] = triplanar_texture_mapping(unit_normal, albedos[i], triplanar_scale[i]);
         }
         else
         {
-            colors[i] = texture(albedos[i], tes_frag_pos.xz * triplanar_scale);;
+            colors[i] = texture(albedos[i], tes_frag_pos.xz * triplanar_scale[i]);
         }
     }
 

@@ -68,7 +68,8 @@ private:
     std::vector<std::unique_ptr<Texture>> albedos_;
     std::unique_ptr<ShaderProgram> terrain_program_{};
     float elevation_{30.0f};
-    float texture_scale_{1.0f / 10.0f};
+    // float texture_scale_{1.0f / 10.0f};
+    std::array<float, 5> textures_scale_{0.4f, 0.25f, 0.1f, 0.1f, 0.6f};
     glm::mat4 terrain_scale_{1.0f};
 
     const DirectionalLight start_light_{glm::vec3{-1.0f, -1.0f, -1.0f}, glm::vec3{0.2f, 0.2f, 0.2f},
