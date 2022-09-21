@@ -108,6 +108,9 @@ Application::Application(int window_width, int window_height, std::string_view t
     terrain_program_->set_float_uniform("elevation", elevation_);
     // terrain_program_->set_float_uniform("triplanar_scale", texture_scale_);
     terrain_program_->set_float_array_uniform("triplanar_scale[0]", textures_scale_.data(), textures_scale_.size());
+    terrain_program_->set_float_array_uniform("start_heights[0]", textures_start_height_.data(),
+                                              textures_start_height_.size());
+    terrain_program_->set_float_array_uniform("blend_end[0]", textures_blend_end_.data(), textures_blend_end_.size());
     terrain_program_->set_vec4_uniform("clip_plane", glm::vec4{0.0f, 0.0f, 0.0f, 15.0f});
 
     texture_->bind(0);
@@ -579,10 +582,7 @@ void Application::render_imgui_editor()
     {
         terrain_program_->set_int_uniform("use_triplanar_texturing", static_cast<int>(use_triplanar_texturing_));
     }
-    /*if (ImGui::SliderFloat("Texture scale", &texture_scale_, 0.02f, 1.1f))
-    {
-        terrain_program_->set_float_uniform("triplanar_scale", texture_scale_);
-    }*/
+
     if (ImGui::SliderFloat("Water", &textures_scale_[0], 0.02f, 1.1f))
     {
         terrain_program_->set_float_array_uniform("triplanar_scale[0]", textures_scale_.data(), textures_scale_.size());

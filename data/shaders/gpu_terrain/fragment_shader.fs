@@ -30,12 +30,14 @@ uniform bool apply_fog;
 
 const int size = 5;
 uniform float triplanar_scale[size];
+uniform float start_heights[size + 1];
+uniform float blend_end[size];
 uniform sampler2D albedos[size];
 //Water Sand Grass Rock Snow
                                                    // Water Sand Grass Rock Snow
-const float start_heights[size + 1] = float[size + 1](0.0, 0.3, 0.35, 0.5, 0.85, 1.1);
+//const float start_heights[size + 1] = float[size + 1](0.0, 0.3, 0.35, 0.5, 0.85, 1.1);
                                       // Water  Sand Grass Rock Snow
-const float blend_end[size] = float[size](0.32, 0.4, 0.6, 0.9, 1.1);
+//const float blend_end[size] = float[size](0.32, 0.4, 0.6, 0.9, 1.1);
 
 vec4 triplanar_texture_mapping(vec3 frag_normal, sampler2D sampler, float triplanar_scale)
 {
@@ -112,9 +114,9 @@ void main()
         }
     }
 
-    if (slope >= 0.15 && height > start_heights[1])
+    if (slope >= 0.15 && height > start_heights[2])
     {
-        float param = smoothstep(0.15, 0.3, slope);
+        float param = smoothstep(0.15, 0.45, slope);
         color = mix(color, colors[3], param);
     }
     
@@ -136,4 +138,5 @@ void main()
         frag_color = mix(frag_color, vec4(fog_color, 1.0), fog_factor);
         //frag_color = mix(frag_color, vec4(fog_factor, fog_factor, fog_factor, 1.0), 0.97); // debug fog factor
     }
+    //frag_color = mix(frag_color, vec4(tes_normal, 1.0), 0.98);
 }
