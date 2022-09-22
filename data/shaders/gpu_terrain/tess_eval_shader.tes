@@ -9,8 +9,8 @@ out vec2 tes_tex_coords;
 out vec3 tes_frag_pos;
 out vec3 tes_normal;
 
-uniform sampler2D texture_sampler;
-uniform sampler2D normal_map_sampler;
+layout (binding = 0) uniform sampler2D texture_sampler;
+layout (binding = 1) uniform sampler2D normal_map_sampler;
 uniform mat4 model;
 uniform mat4 mvp;
 uniform float elevation;

@@ -118,10 +118,7 @@ Application::Application(int window_width, int window_height, std::string_view t
     });
 
     terrain_program_->use();
-    terrain_program_->set_int_uniform("texture_sampler", 0);
-    terrain_program_->set_int_uniform("normal_map_sampler", 1);
     terrain_program_->set_float_uniform("elevation", elevation_);
-    // terrain_program_->set_float_uniform("triplanar_scale", texture_scale_);
     terrain_program_->set_float_array_uniform("triplanar_scale[0]", textures_scale_.data(), textures_scale_.size());
     terrain_program_->set_float_array_uniform("start_heights[0]", textures_start_height_.data(),
                                               textures_start_height_.size());
