@@ -85,6 +85,7 @@ Application::Application(int window_width, int window_height, std::string_view t
                                                                         .wrap_s = GL_REPEAT,
                                                                         .wrap_t = GL_REPEAT,
                                                                         .min_filter = GL_LINEAR_MIPMAP_LINEAR,
+                                                                        .pixel_data_format = GL_RGB,
                                                                         .generate_mipmap = true,
                                                                         .layers = 3}));
     /*std::array<std::string, 5> names{

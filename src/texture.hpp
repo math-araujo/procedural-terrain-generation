@@ -61,6 +61,7 @@ private:
 
     void initialize();
     void set_texture_parameters();
+    void generate_mipmap();
 };
 
 #include "texture.inl"

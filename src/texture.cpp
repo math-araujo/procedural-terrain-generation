@@ -31,11 +31,6 @@ void Texture::initialize()
     {
         glTextureStorage2D(id_, attributes_.mip_levels, attributes_.internal_format, width_, height_);
     }
-
-    /*if (attributes_.generate_mipmap && attributes_.target != GL_TEXTURE_CUBE_MAP)
-    {
-        glGenerateTextureMipmap(id_);
-    }*/
 }
 
 void Texture::set_texture_parameters()
@@ -117,6 +112,14 @@ void Texture::copy_image(std::string_view filename, bool flip_on_load)
     }
 }
 
+void Texture::generate_mipmap()
+{
+    if (attributes_.generate_mipmap && attributes_.target != GL_TEXTURE_CUBE_MAP)
+    {
+        glGenerateTextureMipmap(id_);
+    }
+}
+
 void Texture::load_cubemap(const std::vector<std::string_view>& filenames, bool flip_on_load)
 {
     assert(attributes_.target == GL_TEXTURE_CUBE_MAP);
@@ -147,7 +150,6 @@ void Texture::load_cubemap(const std::vector<std::string_view>& filenames, bool 
     }
 }
 
-#include <iostream>
 void Texture::load_array_texture(const std::vector<std::string_view>& filenames, bool flip_on_load)
 {
     if (attributes_.target != GL_TEXTURE_2D_ARRAY)
@@ -168,22 +170,21 @@ void Texture::load_array_texture(const std::vector<std::string_view>& filenames,
         int number_of_channels{0};
         unsigned char* data = stbi_load(filenames[layer].data(), &width, &height, &number_of_channels, 0);
         assert(data != nullptr);
-        if (layer == 2)
+        // For array textures, all textures must have the same pixel data format
+        if (number_of_channels == 3 && attributes_.pixel_data_format != GL_RGB)
         {
-            std::cout << "Snow (w, h, c) " << width << " " << height << " " << number_of_channels << "\n";
+            throw std::invalid_argument("Image has incompatible data format of type GL_RGB");
         }
-        if (number_of_channels == 3)
+        else if (number_of_channels == 1 && attributes_.pixel_data_format != GL_RED)
         {
-            attributes_.pixel_data_format = GL_RGB;
-        }
-        else if (number_of_channels == 1)
-        {
-            attributes_.pixel_data_format = GL_RED;
+            throw std::invalid_argument("Image has incompatible data format of type GL_RED");
         }
         glTextureSubImage3D(id_, 0, 0, 0, layer, width, height, 1, attributes_.pixel_data_format,
                             attributes_.pixel_data_type, data);
         stbi_image_free(data);
     }
+
+    generate_mipmap();
 
     if (flip_on_load)
     {
