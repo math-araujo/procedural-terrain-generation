@@ -2,6 +2,7 @@
 #define TEXTURE_HPP
 
 #include <cstdint>
+#include <optional>
 #include <string_view>
 #include <vector>
 
@@ -24,6 +25,8 @@ public:
         GLenum pixel_data_format{GL_RGBA};
         GLenum pixel_data_type{GL_UNSIGNED_BYTE};
         bool generate_mipmap{false};
+        GLsizei mip_levels{1};
+        std::optional<GLsizei> layers{};
     };
 
     Texture(std::uint32_t width, std::uint32_t height, Attributes attributes);
@@ -35,19 +38,21 @@ public:
     Texture& operator=(Texture&& other) noexcept;
     ~Texture();
 
-    template<typename T>
+    template <typename T>
     void copy_image(const Image<T>& image);
 
-    template<typename T>
+    template <typename T>
     void copy_image(const T* image_data, std::int32_t width, std::int32_t height);
 
     void copy_image(std::string_view filename, bool flip_on_load = true);
     void load_cubemap(const std::vector<std::string_view>& filenames, bool flip_on_load = true);
+    void load_array_texture(const std::vector<std::string_view>& filenames, bool flip_on_load = true);
     void bind(std::uint32_t unit);
-    
+
     std::uint32_t id() const;
     std::uint32_t width() const;
     std::uint32_t height() const;
+
 private:
     std::uint32_t width_;
     std::uint32_t height_;
@@ -55,6 +60,7 @@ private:
     std::uint32_t id_{0};
 
     void initialize();
+    void set_texture_parameters();
 };
 
 #include "texture.inl"

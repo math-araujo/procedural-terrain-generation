@@ -70,10 +70,10 @@ private:
     float elevation_{30.0f};
 
     // clang-format off
-                                                //  Water  Sand   Grass  Rock  Snow
-    std::array<float, 5 + 1> textures_start_height_{0.0f,  0.2f,  0.30f, 0.5f, 0.80f, 1.1f};
-    std::array<float, 5> textures_blend_end_{       0.25f, 0.33f, 0.60f, 0.9f, 1.1f};
-    std::array<float, 5> textures_scale_{0.6f, 0.6f, 0.1f, 0.1f, 0.6f};
+                                                //  Water  Rock  Snow
+    std::array<float, 3 + 1> textures_start_height_{0.0f,  0.30f, 0.80f, 1.1f};
+    std::array<float, 3> textures_blend_end_{       0.33f, 0.9f, 1.1f};
+    std::array<float, 3> textures_scale_{0.6f, 0.1f, 0.6f};
     // clang-format on
 
     glm::mat4 terrain_scale_{1.0f};

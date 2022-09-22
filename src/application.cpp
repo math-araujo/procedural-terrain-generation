@@ -70,8 +70,8 @@ Application::Application(int window_width, int window_height, std::string_view t
     texture_->copy_image(fractal_noise_generator_.color_map());
     normal_map_ = std::make_unique<Texture>(height_map_dim_.first, height_map_dim_.second);
     normal_map_->copy_image(fractal_noise_generator_.normal_map());
-    albedos_.reserve(5);
-    for (int i = 0; i < 5; ++i)
+    /*albedos_.reserve(3);
+    for (int i = 0; i < 3; ++i)
     {
         albedos_.emplace_back(std::make_unique<Texture>(height_map_dim_.first, height_map_dim_.second,
                                                         Texture::Attributes{
@@ -79,15 +79,29 @@ Application::Application(int window_width, int window_height, std::string_view t
                                                             .wrap_t = GL_REPEAT,
                                                             .generate_mipmap = true,
                                                         }));
-    }
-    std::array<std::string, 5> names{
+    }*/
+    albedos_.emplace_back(std::make_unique<Texture>(height_map_dim_.first, height_map_dim_.second,
+                                                    Texture::Attributes{.target = GL_TEXTURE_2D_ARRAY,
+                                                                        .wrap_s = GL_REPEAT,
+                                                                        .wrap_t = GL_REPEAT,
+                                                                        .min_filter = GL_LINEAR_MIPMAP_LINEAR,
+                                                                        .generate_mipmap = true,
+                                                                        .layers = 3}));
+    /*std::array<std::string, 5> names{
         "textures/terrain/water.png", "textures/terrain/sand.png", "textures/terrain/grass.png",
         "textures/terrain/rock.png",  "textures/terrain/snow.png",
+    };*/
+    // std::array<std::string, 3> names{
+    std::vector<std::string_view> names{
+        "textures/terrain/water.png",
+        "textures/terrain/rock.png",
+        "textures/terrain/snow.png",
     };
-    for (std::size_t i = 0; i < albedos_.size(); ++i)
+    albedos_.back()->load_array_texture(names);
+    /*for (std::size_t i = 0; i < albedos_.size(); ++i)
     {
         albedos_[i]->copy_image(names[i]);
-    }
+    }*/
     /*terrain_program_ = std::make_unique<ShaderProgram>(
         std::initializer_list<std::pair<std::string_view, Shader::Type>>
         {
@@ -115,12 +129,13 @@ Application::Application(int window_width, int window_height, std::string_view t
 
     texture_->bind(0);
     normal_map_->bind(1);
-    const std::array<int, 5> uniforms{2, 3, 4, 5, 6};
+    albedos_.back()->bind(2);
+    /*const std::array<int, 5> uniforms{2, 3, 4, 5, 6};
     terrain_program_->set_int_array_uniform("albedos[0]", uniforms.data(), uniforms.size());
     for (std::size_t i = 0; i < albedos_.size(); ++i)
     {
         albedos_[i]->bind(i + 2);
-    }
+    }*/
 
     terrain_program_->set_bool_uniform("use_triplanar_texturing", use_triplanar_texturing_);
     terrain_program_->set_float_uniform("fog.height", fog_height_);
@@ -500,10 +515,11 @@ void Application::render_terrain()
     terrain_program_->use();
     texture_->bind(0);
     normal_map_->bind(1);
-    for (std::size_t i = 0; i < albedos_.size(); ++i)
+    albedos_.back()->bind(2);
+    /*for (std::size_t i = 0; i < albedos_.size(); ++i)
     {
         albedos_[i]->bind(i + 2);
-    }
+    }*/
     terrain_program_->set_mat4_uniform("model", terrain_scale_);
     terrain_program_->set_vec3_uniform("camera_position", camera_.position());
     terrain_program_->set_mat4_uniform("model_view", camera_.view() * terrain_scale_);
@@ -587,19 +603,19 @@ void Application::render_imgui_editor()
     {
         terrain_program_->set_float_array_uniform("triplanar_scale[0]", textures_scale_.data(), textures_scale_.size());
     }
-    if (ImGui::SliderFloat("Sand", &textures_scale_[1], 0.02f, 1.1f))
+    /*if (ImGui::SliderFloat("Sand", &textures_scale_[1], 0.02f, 1.1f))
     {
         terrain_program_->set_float_array_uniform("triplanar_scale[0]", textures_scale_.data(), textures_scale_.size());
     }
     if (ImGui::SliderFloat("Grass", &textures_scale_[2], 0.02f, 1.1f))
     {
         terrain_program_->set_float_array_uniform("triplanar_scale[0]", textures_scale_.data(), textures_scale_.size());
-    }
-    if (ImGui::SliderFloat("Rock", &textures_scale_[3], 0.02f, 1.1f))
+    }*/
+    if (ImGui::SliderFloat("Rock", &textures_scale_[1], 0.02f, 1.1f))
     {
         terrain_program_->set_float_array_uniform("triplanar_scale[0]", textures_scale_.data(), textures_scale_.size());
     }
-    if (ImGui::SliderFloat("Snow", &textures_scale_[4], 0.02f, 1.1f))
+    if (ImGui::SliderFloat("Snow", &textures_scale_[2], 0.02f, 1.1f))
     {
         terrain_program_->set_float_array_uniform("triplanar_scale[0]", textures_scale_.data(), textures_scale_.size());
     }
