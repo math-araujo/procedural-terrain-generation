@@ -45,7 +45,7 @@ void main()
     
     vec4 texel = texture(texture_sampler, interpolated_tex_coordinates);
     tes_height = texel.a;
-    position.y = elevation * tes_height;
+    position.y = tes_height;
 
     tes_tex_coords = interpolated_tex_coordinates;
     vec4 world_position = model * position;
@@ -56,8 +56,9 @@ void main()
 
     // Fetch normal vector from normal map
     vec3 normal_rgb = texture(normal_map_sampler, tes_tex_coords).rgb;
-    vec3 normal = normal_rgb * 2.0 - 1.0;
-    tes_normal = normal.rbg; // Swap B and G, because our height is on Y-axis, not Z-axis
+    vec3 normal = vec3(normal_rgb.r * 2.0 - 1.0, normal_rgb.b, normal_rgb.g * 2.0 - 1.0);
+    //tes_normal = mat3(transpose(inverse(model))) * normal.rbg; // Swap B and G, because our height is on Y-axis, not Z-axis
+    tes_normal = mat3(transpose(inverse(model))) * normal;
 
-    gl_Position = mvp * position;
+    gl_Position = mvp * world_position;
 }

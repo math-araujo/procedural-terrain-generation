@@ -70,39 +70,47 @@ Application::Application(int window_width, int window_height, std::string_view t
     texture_->copy_image(fractal_noise_generator_.color_map());
     normal_map_ = std::make_unique<Texture>(height_map_dim_.first, height_map_dim_.second);
     normal_map_->copy_image(fractal_noise_generator_.normal_map());
-    /*albedos_.reserve(3);
-    for (int i = 0; i < 3; ++i)
-    {
-        albedos_.emplace_back(std::make_unique<Texture>(height_map_dim_.first, height_map_dim_.second,
-                                                        Texture::Attributes{
-                                                            .wrap_s = GL_REPEAT,
-                                                            .wrap_t = GL_REPEAT,
-                                                            .generate_mipmap = true,
-                                                        }));
-    }*/
-    albedos_.emplace_back(std::make_unique<Texture>(height_map_dim_.first, height_map_dim_.second,
-                                                    Texture::Attributes{.target = GL_TEXTURE_2D_ARRAY,
-                                                                        .wrap_s = GL_REPEAT,
-                                                                        .wrap_t = GL_REPEAT,
-                                                                        .min_filter = GL_LINEAR_MIPMAP_LINEAR,
-                                                                        .pixel_data_format = GL_RGB,
-                                                                        .generate_mipmap = true,
-                                                                        .layers = 3}));
-    /*std::array<std::string, 5> names{
-        "textures/terrain/water.png", "textures/terrain/sand.png", "textures/terrain/grass.png",
-        "textures/terrain/rock.png",  "textures/terrain/snow.png",
-    };*/
-    // std::array<std::string, 3> names{
-    std::vector<std::string_view> names{
+
+    // Terrain textures attributes
+    const Texture::Attributes terrain_texture_attributes{Texture::Attributes{.target = GL_TEXTURE_2D_ARRAY,
+                                                                             .wrap_s = GL_REPEAT,
+                                                                             .wrap_t = GL_REPEAT,
+                                                                             .min_filter = GL_LINEAR_MIPMAP_LINEAR,
+                                                                             .pixel_data_format = GL_RGB,
+                                                                             .generate_mipmap = true,
+                                                                             .layers = 3}};
+
+    albedos_ = std::make_unique<Texture>(height_map_dim_.first, height_map_dim_.second, terrain_texture_attributes);
+    std::vector<std::string_view> albedo_names{
         "textures/terrain/water.png",
         "textures/terrain/rock.png",
         "textures/terrain/snow.png",
     };
-    albedos_.back()->load_array_texture(names);
-    /*for (std::size_t i = 0; i < albedos_.size(); ++i)
-    {
-        albedos_[i]->copy_image(names[i]);
-    }*/
+    albedos_->load_array_texture(albedo_names);
+    // std::cout << "Albedos ok...\n";
+
+    normal_maps_ = std::make_unique<Texture>(height_map_dim_.first, height_map_dim_.second, terrain_texture_attributes);
+    std::vector<std::string_view> normal_names{
+        "textures/terrain/water_normal.png",
+        "textures/terrain/rock_normal.png",
+        "textures/terrain/snow_normal.png",
+    };
+    normal_maps_->load_array_texture(normal_names);
+    // std::cout << "Normals ok...\n";
+
+    auto ambient_occlusion_attributes = terrain_texture_attributes;
+    ambient_occlusion_attributes.internal_format = GL_R8;
+    ambient_occlusion_attributes.pixel_data_format = GL_RED;
+    ao_maps_ = std::make_unique<Texture>(height_map_dim_.first, height_map_dim_.second, ambient_occlusion_attributes);
+
+    std::vector<std::string_view> ao_names{
+        "textures/terrain/water_ao.png",
+        "textures/terrain/rock_ao.png",
+        "textures/terrain/snow_ao.png",
+    };
+    ao_maps_->load_array_texture(ao_names);
+    // std::cout << "AO ok...\n";
+
     /*terrain_program_ = std::make_unique<ShaderProgram>(
         std::initializer_list<std::pair<std::string_view, Shader::Type>>
         {
@@ -118,7 +126,8 @@ Application::Application(int window_width, int window_height, std::string_view t
     });
 
     terrain_program_->use();
-    terrain_program_->set_float_uniform("elevation", elevation_);
+    // terrain_program_->set_float_uniform("elevation", elevation_);
+    terrain_scale_ = glm::scale(glm::mat4{1.0f}, glm::vec3{1.0f, elevation_, 1.0f});
     terrain_program_->set_float_array_uniform("triplanar_scale[0]", textures_scale_.data(), textures_scale_.size());
     terrain_program_->set_float_array_uniform("start_heights[0]", textures_start_height_.data(),
                                               textures_start_height_.size());
@@ -127,15 +136,12 @@ Application::Application(int window_width, int window_height, std::string_view t
 
     texture_->bind(0);
     normal_map_->bind(1);
-    albedos_.back()->bind(2);
-    /*const std::array<int, 5> uniforms{2, 3, 4, 5, 6};
-    terrain_program_->set_int_array_uniform("albedos[0]", uniforms.data(), uniforms.size());
-    for (std::size_t i = 0; i < albedos_.size(); ++i)
-    {
-        albedos_[i]->bind(i + 2);
-    }*/
+    albedos_->bind(2);
+    ao_maps_->bind(3);
+    normal_maps_->bind(4);
 
     terrain_program_->set_bool_uniform("use_triplanar_texturing", use_triplanar_texturing_);
+    terrain_program_->set_bool_uniform("apply_normal_map", apply_normal_map_);
     terrain_program_->set_float_uniform("fog.height", fog_height_);
     terrain_program_->set_float_uniform("fog.density", fog_density_);
 
@@ -358,10 +364,10 @@ void Application::cleanup()
     water_mesh_.reset();
 
     terrain_program_.reset();
-    for (auto& albedo : albedos_)
-    {
-        albedo.reset();
-    }
+    ao_maps_.reset();
+    normal_maps_.reset();
+    albedos_.reset();
+
     normal_map_.reset();
     texture_.reset();
     mesh_.reset();
@@ -513,11 +519,10 @@ void Application::render_terrain()
     terrain_program_->use();
     texture_->bind(0);
     normal_map_->bind(1);
-    albedos_.back()->bind(2);
-    /*for (std::size_t i = 0; i < albedos_.size(); ++i)
-    {
-        albedos_[i]->bind(i + 2);
-    }*/
+    albedos_->bind(2);
+    ao_maps_->bind(3);
+    normal_maps_->bind(4);
+
     terrain_program_->set_mat4_uniform("model", terrain_scale_);
     terrain_program_->set_vec3_uniform("camera_position", camera_.position());
     terrain_program_->set_mat4_uniform("model_view", camera_.view() * terrain_scale_);
@@ -592,6 +597,10 @@ void Application::render_imgui_editor()
     ImGui::End();
 
     ImGui::Begin("Texturing");
+    if (ImGui::Checkbox("Use normal mapping", &apply_normal_map_))
+    {
+        terrain_program_->set_bool_uniform("apply_normal_map", apply_normal_map_);
+    }
     if (ImGui::Checkbox("Use triplanar texture mapping", &use_triplanar_texturing_))
     {
         terrain_program_->set_int_uniform("use_triplanar_texturing", static_cast<int>(use_triplanar_texturing_));
@@ -620,9 +629,10 @@ void Application::render_imgui_editor()
     ImGui::End();
 
     ImGui::Begin("Terrain");
-    if (ImGui::SliderFloat("Elevation", &elevation_, 1.0f, 300.0f))
+    if (ImGui::SliderFloat("Elevation", &elevation_, 0.1f, 20.0f))
     {
-        terrain_program_->set_float_uniform("elevation", elevation_);
+        // terrain_program_->set_float_uniform("elevation", elevation_);
+        terrain_scale_ = glm::scale(glm::mat4{1.0f}, glm::vec3{1.0f, elevation_, 1.0f});
     }
     ImGui::End();
 

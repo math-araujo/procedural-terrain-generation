@@ -26,6 +26,7 @@ uniform bool use_triplanar_texturing;
 uniform vec3 camera_position;
 uniform Fog fog;
 uniform bool apply_fog;
+uniform bool apply_normal_map;
 //uniform float triplanar_scale;
 
 const int size = 3;
@@ -34,6 +35,9 @@ uniform float start_heights[size + 1];
 uniform float blend_end[size];
 //uniform sampler2D albedos[size];
 layout (binding = 2) uniform sampler2DArray albedos;
+layout (binding = 3) uniform sampler2DArray terrain_ao;
+layout (binding = 4) uniform sampler2DArray terrain_normal_map;
+
 //Water Sand Grass Rock Snow
                                                    // Water Sand Grass Rock Snow
 //const float start_heights[size + 1] = float[size + 1](0.0, 0.3, 0.35, 0.5, 0.85, 1.1);
@@ -68,6 +72,31 @@ vec4 triplanar_texture_mapping(vec3 frag_normal, float triplanar_scale, int text
     return vec4(x_axis * abs_normal.x + y_axis * abs_normal.y + z_axis * abs_normal.z, 1.0);
 }
 
+vec3 triplanar_blending(vec3 frag_normal)
+{
+    vec3 abs_normal = abs(frag_normal);
+    abs_normal = normalize(max(abs_normal, 0.00001));
+    float sum = abs_normal.x + abs_normal.y + abs_normal.z;
+    abs_normal /= sum;
+    return abs_normal;
+}
+
+vec4 new_triplanar_texture_mapping(vec3 triplanar_blending, sampler2DArray sampler, float triplanar_scale, int texture_index)
+{    
+    vec3 x_axis = texture(sampler, vec3(tes_frag_pos.yz * triplanar_scale, texture_index)).rgb;
+    vec3 y_axis = texture(sampler, vec3(tes_frag_pos.xz * triplanar_scale, texture_index)).rgb;
+    vec3 z_axis = texture(sampler, vec3(tes_frag_pos.xy * triplanar_scale, texture_index)).rgb;
+    return vec4(x_axis * triplanar_blending.x + y_axis * triplanar_blending.y + z_axis * triplanar_blending.z, 1.0);
+}
+
+vec4 red_triplanar_texture_mapping(vec3 triplanar_blending, sampler2DArray sampler, float triplanar_scale, int texture_index)
+{    
+    vec3 x_axis = texture(sampler, vec3(tes_frag_pos.yz * triplanar_scale, texture_index)).rrr;
+    vec3 y_axis = texture(sampler, vec3(tes_frag_pos.xz * triplanar_scale, texture_index)).rrr;
+    vec3 z_axis = texture(sampler, vec3(tes_frag_pos.xy * triplanar_scale, texture_index)).rrr;
+    return vec4(x_axis * triplanar_blending.x + y_axis * triplanar_blending.y + z_axis * triplanar_blending.z, 1.0);
+}
+
 const vec3 fog_color = vec3(0.75, 0.75, 0.75);
 const vec3 halfspace_plane_normal = vec3(0.0, 1.0, 0.0);
 
@@ -91,31 +120,67 @@ float compute_halfspace_fog_factor(vec3 fragment_pos)
     return 1.0 - clamp(exp2(-(g*g)), 0.0, 1.0);
 }
 
+mat3 TBN;
+
+void get_tbn()
+{
+    vec3 Q1  = dFdx(tes_frag_pos);
+    vec3 Q2  = dFdy(tes_frag_pos);
+    vec2 st1 = dFdx(tes_tex_coords);
+    vec2 st2 = dFdy(tes_tex_coords);
+    
+    vec3 N   = normalize(tes_normal);
+    vec3 T  = normalize(Q1*st2.t - Q2*st1.t);
+    vec3 B  = -normalize(cross(N, T));
+    TBN = mat3(T, B, N);
+}
+
 void main()
 {
     float height = tes_height;
-    vec4 color = vec4(1.0);
     
     // Compute fragment normal
-    vec3 unit_normal = normalize(tes_normal);
-    float slope = 1.0 - unit_normal.y; // slope == 0.0 -> flat plane; slope == 1.0 -> vertical plane
+    get_tbn();
+    vec3 world_space_unit_normal = normalize(tes_normal);
+    //float slope = 1.0 - unit_normal.y; // slope == 0.0 -> flat plane; slope == 1.0 -> vertical plane
 
     vec4 colors[size];
+    float aos[size];
+    vec3 normals[size];
+    vec3 triplanar_blending_factor = triplanar_blending(world_space_unit_normal);
     for (int i = 0; i < size; ++i)
     {
         if (use_triplanar_texturing)
         {
-            colors[i] = triplanar_texture_mapping(unit_normal, triplanar_scale[i], i);
+            colors[i] = triplanar_texture_mapping(world_space_unit_normal, triplanar_scale[i], i);
+            aos[i] = red_triplanar_texture_mapping(triplanar_blending_factor, terrain_ao, triplanar_scale[i], i).r;
+            /*TODO: fix triplanar normal mapping
+            vec3 tangent_normal = new_triplanar_texture_mapping(triplanar_blending_factor, terrain_normal_map, triplanar_scale[i], i).rgb;
+            tangent_normal = tangent_normal * 2.0 - 1.0;
+            normals[i] = tangent_normal;*/
+            normals[i] = world_space_unit_normal;
         }
         else
         {
             colors[i] = texture(albedos, vec3(tes_frag_pos.xz * triplanar_scale[i], i));
+            aos[i] = texture(terrain_ao,  vec3(tes_frag_pos.xz * triplanar_scale[i], i)).r;
+            vec3 tangent_normal = texture(terrain_normal_map,  vec3(tes_frag_pos.xz * triplanar_scale[i], i)).rgb;
+            tangent_normal = tangent_normal * 2.0 - 1.0;
+            normals[i] = normalize(TBN * tangent_normal);
         }
     }
 
+    vec4 color = vec4(1.0);
+    float ao = 0.0;
+    vec3 unit_normal = world_space_unit_normal;
     if (height < start_heights[1])
     {
         color = colors[0];
+        ao = aos[0];
+        if (apply_normal_map)
+        {
+            unit_normal = normals[0];
+        }
     }
     else
     {
@@ -125,6 +190,11 @@ void main()
             {
                 float param = smoothstep(start_heights[i], blend_end[i - 1], height);
                 color = mix(colors[i - 1], colors[i], param);
+                ao = mix(aos[i - 1], aos[i], param);
+                if (apply_normal_map)
+                {
+                    unit_normal = normalize(mix(normals[i - 1], normals[i], param));
+                }
                 break;
             }
         }
@@ -137,7 +207,7 @@ void main()
     }*/
     
     // Ambient Light Component
-    vec3 ambient_color = light.ambient * color.rgb;
+    vec3 ambient_color = vec3(0.1) * color.rgb * ao;
 
     // Diffuse Light Component    
     vec3 light_dir = normalize(-light.direction);
@@ -154,5 +224,6 @@ void main()
         frag_color = mix(frag_color, vec4(fog_color, 1.0), fog_factor);
         //frag_color = mix(frag_color, vec4(fog_factor, fog_factor, fog_factor, 1.0), 0.97); // debug fog factor
     }
-    //frag_color = mix(frag_color, vec4(tes_normal, 1.0), 0.98);
+    //frag_color = mix(frag_color, vec4(unit_normal, 1.0), 0.98); // debug normal map
+    //frag_color = mix(frag_color, vec4(world_space_unit_normal, 1.0), 0.98); // debug world normal
 }

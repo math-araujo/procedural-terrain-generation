@@ -65,9 +65,12 @@ private:
     std::unique_ptr<Texture> texture_{};
     std::unique_ptr<Texture> normal_map_{};
 
-    std::vector<std::unique_ptr<Texture>> albedos_;
+    std::unique_ptr<Texture> albedos_;
+    std::unique_ptr<Texture> normal_maps_{};
+    std::unique_ptr<Texture> ao_maps_{};
     std::unique_ptr<ShaderProgram> terrain_program_{};
-    float elevation_{30.0f};
+    float elevation_{6.5f};
+    bool apply_normal_map_{true};
 
     // clang-format off
                                                 //  Water  Rock  Snow
