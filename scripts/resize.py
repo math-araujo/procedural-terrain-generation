@@ -19,13 +19,19 @@ def resize_textures():
     output_dir = pathlib.Path(textures_dir, args.output_dir)
     output_dir.mkdir(exist_ok=True)
 
-    for image_path in input_dir.glob(f"*.{args.extension}"):
+    for image_path in input_dir.glob(f"*/*.{args.extension}"):
         image_filename = image_path.stem
         print(f"Current File: {image_filename}")
         image = Image.open(image_path)
         resized_image = image.resize((args.target_size, args.target_size), resample=Image.Resampling.LANCZOS)
         resized_dest = output_dir / f"{image_filename}_{args.target_size}.{args.extension}"
         assert not resized_dest.is_file(), f"Image file {resized_dest} already exists in directory {output_dir}"
+        
+        if "ao" in str(image_path):
+                resized_image = resized_image.convert("L")
+        else:
+                resized_image = resized_image.convert("RGB")
+
         resized_image.save(resized_dest)
 
 if __name__ == "__main__":
