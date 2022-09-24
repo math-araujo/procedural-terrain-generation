@@ -19,7 +19,8 @@ public:
         Vertex = GL_VERTEX_SHADER,
         TessControl = GL_TESS_CONTROL_SHADER,
         TessEval = GL_TESS_EVALUATION_SHADER,
-        Fragment = GL_FRAGMENT_SHADER
+        Fragment = GL_FRAGMENT_SHADER,
+        Compute = GL_COMPUTE_SHADER,
     };
 
     Shader(const std::string& shader_source_code, Type type);
@@ -60,6 +61,7 @@ public:
     void set_vec3_uniform(const std::string& uniform_name, const glm::vec3& vector);
     void set_vec4_uniform(const std::string& uniform_name, const glm::vec4& vector);
     void set_mat4_uniform(const std::string& uniform_name, const glm::mat4& transform);
+
 private:
     std::uint32_t program_id_{0};
     std::unordered_map<std::string, std::uint32_t> uniform_locations{};
@@ -70,7 +72,8 @@ private:
 // Auxiliary free functions
 void check_shader_compilation(std::uint32_t shader_id, std::string_view shader_type);
 Shader load_shader_from_file(std::string_view filepath, Shader::Type type);
-void check_shader_program_link_status(std::uint32_t shader_program_id, std::initializer_list<std::pair<std::string_view, Shader::Type>> shader_data);
+void check_shader_program_link_status(std::uint32_t shader_program_id,
+                                      std::initializer_list<std::pair<std::string_view, Shader::Type>> shader_data);
 
 template <typename T>
 constexpr std::underlying_type_t<T> to_underlying(T enumerator) noexcept
