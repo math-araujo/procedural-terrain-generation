@@ -7,7 +7,6 @@
 
 #include <glm/glm.hpp>
 
-
 class Framebuffer;
 
 class Water
@@ -33,6 +32,7 @@ public:
     std::uint32_t refraction_color_attachment() const;
     std::uint32_t refraction_depth_texture() const;
     void bind_textures();
+
 private:
     const std::uint32_t reflection_width_{1024};
     const std::uint32_t reflection_height_{768};
