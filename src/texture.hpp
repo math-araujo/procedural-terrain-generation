@@ -48,7 +48,7 @@ public:
     void load_cubemap(const std::vector<std::string_view>& filenames, bool flip_on_load = true);
     void load_array_texture(const std::vector<std::string_view>& filenames, bool flip_on_load = true);
     void bind(std::uint32_t unit);
-
+    void bind_image(std::uint32_t unit, GLenum access = GL_READ_WRITE);
     std::uint32_t id() const;
     std::uint32_t width() const;
     std::uint32_t height() const;

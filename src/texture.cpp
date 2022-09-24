@@ -71,6 +71,11 @@ void Texture::bind(std::uint32_t unit)
     glBindTextureUnit(unit, id_);
 }
 
+void Texture::bind_image(std::uint32_t unit, GLenum access)
+{
+    glBindImageTexture(unit, id_, 0, GL_FALSE, 0, access, attributes_.internal_format);
+}
+
 std::uint32_t Texture::id() const
 {
     return id_;
