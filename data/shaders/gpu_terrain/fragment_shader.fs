@@ -162,7 +162,8 @@ void main()
         }
         else
         {
-            colors[i] = texture(albedos, vec3(tes_frag_pos.xz * triplanar_scale[i], i));
+            vec3 albedo = pow(texture(albedos, vec3(tes_frag_pos.xz * triplanar_scale[i], i)).rgb, vec3(2.2));
+            colors[i] = vec4(albedo, 1.0);
             aos[i] = texture(terrain_ao,  vec3(tes_frag_pos.xz * triplanar_scale[i], i)).r;
             vec3 tangent_normal = texture(terrain_normal_map,  vec3(tes_frag_pos.xz * triplanar_scale[i], i)).rgb;
             tangent_normal = tangent_normal * 2.0 - 1.0;
@@ -215,7 +216,7 @@ void main()
     vec3 diffuse_color = light.diffuse * diffuse_intensity * color.rgb;
 
     vec3 result = ambient_color + diffuse_color;
-    frag_color = vec4(result, 1.0);
+    frag_color = vec4(pow(result, vec3(1.0/2.2)), 1.0);
 
     // Add Fog
     if (apply_fog)
