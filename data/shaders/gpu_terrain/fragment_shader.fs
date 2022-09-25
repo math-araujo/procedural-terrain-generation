@@ -27,36 +27,15 @@ uniform vec3 camera_position;
 uniform Fog fog;
 uniform bool apply_fog;
 uniform bool apply_normal_map;
-//uniform float triplanar_scale;
 
 const int size = 3;
 uniform float triplanar_scale[size];
 uniform float start_heights[size + 1];
 uniform float blend_end[size];
-//uniform sampler2D albedos[size];
 layout (binding = 2) uniform sampler2DArray albedos;
 layout (binding = 3) uniform sampler2DArray terrain_ao;
 layout (binding = 4) uniform sampler2DArray terrain_normal_map;
 
-//Water Sand Grass Rock Snow
-                                                   // Water Sand Grass Rock Snow
-//const float start_heights[size + 1] = float[size + 1](0.0, 0.3, 0.35, 0.5, 0.85, 1.1);
-                                      // Water  Sand Grass Rock Snow
-//const float blend_end[size] = float[size](0.32, 0.4, 0.6, 0.9, 1.1);
-
-// Triplanar texture mapping for arrau of uniform samplers
-/*vec4 triplanar_texture_mapping(vec3 frag_normal, sampler2D sampler, float triplanar_scale)
-{
-    vec3 abs_normal = abs(frag_normal);
-    abs_normal = normalize(max(abs_normal, 0.00001));
-    float sum = abs_normal.x + abs_normal.y + abs_normal.z;
-    abs_normal /= sum;
-    
-    vec3 x_axis = texture(sampler, tes_frag_pos.yz * triplanar_scale).rgb;
-    vec3 y_axis = texture(sampler, tes_frag_pos.xz * triplanar_scale).rgb;
-    vec3 z_axis = texture(sampler, tes_frag_pos.xy * triplanar_scale).rgb;
-    return vec4(x_axis * abs_normal.x + y_axis * abs_normal.y + z_axis * abs_normal.z, 1.0);
-}*/
 
 // Triplanar texture mapping for array texture
 vec4 triplanar_texture_mapping(vec3 frag_normal, float triplanar_scale, int texture_index)
@@ -81,20 +60,20 @@ vec3 triplanar_blending(vec3 frag_normal)
     return abs_normal;
 }
 
-vec4 new_triplanar_texture_mapping(vec3 triplanar_blending, sampler2DArray sampler, float triplanar_scale, int texture_index)
+vec3 triplanar_normal_mapping(vec3 triplanar_blending, sampler2DArray sampler, float triplanar_scale, int texture_index)
 {    
-    vec3 x_axis = texture(sampler, vec3(tes_frag_pos.yz * triplanar_scale, texture_index)).rgb;
-    vec3 y_axis = texture(sampler, vec3(tes_frag_pos.xz * triplanar_scale, texture_index)).rgb;
-    vec3 z_axis = texture(sampler, vec3(tes_frag_pos.xy * triplanar_scale, texture_index)).rgb;
-    return vec4(x_axis * triplanar_blending.x + y_axis * triplanar_blending.y + z_axis * triplanar_blending.z, 1.0);
+    vec3 x_axis = 2.0 * texture(sampler, vec3(tes_frag_pos.yz * triplanar_scale, texture_index)).rgb - 1.0;
+    vec3 y_axis = 2.0 * texture(sampler, vec3(tes_frag_pos.xz * triplanar_scale, texture_index)).rgb - 1.0;
+    vec3 z_axis = 2.0 * texture(sampler, vec3(tes_frag_pos.xy * triplanar_scale, texture_index)).rgb - 1.0;
+    return vec3(x_axis * triplanar_blending.x + y_axis * triplanar_blending.y + z_axis * triplanar_blending.z);
 }
 
-vec4 red_triplanar_texture_mapping(vec3 triplanar_blending, sampler2DArray sampler, float triplanar_scale, int texture_index)
+float triplanar_ao_mapping(vec3 triplanar_blending, sampler2DArray sampler, float triplanar_scale, int texture_index)
 {    
-    vec3 x_axis = texture(sampler, vec3(tes_frag_pos.yz * triplanar_scale, texture_index)).rrr;
-    vec3 y_axis = texture(sampler, vec3(tes_frag_pos.xz * triplanar_scale, texture_index)).rrr;
-    vec3 z_axis = texture(sampler, vec3(tes_frag_pos.xy * triplanar_scale, texture_index)).rrr;
-    return vec4(x_axis * triplanar_blending.x + y_axis * triplanar_blending.y + z_axis * triplanar_blending.z, 1.0);
+    float x_axis = texture(sampler, vec3(tes_frag_pos.yz * triplanar_scale, texture_index)).r;
+    float y_axis = texture(sampler, vec3(tes_frag_pos.xz * triplanar_scale, texture_index)).r;
+    float z_axis = texture(sampler, vec3(tes_frag_pos.xy * triplanar_scale, texture_index)).r;
+    return x_axis * triplanar_blending.x + y_axis * triplanar_blending.y + z_axis * triplanar_blending.z;
 }
 
 const vec3 fog_color = vec3(0.75, 0.75, 0.75);
@@ -152,13 +131,11 @@ void main()
     {
         if (use_triplanar_texturing)
         {
-            colors[i] = triplanar_texture_mapping(world_space_unit_normal, triplanar_scale[i], i);
-            aos[i] = red_triplanar_texture_mapping(triplanar_blending_factor, terrain_ao, triplanar_scale[i], i).r;
-            /*TODO: fix triplanar normal mapping
-            vec3 tangent_normal = new_triplanar_texture_mapping(triplanar_blending_factor, terrain_normal_map, triplanar_scale[i], i).rgb;
-            tangent_normal = tangent_normal * 2.0 - 1.0;
-            normals[i] = tangent_normal;*/
-            normals[i] = world_space_unit_normal;
+            vec3 albedo = pow(triplanar_texture_mapping(world_space_unit_normal, triplanar_scale[i], i).rgb, vec3(2.2));
+            colors[i] = vec4(albedo, 1.0);
+            aos[i] = triplanar_ao_mapping(triplanar_blending_factor, terrain_ao, triplanar_scale[i], i);
+            vec3 tangent_normal = triplanar_normal_mapping(triplanar_blending_factor, terrain_normal_map, triplanar_scale[i], i);
+            normals[i] = normalize(TBN * tangent_normal);
         }
         else
         {
@@ -208,7 +185,8 @@ void main()
     }*/
     
     // Ambient Light Component
-    vec3 ambient_color = vec3(0.1) * color.rgb * ao;
+    vec3 ambient_color;
+    ambient_color = vec3(0.1) * color.rgb * ao;
 
     // Diffuse Light Component    
     vec3 light_dir = normalize(-light.direction);
