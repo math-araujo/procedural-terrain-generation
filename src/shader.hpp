@@ -5,6 +5,7 @@
 #include <glm/fwd.hpp>
 
 #include <cstdint>
+#include <filesystem>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -74,6 +75,7 @@ void check_shader_compilation(std::uint32_t shader_id, std::string_view shader_t
 Shader load_shader_from_file(std::string_view filepath, Shader::Type type);
 void check_shader_program_link_status(std::uint32_t shader_program_id,
                                       std::initializer_list<std::pair<std::string_view, Shader::Type>> shader_data);
+std::string process_shader_include(std::string shader_source, std::filesystem::path shader_path);
 
 template <typename T>
 constexpr std::underlying_type_t<T> to_underlying(T enumerator) noexcept

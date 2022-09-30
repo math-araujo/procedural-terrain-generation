@@ -5,7 +5,10 @@
 #include <exception>
 #include <fstream>
 #include <iostream>
+#include <regex>
 #include <sstream>
+#include <string>
+#include <string_view>
 #include <vector>
 
 #include <glm/glm.hpp>
@@ -101,7 +104,29 @@ Shader load_shader_from_file(std::string_view filepath, Shader::Type type)
 
     std::stringstream source_code_stream;
     source_code_stream << shader_file.rdbuf();
-    return Shader{source_code_stream.str(), type};
+    // return Shader{source_code_stream.str(), type};
+    return Shader{process_shader_include(source_code_stream.str(), std::filesystem::path{filepath}), type};
+}
+
+std::string process_shader_include(std::string shader_source, std::filesystem::path shader_path)
+{
+    std::string_view pattern = "#include ";
+    auto include_position = shader_source.find(pattern);
+    if (include_position != std::string::npos)
+    {
+        auto file_name_start_pos = include_position + pattern.size();
+        auto end = shader_source.find('\n', file_name_start_pos);
+        std::string filename = shader_source.substr(file_name_start_pos, end - file_name_start_pos - 1);
+        std::filesystem::path include_path{shader_path.parent_path()};
+        include_path.append(filename);
+        std::ifstream shader_file{include_path};
+        std::stringstream source_code_stream;
+        source_code_stream << shader_file.rdbuf();
+        auto include_pattern = shader_source.substr(include_position, end - include_position);
+        return std::regex_replace(shader_source, std::regex(include_pattern), source_code_stream.str());
+    }
+
+    return shader_source;
 }
 
 void check_shader_program_link_status(std::uint32_t shader_program_id,
