@@ -102,22 +102,9 @@ float fbm(vec2 coordinate)
 
 void main()
 {
-	ivec2 texel_coord = ivec2(gl_GlobalInvocationID.xy);
-	vec2 spatial_coordinate = gl_GlobalInvocationID.xy / 2048.0;
-
-	vec3 color = vec3(0.0);
-	color += fbm(spatial_coordinate);
-	vec4 value = vec4(color, color.x);
-    
-    // Visualization of extreme values
-    /*
-    if (color.x > 0.8)
-    {
-        value = vec4(1.0, 0.0, 0.0, color.x);
-    }
-    else if (color.x < 0.2)
-    {
-        value = vec4(0.0, 1.0, 0.0, color.x);
-    }*/
+    ivec2 texel_coord = ivec2(gl_GlobalInvocationID.xy);
+    vec2 spatial_coordinate = gl_GlobalInvocationID.xy / 2048.0;
+    float height = fbm(spatial_coordinate);
+    vec4 value = vec4(height);
     imageStore(heightmap, texel_coord, value);
 }

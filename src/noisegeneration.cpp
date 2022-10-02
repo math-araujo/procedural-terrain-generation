@@ -11,9 +11,8 @@
 #include <glm/gtc/random.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-FractalNoiseGenerator::FractalNoiseGenerator(std::uint32_t width, std::uint32_t height):
-    width_{width}, height_{height}, height_map_{width, height}, color_map_{width, height, 4},
-    normal_map_{width, height, 4}
+FractalNoiseGenerator::FractalNoiseGenerator(std::uint32_t width, std::uint32_t height) :
+    width_{width}, height_{height}, height_map_{width, height}, normal_map_{width, height, 4}
 {
     random_offsets_.reserve(4 * noise_settings.octaves);
 }
@@ -22,7 +21,6 @@ void FractalNoiseGenerator::update(bool apply_hermite_interpolation)
 {
     update_height_map(apply_hermite_interpolation);
     update_normal_map();
-    update_color_map();
 }
 
 void FractalNoiseGenerator::update_height_map(bool apply_hermite_interpolation)
@@ -50,7 +48,8 @@ void FractalNoiseGenerator::update_height_map(bool apply_hermite_interpolation)
 
             for (int octave = 0; octave < noise_settings.octaves; ++octave)
             {
-                auto sample_point = (frequency / noise_settings.noise_scale) * glm::vec2{j - half_width, i - half_height};
+                auto sample_point =
+                    (frequency / noise_settings.noise_scale) * glm::vec2{j - half_width, i - half_height};
                 sample_point += frequency * random_offsets_[octave];
                 noise_height += amplitude * glm::perlin(sample_point);
                 frequency *= noise_settings.lacunarity;
@@ -67,20 +66,14 @@ void FractalNoiseGenerator::update_height_map(bool apply_hermite_interpolation)
 
     if (apply_hermite_interpolation)
     {
-        height_map_.transform([&curve=curve_](float noise_height)
-        {
-            return curve.evaluate(noise_height).y;
-        });
+        height_map_.transform([&curve = curve_](float noise_height) { return curve.evaluate(noise_height).y; });
     }
 }
 
 void FractalNoiseGenerator::update_normal_map()
 {
     const float dz = 1.0f / 2.0f;
-    const auto float_to_uint = [](float channel_value)
-    {
-        return static_cast<std::uint8_t>(channel_value);
-    };
+    const auto float_to_uint = [](float channel_value) { return static_cast<std::uint8_t>(channel_value); };
     for (std::size_t i = 0; i < height_; ++i)
     {
         for (std::size_t j = 0; j < width_; ++j)
@@ -96,9 +89,9 @@ void FractalNoiseGenerator::update_normal_map()
             const float dx = (top_right + 2 * right + bottom_right) - (top_left + 2 * left + bottom_left);
             const float dy = (bottom_left + 2 * bottom + bottom_right) - (top_left + 2 * top + top_right);
             const glm::vec3 rgb_normal = cast_normal_to_rgb(glm::normalize(glm::vec3{dx, dy, dz}));
-            const glm::vec4 rgba_normal = glm::vec4{rgb_normal, 255.0};            
-            normal_map_.set_transform(i, j, glm::value_ptr(rgba_normal), glm::value_ptr(rgba_normal) + 4, 
-                                    float_to_uint);
+            const glm::vec4 rgba_normal = glm::vec4{rgb_normal, 255.0};
+            normal_map_.set_transform(i, j, glm::value_ptr(rgba_normal), glm::value_ptr(rgba_normal) + 4,
+                                      float_to_uint);
         }
     }
 }
@@ -115,37 +108,6 @@ glm::vec3 FractalNoiseGenerator::cast_normal_to_rgb(glm::vec3 vector)
     return ((vector + 1.0f) / 2.0f) * 255.0f;
 }
 
-void FractalNoiseGenerator::update_color_map()
-{
-    regions_settings.compute_uint8_colors();
-    assert(std::is_sorted(regions_settings.height_ranges.cbegin(), regions_settings.height_ranges.cend()));
-    
-    for (std::size_t i = 0; i < height_; ++i)
-    {
-        for (std::size_t j = 0; j < width_; ++j)
-        {
-            const float noise_height = height_map_.get(i, j);
-            auto region_iter = noise_height > 0.999f ? (regions_settings.height_ranges.cend() - 1) : std::upper_bound(regions_settings.height_ranges.cbegin(), regions_settings.height_ranges.cend(), noise_height);
-            assert(region_iter != regions_settings.height_ranges.cend());
-            std::size_t region_index = region_iter - regions_settings.height_ranges.cbegin();
-            auto& color = regions_settings.colors_uint8[region_index];
-            color.back() = static_cast<std::uint8_t>(255.0f * noise_height);
-            color_map_.set(i, j, color.cbegin(), color.cend());
-        }
-    }
-}
-
-void FractalNoiseGenerator::RegionsSettings::compute_uint8_colors()
-{
-    for (std::size_t i = 0; i < size; ++i)
-    {
-        std::transform(colors[i].cbegin(), colors[i].cend(), colors_uint8[i].begin(), [](float channel_value)
-        {
-            return static_cast<std::uint8_t>(255.0f * channel_value);
-        });
-    }
-}
-
 void FractalNoiseGenerator::reset_settings()
 {
     static const NoiseSettings default_noise_settings{};
@@ -156,11 +118,6 @@ void FractalNoiseGenerator::reset_settings()
 const Image<float>& FractalNoiseGenerator::height_map() const
 {
     return height_map_;
-}
-
-const Image<std::uint8_t>& FractalNoiseGenerator::color_map() const
-{
-    return color_map_;
 }
 
 const Image<std::uint8_t>& FractalNoiseGenerator::normal_map() const
