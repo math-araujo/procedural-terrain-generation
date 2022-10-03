@@ -82,8 +82,7 @@ void Skybox::render(const glm::mat4& projection, const glm::mat4& view)
 {
     glDepthFunc(GL_LEQUAL);
     shader_->use();
-    shader_->set_mat4_uniform("projection", projection);
-    shader_->set_mat4_uniform("view", glm::mat4{glm::mat3{view}});
+    shader_->set_mat4_uniform("view_projection", projection * glm::mat4{glm::mat3{view}});
     cubemap_->bind(0);
     mesh_->render();
     glDepthFunc(GL_LESS);
