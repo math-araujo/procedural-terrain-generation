@@ -8,7 +8,7 @@ Camera::Camera()
     update_orientation();
 }
 
-Camera::Camera(glm::vec3 position, glm::vec3 target, glm::vec3 up_direction):
+Camera::Camera(glm::vec3 position, glm::vec3 target, glm::vec3 up_direction) :
     position_{position}, target_{target}, world_up_{up_direction}
 {
     update_orientation();
@@ -53,17 +53,20 @@ void Camera::update_position(glm::vec3 delta_position)
 FPSCamera::FPSCamera()
 {
     update_orientation();
+    update_projection_matrix();
 }
 
-FPSCamera::FPSCamera(glm::vec3 position): position_{position}
+FPSCamera::FPSCamera(glm::vec3 position) : position_{position}
 {
     update_orientation();
+    update_projection_matrix();
 }
 
-FPSCamera::FPSCamera(glm::vec3 position, glm::vec2 pitch_yaw_angles, glm::vec3 up_direction):
+FPSCamera::FPSCamera(glm::vec3 position, glm::vec2 pitch_yaw_angles, glm::vec3 up_direction) :
     position_{position}, euler_angles_{pitch_yaw_angles}, world_up_{up_direction}
 {
     update_orientation();
+    update_projection_matrix();
 }
 
 void FPSCamera::update_orientation()
@@ -71,13 +74,11 @@ void FPSCamera::update_orientation()
     // Note: the negative sign in the z-coordinate of the gaze_direction_
     // makes the camera look in the -w-direction, where w is the basis vector
     // of the camera's coordinate system.
-    gaze_direction_ = glm::normalize(glm::vec3
-    {
-        // Pitch component                        // Yaw component
-        glm::cos(glm::radians(euler_angles_.x)) * glm::sin(glm::radians(euler_angles_.y)),
-        glm::sin(glm::radians(euler_angles_.x)),
-        -1.0f * glm::cos(glm::radians(euler_angles_.x)) * glm::cos(glm::radians(euler_angles_.y))
-    });
+    gaze_direction_ = glm::normalize(
+        glm::vec3{// Pitch component                        // Yaw component
+                  glm::cos(glm::radians(euler_angles_.x)) * glm::sin(glm::radians(euler_angles_.y)),
+                  glm::sin(glm::radians(euler_angles_.x)),
+                  -1.0f * glm::cos(glm::radians(euler_angles_.x)) * glm::cos(glm::radians(euler_angles_.y))});
 
     // The cross product seems inverted because gaze_direction_ has the opposite
     // direction of the w-basis. This works because cross(-w, v) = -cross(v, -w) = -(-u) = u,
@@ -90,6 +91,13 @@ void FPSCamera::update_orientation()
 void FPSCamera::update_view_matrix()
 {
     view_ = glm::lookAt(position_, position_ + gaze_direction_, world_up_);
+    view_projection_ = projection_ * view_;
+}
+
+void FPSCamera::update_projection_matrix()
+{
+    projection_ = glm::perspective(glm::radians(zoom_), aspect_ratio_, 0.1f, 1000.0f);
+    view_projection_ = projection_ * view_;
 }
 
 const glm::vec3& FPSCamera::position() const
@@ -120,9 +128,10 @@ void FPSCamera::move_position(glm::vec3 delta_position)
 void FPSCamera::invert_pitch()
 {
     euler_angles_.x = -euler_angles_.x;
-    orientation_update_= true;
+    orientation_update_ = true;
 }
 
+#include <iostream>
 const glm::mat4& FPSCamera::view()
 {
     if (orientation_update_)
@@ -138,6 +147,34 @@ const glm::mat4& FPSCamera::view()
     }
 
     return view_;
+}
+
+const glm::mat4& FPSCamera::projection()
+{
+    if (projection_update_)
+    {
+        update_projection_matrix();
+        projection_update_ = true;
+    }
+
+    return projection_;
+}
+
+const glm::mat4& FPSCamera::view_projection()
+{
+    if (projection_update_)
+    {
+        update_projection_matrix();
+        projection_update_ = false;
+    }
+
+    if (orientation_update_ || position_update_)
+    {
+        update_view_matrix();
+        orientation_update_ = position_update_ = false;
+    }
+
+    return view_projection_;
 }
 
 float FPSCamera::zoom() const
@@ -183,7 +220,7 @@ void FPSCamera::process_keyboard_input(CameraMovement direction, float delta_tim
 
     position_ += delta_position;
     position_.y = std::max(position_.y, 0.0f);
-    
+
     update_view_matrix();
 }
 
@@ -199,4 +236,16 @@ void FPSCamera::process_mouse_scroll(float yoffset)
 {
     zoom_ -= yoffset;
     zoom_ = std::max(std::min(zoom_, 45.0f), 1.0f);
+    projection_update_ = true;
+}
+
+void FPSCamera::set_aspect_ratio(float aspect_ratio)
+{
+    aspect_ratio_ = aspect_ratio;
+    projection_update_ = true;
+}
+
+float FPSCamera::get_aspect_ratio() const
+{
+    return aspect_ratio_;
 }

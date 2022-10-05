@@ -56,6 +56,10 @@ Application::Application(int window_width, int window_height, std::string_view t
             2, 1, 3
         }
     );*/
+    std::cout << "Vendor: " << glGetString(GL_VENDOR) << "\n";
+    std::cout << "Renderer: " << glGetString(GL_RENDERER) << "\n";
+
+    camera_.set_aspect_ratio(aspect_ratio_);
 
     // mesh_ = create_indexed_grid_mesh(200, 200, fractal_noise_generator_.height_map(), curve_);
     mesh_ = create_grid_patch(grid_mesh_dim_.first, grid_mesh_dim_.second, 64);
@@ -517,7 +521,7 @@ void Application::render()
     glm::mat4 model = glm::translate(glm::mat4{1.0f}, glm::vec3{0.0f, water_->height(), 0.0f});
     model = glm::rotate(model, glm::radians(-90.0f), glm::vec3{1.0f, 0.0f, 0.0f});
     model = glm::scale(model, glm::vec3{grid_mesh_dim_.first, grid_mesh_dim_.second, 1.0f});
-    water_program_->set_mat4_uniform("mvp", projection_matrix_ * camera_.view() * model);
+    water_program_->set_mat4_uniform("mvp", camera_.view_projection() * model);
     water_program_->set_mat4_uniform("model", model);
     water_program_->set_vec3_uniform("camera_position", camera_.position());
     water_program_->set_float_uniform("dudv_offset", water_->dudv_offset());
@@ -535,7 +539,6 @@ void Application::render()
 
 void Application::render_terrain()
 {
-    projection_matrix_ = glm::perspective(glm::radians(camera_.zoom()), aspect_ratio_, 0.1f, 1000.0f);
     terrain_program_->use();
     terrain_heightmap_->bind(0);
     terrain_normalmap_->bind(1);
@@ -546,9 +549,9 @@ void Application::render_terrain()
     terrain_program_->set_mat4_uniform("model", terrain_scale_);
     terrain_program_->set_vec3_uniform("camera_position", camera_.position());
     terrain_program_->set_mat4_uniform("model_view", camera_.view() * terrain_scale_);
-    terrain_program_->set_mat4_uniform("mvp", projection_matrix_ * camera_.view() * terrain_scale_);
+    terrain_program_->set_mat4_uniform("mvp", camera_.view_projection() * terrain_scale_);
     mesh_->render();
-    skybox_->render(projection_matrix_, camera_.view());
+    skybox_->render(camera_.projection(), camera_.view());
 }
 
 void Application::reset_viewport()
