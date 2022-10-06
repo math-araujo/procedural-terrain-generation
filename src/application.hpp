@@ -58,30 +58,27 @@ private:
 
     FPSCamera camera_{glm::vec3{0.0, 30.0f, 3.0f}};
     glm::mat4 projection_matrix_{1.0f};
+
+    // Variables related to the terrain and the terrain generation processs
     const std::pair<std::uint32_t, std::uint32_t> height_map_dim_{2048, 2048};
     const std::pair<std::uint32_t, std::uint32_t> grid_mesh_dim_{256, 256};
-    std::unique_ptr<ShaderProgram> heightmap_cs_{};
-    std::unique_ptr<ShaderProgram> normalmap_cs_{};
-
+    std::unique_ptr<ShaderProgram> heightmap_generator_{};
+    std::unique_ptr<ShaderProgram> normalmap_generator_{};
     FractalNoiseGenerator fractal_noise_generator_{height_map_dim_.first, height_map_dim_.second};
     std::unique_ptr<Texture> terrain_heightmap_{};
     std::unique_ptr<Texture> terrain_normalmap_{};
-    std::unique_ptr<Mesh> mesh_{};
-    // std::unique_ptr<IndexedMesh> mesh_{};
-
-    std::unique_ptr<Texture> albedos_;
-    std::unique_ptr<Texture> normal_maps_{};
-    std::unique_ptr<Texture> ao_maps_{};
+    std::unique_ptr<Mesh> terrain_mesh_{};
+    std::unique_ptr<Texture> terrain_albedos_;
+    std::unique_ptr<Texture> terain_normal_maps_{};
+    std::unique_ptr<Texture> terrain_ao_maps_{};
     std::unique_ptr<ShaderProgram> terrain_program_{};
-    float elevation_{25.0f};
+    float terrain_elevation_{25.0f};
     bool apply_normal_map_{true};
 
-    // clang-format off
-                                                //  Water  Rock  Snow
-    std::array<float, 3 + 1> textures_start_height_{0.0f,  0.30f, 0.70f, 1.1f};
-    std::array<float, 3> textures_blend_end_{       0.33f, 0.9f, 1.1f};
+    // Water   Rock   Snow
+    std::array<float, 3 + 1> textures_start_height_{0.0f, 0.30f, 0.70f, 1.1f};
+    std::array<float, 3> textures_blend_end_{0.33f, 0.9f, 1.1f};
     std::array<float, 3> textures_scale_{0.6f, 0.1f, 0.6f};
-    // clang-format on
 
     glm::mat4 terrain_scale_{1.0f};
 
@@ -103,15 +100,21 @@ private:
     void create_context(std::string_view title);
 
     /*
+    Load OpenGL functions. If loading was unsuccessfull,
+    throws a runtime exception.
+    */
+    void load_opengl();
+
+    /*
     Initializes ImGui
     */
     void initialize_imgui();
 
     /*
-    Load OpenGL functions. If loading was unsuccessfull,
-    throws a runtime exception.
+    Initialize variables related to the terrain and it's
+    generators.
     */
-    void load_opengl();
+    void initialize_terrain();
 
     /*
     Render procedural terrain on GPU

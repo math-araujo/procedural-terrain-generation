@@ -27,8 +27,8 @@ Application::Application(int window_width, int window_height, std::string_view t
     width_{window_width}, height_{window_height}, aspect_ratio_{static_cast<float>(width_) / height_}
 {
     create_context(title);
-    initialize_imgui();
     load_opengl();
+    initialize_imgui();
     /*mesh_ = std::make_unique<Mesh>(
         std::vector<float>
         {
@@ -60,115 +60,13 @@ Application::Application(int window_width, int window_height, std::string_view t
     std::cout << "Renderer: " << glGetString(GL_RENDERER) << "\n";
 
     camera_.set_aspect_ratio(aspect_ratio_);
-
-    // mesh_ = create_indexed_grid_mesh(200, 200, fractal_noise_generator_.height_map(), curve_);
-    mesh_ = create_grid_patch(grid_mesh_dim_.first, grid_mesh_dim_.second, 64);
-
-    heightmap_cs_ = std::make_unique<ShaderProgram>(std::initializer_list<std::pair<std::string_view, Shader::Type>>{
-        {"shaders/heightmap/heightmap.cs", Shader::Type::Compute},
-    });
-    heightmap_cs_->set_float_uniform("lacunarity", fractal_noise_generator_.noise_settings.lacunarity);
-    heightmap_cs_->set_float_uniform("persistance", fractal_noise_generator_.noise_settings.persistance);
-    heightmap_cs_->set_float_uniform("octaves", fractal_noise_generator_.noise_settings.octaves);
-    heightmap_cs_->set_float_uniform("noise_scale", fractal_noise_generator_.noise_settings.noise_scale);
-    heightmap_cs_->set_float_uniform("exponent", fractal_noise_generator_.noise_settings.exponent);
-
-    terrain_heightmap_ = std::make_unique<Texture>(height_map_dim_.first, height_map_dim_.second);
-    terrain_heightmap_->bind_image(0);
-    heightmap_cs_->use();
-    glDispatchCompute(height_map_dim_.first / 32, height_map_dim_.second / 32, 1);
-    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-
-    normalmap_cs_ = std::make_unique<ShaderProgram>(std::initializer_list<std::pair<std::string_view, Shader::Type>>{
-        {"shaders/heightmap/normalmap.cs", Shader::Type::Compute},
-    });
-    terrain_normalmap_ = std::make_unique<Texture>(height_map_dim_.first, height_map_dim_.second);
-    normalmap_cs_->use();
-    terrain_heightmap_->bind_image(0);
-    terrain_normalmap_->bind_image(1);
-    glDispatchCompute(height_map_dim_.first / 32, height_map_dim_.second / 32, 1);
-    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+    initialize_terrain();
+    water_ = std::make_unique<Water>(grid_mesh_dim_.first);
+    skybox_ = std::make_unique<Skybox>();
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glEnable(GL_CLIP_DISTANCE0);
-
-    // Terrain textures attributes
-    const Texture::Attributes terrain_texture_attributes{Texture::Attributes{.target = GL_TEXTURE_2D_ARRAY,
-                                                                             .wrap_s = GL_REPEAT,
-                                                                             .wrap_t = GL_REPEAT,
-                                                                             .min_filter = GL_LINEAR_MIPMAP_LINEAR,
-                                                                             .pixel_data_format = GL_RGB,
-                                                                             .generate_mipmap = true,
-                                                                             .layers = 3}};
-
-    albedos_ = std::make_unique<Texture>(grid_mesh_dim_.first, grid_mesh_dim_.second, terrain_texture_attributes);
-    std::vector<std::string_view> albedo_names{
-        "textures/terrain/water.png",
-        "textures/terrain/rock.png",
-        "textures/terrain/snow.png",
-    };
-    albedos_->load_array_texture(albedo_names);
-    // std::cout << "Albedos ok...\n";
-
-    normal_maps_ = std::make_unique<Texture>(grid_mesh_dim_.first, grid_mesh_dim_.second, terrain_texture_attributes);
-    std::vector<std::string_view> normal_names{
-        "textures/terrain/water_normal.png",
-        "textures/terrain/rock_normal.png",
-        "textures/terrain/snow_normal.png",
-    };
-    normal_maps_->load_array_texture(normal_names);
-    // std::cout << "Normals ok...\n";
-
-    auto ambient_occlusion_attributes = terrain_texture_attributes;
-    ambient_occlusion_attributes.internal_format = GL_R8;
-    ambient_occlusion_attributes.pixel_data_format = GL_RED;
-    ao_maps_ = std::make_unique<Texture>(grid_mesh_dim_.first, grid_mesh_dim_.second, ambient_occlusion_attributes);
-
-    std::vector<std::string_view> ao_names{
-        "textures/terrain/water_ao.png",
-        "textures/terrain/rock_ao.png",
-        "textures/terrain/snow_ao.png",
-    };
-    ao_maps_->load_array_texture(ao_names);
-    // std::cout << "AO ok...\n";
-
-    /*terrain_program_ = std::make_unique<ShaderProgram>(
-        std::initializer_list<std::pair<std::string_view, Shader::Type>>
-        {
-            {"shaders/cpu_terrain/vertex_shader.vs", Shader::Type::Vertex},
-            {"shaders/cpu_terrain/fragment_shader.fs", Shader::Type::Fragment},
-        }
-    );*/
-    terrain_program_ = std::make_unique<ShaderProgram>(std::initializer_list<std::pair<std::string_view, Shader::Type>>{
-        {"shaders/gpu_terrain/vertex_shader.vs", Shader::Type::Vertex},
-        {"shaders/gpu_terrain/tess_control_shader.tcs", Shader::Type::TessControl},
-        {"shaders/gpu_terrain/tess_eval_shader.tes", Shader::Type::TessEval},
-        {"shaders/gpu_terrain/fragment_shader.fs", Shader::Type::Fragment},
-    });
-
-    terrain_program_->use();
-    terrain_program_->set_float_uniform("elevation", elevation_);
-    terrain_program_->set_float_array_uniform("triplanar_scale[0]", textures_scale_.data(), textures_scale_.size());
-    terrain_program_->set_float_array_uniform("start_heights[0]", textures_start_height_.data(),
-                                              textures_start_height_.size());
-    terrain_program_->set_float_array_uniform("blend_end[0]", textures_blend_end_.data(), textures_blend_end_.size());
-    terrain_program_->set_vec4_uniform("clip_plane", glm::vec4{0.0f, 0.0f, 0.0f, 0.0f});
-
-    terrain_heightmap_->bind(0);
-    terrain_normalmap_->bind(1);
-    albedos_->bind(2);
-    ao_maps_->bind(3);
-    normal_maps_->bind(4);
-
-    terrain_program_->set_bool_uniform("use_triplanar_texturing", use_triplanar_texturing_);
-    terrain_program_->set_bool_uniform("apply_normal_map", apply_normal_map_);
-    terrain_program_->set_float_uniform("fog.height", fog_height_);
-    terrain_program_->set_float_uniform("fog.density", fog_density_);
-
-    water_ = std::make_unique<Water>(grid_mesh_dim_.first);
-
-    skybox_ = std::make_unique<Skybox>();
 }
 
 void Application::create_context(std::string_view title)
@@ -323,6 +221,16 @@ void scroll_callback(GLFWwindow* window, double /*x_offset*/, double y_offset)
     application->camera().process_mouse_scroll(y_offset);
 }
 
+void Application::load_opengl()
+{
+    if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)))
+    {
+        glfwDestroyWindow(window_);
+        glfwTerminate();
+        throw std::runtime_error("Failure to initialize GLAD");
+    }
+}
+
 void Application::initialize_imgui()
 {
     IMGUI_CHECKVERSION();
@@ -334,14 +242,101 @@ void Application::initialize_imgui()
     ImGui_ImplOpenGL3_Init("# version 450");
 }
 
-void Application::load_opengl()
+void Application::initialize_terrain()
 {
-    if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)))
-    {
-        glfwDestroyWindow(window_);
-        glfwTerminate();
-        throw std::runtime_error("Failure to initialize GLAD");
-    }
+    terrain_mesh_ = create_grid_patch(grid_mesh_dim_.first, grid_mesh_dim_.second, 64);
+
+    heightmap_generator_ =
+        std::make_unique<ShaderProgram>(std::initializer_list<std::pair<std::string_view, Shader::Type>>{
+            {"shaders/heightmap/heightmap.cs", Shader::Type::Compute},
+        });
+    heightmap_generator_->set_float_uniform("lacunarity", fractal_noise_generator_.noise_settings.lacunarity);
+    heightmap_generator_->set_float_uniform("persistance", fractal_noise_generator_.noise_settings.persistance);
+    heightmap_generator_->set_float_uniform("octaves", fractal_noise_generator_.noise_settings.octaves);
+    heightmap_generator_->set_float_uniform("noise_scale", fractal_noise_generator_.noise_settings.noise_scale);
+    heightmap_generator_->set_float_uniform("exponent", fractal_noise_generator_.noise_settings.exponent);
+
+    terrain_heightmap_ = std::make_unique<Texture>(height_map_dim_.first, height_map_dim_.second);
+    terrain_heightmap_->bind_image(0);
+    heightmap_generator_->use();
+    glDispatchCompute(height_map_dim_.first / 32, height_map_dim_.second / 32, 1);
+    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+
+    normalmap_generator_ =
+        std::make_unique<ShaderProgram>(std::initializer_list<std::pair<std::string_view, Shader::Type>>{
+            {"shaders/heightmap/normalmap.cs", Shader::Type::Compute},
+        });
+    terrain_normalmap_ = std::make_unique<Texture>(height_map_dim_.first, height_map_dim_.second);
+    normalmap_generator_->use();
+    terrain_heightmap_->bind_image(0);
+    terrain_normalmap_->bind_image(1);
+    glDispatchCompute(height_map_dim_.first / 32, height_map_dim_.second / 32, 1);
+    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+
+    // Terrain textures attributes
+    const Texture::Attributes terrain_texture_attributes{Texture::Attributes{.target = GL_TEXTURE_2D_ARRAY,
+                                                                             .wrap_s = GL_REPEAT,
+                                                                             .wrap_t = GL_REPEAT,
+                                                                             .min_filter = GL_LINEAR_MIPMAP_LINEAR,
+                                                                             .pixel_data_format = GL_RGB,
+                                                                             .generate_mipmap = true,
+                                                                             .layers = 3}};
+
+    terrain_albedos_ =
+        std::make_unique<Texture>(grid_mesh_dim_.first, grid_mesh_dim_.second, terrain_texture_attributes);
+    std::vector<std::string_view> albedo_names{
+        "textures/terrain/water.png",
+        "textures/terrain/rock.png",
+        "textures/terrain/snow.png",
+    };
+    terrain_albedos_->load_array_texture(albedo_names);
+
+    terain_normal_maps_ =
+        std::make_unique<Texture>(grid_mesh_dim_.first, grid_mesh_dim_.second, terrain_texture_attributes);
+    std::vector<std::string_view> normal_names{
+        "textures/terrain/water_normal.png",
+        "textures/terrain/rock_normal.png",
+        "textures/terrain/snow_normal.png",
+    };
+    terain_normal_maps_->load_array_texture(normal_names);
+
+    auto ambient_occlusion_attributes = terrain_texture_attributes;
+    ambient_occlusion_attributes.internal_format = GL_R8;
+    ambient_occlusion_attributes.pixel_data_format = GL_RED;
+    terrain_ao_maps_ =
+        std::make_unique<Texture>(grid_mesh_dim_.first, grid_mesh_dim_.second, ambient_occlusion_attributes);
+
+    std::vector<std::string_view> ao_names{
+        "textures/terrain/water_ao.png",
+        "textures/terrain/rock_ao.png",
+        "textures/terrain/snow_ao.png",
+    };
+    terrain_ao_maps_->load_array_texture(ao_names);
+
+    terrain_program_ = std::make_unique<ShaderProgram>(std::initializer_list<std::pair<std::string_view, Shader::Type>>{
+        {"shaders/gpu_terrain/vertex_shader.vs", Shader::Type::Vertex},
+        {"shaders/gpu_terrain/tess_control_shader.tcs", Shader::Type::TessControl},
+        {"shaders/gpu_terrain/tess_eval_shader.tes", Shader::Type::TessEval},
+        {"shaders/gpu_terrain/fragment_shader.fs", Shader::Type::Fragment},
+    });
+
+    terrain_program_->set_float_uniform("elevation", terrain_elevation_);
+    terrain_program_->set_float_array_uniform("triplanar_scale[0]", textures_scale_.data(), textures_scale_.size());
+    terrain_program_->set_float_array_uniform("start_heights[0]", textures_start_height_.data(),
+                                              textures_start_height_.size());
+    terrain_program_->set_float_array_uniform("blend_end[0]", textures_blend_end_.data(), textures_blend_end_.size());
+    terrain_program_->set_vec4_uniform("clip_plane", glm::vec4{0.0f, 0.0f, 0.0f, 0.0f});
+
+    terrain_heightmap_->bind(0);
+    terrain_normalmap_->bind(1);
+    terrain_albedos_->bind(2);
+    terrain_ao_maps_->bind(3);
+    terain_normal_maps_->bind(4);
+
+    terrain_program_->set_bool_uniform("use_triplanar_texturing", use_triplanar_texturing_);
+    terrain_program_->set_bool_uniform("apply_normal_map", apply_normal_map_);
+    terrain_program_->set_float_uniform("fog.height", fog_height_);
+    terrain_program_->set_float_uniform("fog.density", fog_density_);
 }
 
 Application::~Application()
@@ -358,18 +353,15 @@ void Application::cleanup()
 {
     skybox_.reset();
     water_.reset();
-
     terrain_program_.reset();
-    ao_maps_.reset();
-    normal_maps_.reset();
-    albedos_.reset();
-
-    mesh_.reset();
-
+    terrain_ao_maps_.reset();
+    terain_normal_maps_.reset();
+    terrain_albedos_.reset();
+    terrain_mesh_.reset();
     terrain_normalmap_.reset();
     terrain_heightmap_.reset();
-    normalmap_cs_.reset();
-    heightmap_cs_.reset();
+    normalmap_generator_.reset();
+    heightmap_generator_.reset();
 }
 
 void Application::run()
@@ -497,15 +489,15 @@ void Application::render_terrain()
     terrain_program_->use();
     terrain_heightmap_->bind(0);
     terrain_normalmap_->bind(1);
-    albedos_->bind(2);
-    ao_maps_->bind(3);
-    normal_maps_->bind(4);
+    terrain_albedos_->bind(2);
+    terrain_ao_maps_->bind(3);
+    terain_normal_maps_->bind(4);
 
     terrain_program_->set_mat4_uniform("model", terrain_scale_);
     terrain_program_->set_vec3_uniform("camera_position", camera_.position());
     terrain_program_->set_mat4_uniform("model_view", camera_.view() * terrain_scale_);
     terrain_program_->set_mat4_uniform("mvp", camera_.view_projection() * terrain_scale_);
-    mesh_->render();
+    terrain_mesh_->render();
     skybox_->render(camera_.projection(), camera_.view());
 }
 
@@ -596,9 +588,9 @@ void Application::render_imgui_editor()
     ImGui::End();
 
     ImGui::Begin("Terrain");
-    if (ImGui::SliderFloat("Elevation", &elevation_, -20.0f, 50.0f))
+    if (ImGui::SliderFloat("Elevation", &terrain_elevation_, -20.0f, 50.0f))
     {
-        terrain_program_->set_float_uniform("elevation", elevation_);
+        terrain_program_->set_float_uniform("elevation", terrain_elevation_);
     }
     ImGui::End();
 
@@ -635,23 +627,18 @@ void Application::render_imgui_editor()
 void Application::update_noise_and_mesh()
 {
     terrain_heightmap_->bind_image(0);
-    heightmap_cs_->use();
-    heightmap_cs_->set_float_uniform("lacunarity", fractal_noise_generator_.noise_settings.lacunarity);
-    heightmap_cs_->set_float_uniform("persistance", fractal_noise_generator_.noise_settings.persistance);
-    heightmap_cs_->set_float_uniform("octaves", fractal_noise_generator_.noise_settings.octaves);
-    heightmap_cs_->set_float_uniform("noise_scale", fractal_noise_generator_.noise_settings.noise_scale);
-    heightmap_cs_->set_float_uniform("exponent", fractal_noise_generator_.noise_settings.exponent);
+    heightmap_generator_->use();
+    heightmap_generator_->set_float_uniform("lacunarity", fractal_noise_generator_.noise_settings.lacunarity);
+    heightmap_generator_->set_float_uniform("persistance", fractal_noise_generator_.noise_settings.persistance);
+    heightmap_generator_->set_float_uniform("octaves", fractal_noise_generator_.noise_settings.octaves);
+    heightmap_generator_->set_float_uniform("noise_scale", fractal_noise_generator_.noise_settings.noise_scale);
+    heightmap_generator_->set_float_uniform("exponent", fractal_noise_generator_.noise_settings.exponent);
     glDispatchCompute(height_map_dim_.first / 32, height_map_dim_.second / 32, 1);
     glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
-    normalmap_cs_->use();
+    normalmap_generator_->use();
     terrain_heightmap_->bind_image(0);
     terrain_normalmap_->bind_image(1);
     glDispatchCompute(height_map_dim_.first / 32, height_map_dim_.second / 32, 1);
     glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-    // texture_->copy_image(fractal_noise_generator_.color_map());
-    // normal_map_->copy_image(fractal_noise_generator_.normal_map());
-    // auto grid_mesh_data = grid_mesh(height_map_dim_.first, height_map_dim.second,
-    // fractal_noise_generator_.height_map(), curve_); mesh_->update_mesh(std::move(grid_mesh_data.first),
-    // std::move(grid_mesh_data.second));
 }
