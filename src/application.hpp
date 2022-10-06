@@ -90,10 +90,6 @@ private:
     DirectionalLight light_{start_light_};
     bool use_triplanar_texturing_{false};
 
-    std::unique_ptr<IndexedMesh> water_mesh_{};
-    std::unique_ptr<ShaderProgram> water_program_{};
-    std::unique_ptr<Texture> water_dudv_map_{};
-    std::unique_ptr<Texture> water_normal_map_{};
     std::unique_ptr<Water> water_{};
     std::unique_ptr<Skybox> skybox_{};
     float fog_height_{20.0f};

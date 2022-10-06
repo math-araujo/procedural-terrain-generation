@@ -1,40 +1,19 @@
 #include "water.hpp"
 
 #include <cmath>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
-#include "framebuffer.hpp"
-#include "renderbuffer.hpp"
-#include "texture.hpp"
+#include "camera.hpp"
+#include "light.hpp"
 
-Water::Water()
+Water::Water(int planar_scale)
 {
-    reflection_fbo_ = std::make_unique<Framebuffer>(
-        reflection_width_, reflection_height_,
-        Renderbuffer{reflection_width_, reflection_height_, GL_DEPTH_COMPONENT32},
-        Texture
-        {
-            reflection_width_, reflection_height_,
-            Texture::Attributes{.wrap_s = GL_REPEAT, .wrap_t = GL_REPEAT}
-        }  
-    );
-
-    refraction_fbo_ = std::make_unique<Framebuffer>(
-        refraction_width_, refraction_height_,
-        Texture
-        {refraction_width_, refraction_height_, 
-        Texture::Attributes
-        {
-            .internal_format = GL_DEPTH_COMPONENT32, 
-            .pixel_data_format = GL_DEPTH_COMPONENT,
-            .pixel_data_type = GL_FLOAT
-        }
-        },
-        Texture
-        {
-            refraction_width_, refraction_height_,
-            Texture::Attributes{.wrap_s = GL_REPEAT, .wrap_t = GL_REPEAT}
-        }
-    );
+    model_ = glm::translate(glm::mat4{1.0f}, glm::vec3{0.0f, height_, 0.0f});
+    model_ = glm::rotate(model_, glm::radians(-90.0f), glm::vec3{1.0f, 0.0f, 0.0f});
+    model_ = glm::scale(model_, glm::vec3{planar_scale, planar_scale, 1.0f});
+    dudv_map_.copy_image("textures/water/dudv.png");
+    normal_map_.copy_image("textures/water/normal.png");
 }
 
 void Water::update(float delta_time)
@@ -43,19 +22,39 @@ void Water::update(float delta_time)
     dudv_offset_ = fmodf(dudv_offset_, 1.0f);
 }
 
+void Water::render(FPSCamera& camera)
+{
+    shader_program_.use();
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    shader_program_.set_mat4_uniform("mvp", camera.view_projection() * model_);
+    shader_program_.set_mat4_uniform("model", model_);
+    shader_program_.set_vec3_uniform("camera_position", camera.position());
+    shader_program_.set_float_uniform("dudv_offset", dudv_offset_);
+    shader_program_.set_float_uniform("near_plane", 0.1f);
+    shader_program_.set_float_uniform("far_plane", 1000.0f);
+    reflection_fbo_.bind_color(0);
+    refraction_fbo_.bind_color(1);
+    dudv_map_.bind(2);
+    normal_map_.bind(3);
+    refraction_fbo_.bind_depth_texture(4);
+    mesh_.render();
+    glDisable(GL_BLEND);
+}
+
 void Water::bind_reflection()
 {
-    reflection_fbo_->bind();
+    reflection_fbo_.bind();
 }
 
 void Water::bind_refraction()
 {
-    refraction_fbo_->bind();
+    refraction_fbo_.bind();
 }
 
 void Water::unbind()
 {
-    reflection_fbo_->unbind();
+    reflection_fbo_.unbind();
 }
 
 float Water::height() const
@@ -80,22 +79,23 @@ const glm::vec4& Water::refraction_clip_plane() const
 
 std::uint32_t Water::reflection_color_attachment() const
 {
-    return reflection_fbo_->color_id();
+    return reflection_fbo_.color_id();
 }
 
 std::uint32_t Water::refraction_color_attachment() const
 {
-    return refraction_fbo_->color_id();
+    return refraction_fbo_.color_id();
 }
 
 std::uint32_t Water::refraction_depth_texture() const
 {
-    return refraction_fbo_->depth_id();
+    return refraction_fbo_.depth_id();
 }
 
-void Water::bind_textures()
+void Water::update_light(const DirectionalLight& light)
 {
-    reflection_fbo_->bind_color(0);
-    refraction_fbo_->bind_color(1);
-    refraction_fbo_->bind_depth_texture(4);
+    shader_program_.set_vec3_uniform("light.direction", light.direction);
+    shader_program_.set_vec3_uniform("light.ambient", light.ambient);
+    shader_program_.set_vec3_uniform("light.diffuse", light.diffuse);
+    shader_program_.set_vec3_uniform("light.specular", light.specular);
 }

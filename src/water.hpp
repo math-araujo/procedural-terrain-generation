@@ -2,24 +2,33 @@
 #define WATER_HPP
 
 #include <cstdint>
-
 #include <memory>
+#include <string_view>
 
 #include <glm/glm.hpp>
 
-class Framebuffer;
+#include "framebuffer.hpp"
+#include "mesh.hpp"
+#include "renderbuffer.hpp"
+#include "shader.hpp"
+#include "texture.hpp"
+
+class DirectionalLight;
+class FPSCamera;
 
 class Water
 {
 public:
-    Water();
-    Water(const Water&) = default;
+    Water(int planar_scale);
+    Water(const Water&) = delete;
     Water(Water&&) = default;
-    Water& operator=(const Water&) = default;
+    Water& operator=(const Water&) = delete;
     Water& operator=(Water&&) = default;
     ~Water() = default;
 
     void update(float delta_time);
+    void render(FPSCamera& camera);
+
     void bind_reflection();
     void bind_refraction();
     void unbind();
@@ -31,7 +40,8 @@ public:
     std::uint32_t reflection_color_attachment() const;
     std::uint32_t refraction_color_attachment() const;
     std::uint32_t refraction_depth_texture() const;
-    void bind_textures();
+
+    void update_light(const DirectionalLight& light);
 
 private:
     const std::uint32_t reflection_width_{1024};
@@ -42,9 +52,37 @@ private:
     const float wave_speed_{.03f};
     const glm::vec4 reflection_clip_plane_{0.0f, 1.0f, 0.0f, -height_ + 0.1f};
     const glm::vec4 refraction_clip_plane_{0.0f, -1.0f, 0.0f, height_ + 0.2f};
-    std::unique_ptr<Framebuffer> reflection_fbo_{};
-    std::unique_ptr<Framebuffer> refraction_fbo_{};
+    glm::mat4 model_{1.0f};
     float dudv_offset_{0.0f};
+
+    IndexedMesh mesh_{std::vector<float>{
+                          // X     Y     Z     U     V
+                          0.5f,  0.5f,  0.0f, 1.0f, 1.0f, // Top-right
+                          -0.5f, 0.5f,  0.0f, 0.0f, 1.0f, // Top-left
+                          0.5f,  -0.5f, 0.0f, 1.0f, 0.0f, // Bottom-right
+                          -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, // Bottom-left
+                      },
+                      std::vector<std::uint32_t>{0, 1, 2, 2, 1, 3}};
+
+    ShaderProgram shader_program_{std::initializer_list<std::pair<std::string_view, Shader::Type>>{
+        {"shaders/water/vertex_shader.vs", Shader::Type::Vertex},
+        {"shaders/water/fragment_shader.fs", Shader::Type::Fragment},
+    }};
+    Texture dudv_map_{512, 512, Texture::Attributes{.wrap_s = GL_REPEAT, .wrap_t = GL_REPEAT}};
+    Texture normal_map_{512, 512, Texture::Attributes{.wrap_s = GL_REPEAT, .wrap_t = GL_REPEAT}};
+    Framebuffer reflection_fbo_{
+        reflection_width_, reflection_height_,
+        Renderbuffer{reflection_width_, reflection_height_, GL_DEPTH_COMPONENT32},
+        Texture{reflection_width_, reflection_height_, Texture::Attributes{.wrap_s = GL_REPEAT, .wrap_t = GL_REPEAT}}};
+    Framebuffer refraction_fbo_{
+        refraction_width_, refraction_height_,
+        Texture{refraction_width_, refraction_height_,
+                Texture::Attributes{.internal_format = GL_DEPTH_COMPONENT32,
+                                    .pixel_data_format = GL_DEPTH_COMPONENT,
+                                    .pixel_data_type = GL_FLOAT}},
+        Texture{refraction_width_, refraction_height_, Texture::Attributes{.wrap_s = GL_REPEAT, .wrap_t = GL_REPEAT}}};
+    /*dudv_map_->copy_image("textures/water/dudv.png");
+    normal_map_->copy_image("textures/water/normal.png");*/
 };
 
 #endif // WATER_HPP
