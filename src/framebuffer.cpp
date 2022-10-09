@@ -1,15 +1,15 @@
 #include "framebuffer.hpp"
 
-#include <iostream>
 #include <exception>
+#include <iostream>
 
-Framebuffer::Framebuffer(std::uint32_t width, std::uint32_t height, Texture depth, std::optional<Texture> color):
+Framebuffer::Framebuffer(std::uint32_t width, std::uint32_t height, Texture depth, std::optional<Texture> color) :
     width_{width}, height_{height}, depth_{std::move(depth)}, color_{std::move(color)}
 {
     initialize(false);
 }
 
-Framebuffer::Framebuffer(std::uint32_t width, std::uint32_t height, Renderbuffer depth, std::optional<Texture> color):
+Framebuffer::Framebuffer(std::uint32_t width, std::uint32_t height, Renderbuffer depth, std::optional<Texture> color) :
     width_{width}, height_{height}, depth_{std::move(depth)}, color_{std::move(color)}
 {
     initialize(true);
@@ -25,19 +25,19 @@ void Framebuffer::initialize(bool use_depth_renderbuffer)
     }
     else
     {
-        glDrawBuffer(GL_NONE);
-        glReadBuffer(GL_NONE);
+        glNamedFramebufferDrawBuffer(id_, GL_NONE);
+        glNamedFramebufferReadBuffer(id_, GL_NONE);
     }
 
     if (use_depth_renderbuffer)
     {
-        glNamedFramebufferRenderbuffer(id_, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, std::get<Renderbuffer>(depth_).id());  
+        glNamedFramebufferRenderbuffer(id_, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, std::get<Renderbuffer>(depth_).id());
     }
     else
     {
         glNamedFramebufferTexture(id_, GL_DEPTH_ATTACHMENT, std::get<Texture>(depth_).id(), 0);
     }
-    
+
     const auto status = glCheckNamedFramebufferStatus(id_, GL_FRAMEBUFFER);
     if (status != GL_FRAMEBUFFER_COMPLETE)
     {
@@ -46,9 +46,9 @@ void Framebuffer::initialize(bool use_depth_renderbuffer)
     }
 }
 
-Framebuffer::Framebuffer(Framebuffer&& other) noexcept: 
-    width_{other.width_}, height_{other.height_}, id_{other.id_}, 
-    depth_{std::move(other.depth_)}, color_{std::move(other.color_)}
+Framebuffer::Framebuffer(Framebuffer&& other) noexcept :
+    width_{other.width_}, height_{other.height_}, id_{other.id_}, depth_{std::move(other.depth_)}, color_{std::move(
+                                                                                                       other.color_)}
 {
     other.id_ = 0;
 }
@@ -60,7 +60,7 @@ Framebuffer& Framebuffer::operator=(Framebuffer&& other) noexcept
     std::swap(id_, other.id_);
     std::swap(depth_, other.depth_);
     std::swap(color_, other.color_);
-    
+
     return *this;
 }
 
@@ -73,9 +73,9 @@ void Framebuffer::clear()
 {
     glClearNamedFramebufferfv(id_, GL_COLOR, 0, clear_color_.data());
     glClearNamedFramebufferfv(id_, GL_DEPTH, 0, &clear_depth_);
-    
-    //glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void Framebuffer::bind()
