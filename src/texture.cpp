@@ -93,6 +93,16 @@ std::uint32_t Texture::height() const
     return height_;
 }
 
+void Texture::set_border_color(const std::array<float, 4> border_color)
+{
+    if (attributes_.wrap_s != GL_CLAMP_TO_BORDER || attributes_.wrap_t != GL_CLAMP_TO_BORDER)
+    {
+        throw std::invalid_argument("Texture wrapping mode is not set to clamp to border");
+    }
+
+    glTextureParameterfv(id_, GL_TEXTURE_BORDER_COLOR, border_color.data());
+}
+
 void Texture::copy_image(std::string_view filename, bool flip_on_load)
 {
     int width{0};

@@ -81,8 +81,6 @@ private:
                                     .pixel_data_format = GL_DEPTH_COMPONENT,
                                     .pixel_data_type = GL_FLOAT}},
         Texture{refraction_width_, refraction_height_, Texture::Attributes{.wrap_s = GL_REPEAT, .wrap_t = GL_REPEAT}}};
-    /*dudv_map_->copy_image("textures/water/dudv.png");
-    normal_map_->copy_image("textures/water/normal.png");*/
 };
 
 #endif // WATER_HPP
