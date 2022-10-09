@@ -1,6 +1,7 @@
 #ifndef TEXTURE_HPP
 #define TEXTURE_HPP
 
+#include <array>
 #include <cstdint>
 #include <optional>
 #include <string_view>
@@ -52,6 +53,8 @@ public:
     std::uint32_t id() const;
     std::uint32_t width() const;
     std::uint32_t height() const;
+
+    void set_border_color(const std::array<float, 4> border_color);
 
 private:
     std::uint32_t width_;
