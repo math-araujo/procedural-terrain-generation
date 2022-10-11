@@ -565,9 +565,25 @@ void Application::render_imgui_editor()
         terrain_program_->set_int_uniform("use_triplanar_texturing", static_cast<int>(use_triplanar_texturing_));
     }
 
+    /*
+    terrain_program_->set_float_array_uniform("triplanar_scale[0]", textures_scale_.data(), textures_scale_.size());
+    terrain_program_->set_float_array_uniform("start_heights[0]", textures_start_height_.data(),
+                                              textures_start_height_.size());
+    terrain_program_->set_float_array_uniform("blend_end[0]", textures_blend_end_.data(), textures_blend_end_.size());
+    */
     if (ImGui::SliderFloat("Water", &textures_scale_[0], 0.02f, 1.1f))
     {
         terrain_program_->set_float_array_uniform("triplanar_scale[0]", textures_scale_.data(), textures_scale_.size());
+    }
+    if (ImGui::SliderFloat("Water Start", &textures_start_height_[0], 0.0f, 0.0f))
+    {
+        terrain_program_->set_float_array_uniform("start_heights[0]", textures_start_height_.data(),
+                                                  textures_start_height_.size());
+    }
+    if (ImGui::SliderFloat("Water Blend End", &textures_blend_end_[0], 0.0, 1.0f))
+    {
+        terrain_program_->set_float_array_uniform("blend_end[0]", textures_blend_end_.data(),
+                                                  textures_blend_end_.size());
     }
     /*if (ImGui::SliderFloat("Sand", &textures_scale_[1], 0.02f, 1.1f))
     {
@@ -581,9 +597,30 @@ void Application::render_imgui_editor()
     {
         terrain_program_->set_float_array_uniform("triplanar_scale[0]", textures_scale_.data(), textures_scale_.size());
     }
+    if (ImGui::SliderFloat("Rock Start", &textures_start_height_[1], 0.0f, 1.0f))
+    {
+        terrain_program_->set_float_array_uniform("start_heights[0]", textures_start_height_.data(),
+                                                  textures_start_height_.size());
+    }
+    if (ImGui::SliderFloat("Rock Blend End", &textures_blend_end_[1], 0.0f, 1.0f))
+    {
+        terrain_program_->set_float_array_uniform("blend_end[0]", textures_blend_end_.data(),
+                                                  textures_blend_end_.size());
+    }
+
     if (ImGui::SliderFloat("Snow", &textures_scale_[2], 0.02f, 1.1f))
     {
         terrain_program_->set_float_array_uniform("triplanar_scale[0]", textures_scale_.data(), textures_scale_.size());
+    }
+    if (ImGui::SliderFloat("Snow Start", &textures_start_height_[2], 0.0f, 1.0f))
+    {
+        terrain_program_->set_float_array_uniform("start_heights[0]", textures_start_height_.data(),
+                                                  textures_start_height_.size());
+    }
+    if (ImGui::SliderFloat("Snow Blend End", &textures_blend_end_[2], 1.1f, 1.1f))
+    {
+        terrain_program_->set_float_array_uniform("blend_end[0]", textures_blend_end_.data(),
+                                                  textures_blend_end_.size());
     }
     ImGui::End();
 

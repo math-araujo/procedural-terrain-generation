@@ -77,8 +77,8 @@ private:
 
     // Water   Rock   Snow
     std::array<float, 3 + 1> textures_start_height_{0.0f, 0.30f, 0.70f, 1.1f};
-    std::array<float, 3> textures_blend_end_{0.33f, 0.9f, 1.1f};
-    std::array<float, 3> textures_scale_{0.6f, 0.1f, 0.6f};
+    std::array<float, 3> textures_blend_end_{0.33f, 0.8f, 1.1f};
+    std::array<float, 3> textures_scale_{0.6f, 0.1f, 0.3f};
 
     glm::mat4 terrain_scale_{1.0f};
 
