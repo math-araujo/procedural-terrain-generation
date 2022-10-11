@@ -121,7 +121,6 @@ void main()
     // Compute fragment normal
     get_tbn();
     vec3 world_space_unit_normal = normalize(tes_normal);
-    //float slope = 1.0 - unit_normal.y; // slope == 0.0 -> flat plane; slope == 1.0 -> vertical plane
 
     vec4 colors[size];
     float aos[size];
@@ -178,11 +177,12 @@ void main()
         }
     }
 
-    /*if (slope >= 0.15 && height > start_heights[2])
+    float slope = 1.0 - world_space_unit_normal.y; // slope == 0.0 -> flat plane; slope == 1.0 -> vertical plane
+    if (slope > 0.15 && height >= start_heights[2])
     {
-        float param = smoothstep(0.15, 0.45, slope);
-        color = mix(color, colors[3], param);
-    }*/
+        float param = smoothstep(0.15, 0.8, slope);
+        color = mix(color, colors[1], param);
+    }
     
     // Ambient Light Component
     vec3 ambient_color;
