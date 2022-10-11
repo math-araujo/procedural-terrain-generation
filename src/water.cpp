@@ -7,13 +7,18 @@
 #include "camera.hpp"
 #include "light.hpp"
 
-Water::Water(int planar_scale)
+Water::Water(int plane_scale) : plane_scale_{static_cast<float>(plane_scale)}
+{
+    compute_model_matrix();
+    dudv_map_.copy_image("textures/water/dudv.png");
+    normal_map_.copy_image("textures/water/normal.png");
+}
+
+void Water::compute_model_matrix()
 {
     model_ = glm::translate(glm::mat4{1.0f}, glm::vec3{0.0f, height_, 0.0f});
     model_ = glm::rotate(model_, glm::radians(-90.0f), glm::vec3{1.0f, 0.0f, 0.0f});
-    model_ = glm::scale(model_, glm::vec3{planar_scale, planar_scale, 1.0f});
-    dudv_map_.copy_image("textures/water/dudv.png");
-    normal_map_.copy_image("textures/water/normal.png");
+    model_ = glm::scale(model_, glm::vec3{plane_scale_, plane_scale_, 1.0f});
 }
 
 void Water::update(float delta_time)
@@ -60,6 +65,14 @@ void Water::unbind()
 float Water::height() const
 {
     return height_;
+}
+
+void Water::set_height(float new_height)
+{
+    height_ = new_height;
+    reflection_clip_plane_ = glm::vec4{0.0f, 1.0f, 0.0f, -height_ + 0.1f};
+    refraction_clip_plane_ = glm::vec4{0.0f, -1.0f, 0.0f, height_ + 0.2f};
+    compute_model_matrix();
 }
 
 float Water::dudv_offset() const

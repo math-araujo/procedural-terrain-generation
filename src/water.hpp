@@ -19,7 +19,7 @@ class FPSCamera;
 class Water
 {
 public:
-    Water(int planar_scale);
+    Water(int plane_scale);
     Water(const Water&) = delete;
     Water(Water&&) = default;
     Water& operator=(const Water&) = delete;
@@ -34,6 +34,7 @@ public:
     void unbind();
 
     float height() const;
+    void set_height(float new_height);
     float dudv_offset() const;
     const glm::vec4& reflection_clip_plane() const;
     const glm::vec4& refraction_clip_plane() const;
@@ -48,12 +49,13 @@ private:
     const std::uint32_t reflection_height_{768};
     const std::uint32_t refraction_width_{1024};
     const std::uint32_t refraction_height_{768};
-    const float height_{10.0f};
     const float wave_speed_{.03f};
-    const glm::vec4 reflection_clip_plane_{0.0f, 1.0f, 0.0f, -height_ + 0.1f};
-    const glm::vec4 refraction_clip_plane_{0.0f, -1.0f, 0.0f, height_ + 0.2f};
+    float height_{11.0f};
+    glm::vec4 reflection_clip_plane_{0.0f, 1.0f, 0.0f, -height_ + 0.1f};
+    glm::vec4 refraction_clip_plane_{0.0f, -1.0f, 0.0f, height_ + 0.2f};
     glm::mat4 model_{1.0f};
     float dudv_offset_{0.0f};
+    float plane_scale_{1.0f};
 
     IndexedMesh mesh_{std::vector<float>{
                           // X     Y     Z     U     V
@@ -81,6 +83,8 @@ private:
                                     .pixel_data_format = GL_DEPTH_COMPONENT,
                                     .pixel_data_type = GL_FLOAT}},
         Texture{refraction_width_, refraction_height_, Texture::Attributes{.wrap_s = GL_REPEAT, .wrap_t = GL_REPEAT}}};
+
+    void compute_model_matrix();
 };
 
 #endif // WATER_HPP

@@ -555,7 +555,16 @@ void Application::render_imgui_editor()
     }
     ImGui::End();
 
-    ImGui::Begin("Texturing");
+    ImGui::Begin("Terrain");
+    if (ImGui::SliderFloat("Elevation", &terrain_elevation_, -20.0f, 50.0f))
+    {
+        terrain_program_->set_float_uniform("elevation", terrain_elevation_);
+    }
+    float water_height{water_->height()};
+    if (ImGui::SliderFloat("Water Height", &water_height, 0.0f, 50.0f))
+    {
+        water_->set_height(water_height);
+    }
     if (ImGui::Checkbox("Use normal mapping", &apply_normal_map_))
     {
         terrain_program_->set_bool_uniform("apply_normal_map", apply_normal_map_);
@@ -621,13 +630,6 @@ void Application::render_imgui_editor()
     {
         terrain_program_->set_float_array_uniform("blend_end[0]", textures_blend_end_.data(),
                                                   textures_blend_end_.size());
-    }
-    ImGui::End();
-
-    ImGui::Begin("Terrain");
-    if (ImGui::SliderFloat("Elevation", &terrain_elevation_, -20.0f, 50.0f))
-    {
-        terrain_program_->set_float_uniform("elevation", terrain_elevation_);
     }
     ImGui::End();
 

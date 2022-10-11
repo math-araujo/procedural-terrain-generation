@@ -72,13 +72,13 @@ private:
     std::unique_ptr<Texture> terain_normal_maps_{};
     std::unique_ptr<Texture> terrain_ao_maps_{};
     std::unique_ptr<ShaderProgram> terrain_program_{};
-    float terrain_elevation_{25.0f};
+    float terrain_elevation_{35.0f};
     bool apply_normal_map_{true};
 
     // Water   Rock   Snow
-    std::array<float, 3 + 1> textures_start_height_{0.0f, 0.30f, 0.70f, 1.1f};
-    std::array<float, 3> textures_blend_end_{0.33f, 0.8f, 1.1f};
-    std::array<float, 3> textures_scale_{0.6f, 0.1f, 0.3f};
+    std::array<float, 3 + 1> textures_start_height_{0.0f, 0.17f, 0.5f, 1.1f};
+    std::array<float, 3> textures_blend_end_{0.36f, 0.8f, 1.1f};
+    std::array<float, 3> textures_scale_{0.3f, 0.1f, 0.6f};
 
     glm::mat4 terrain_scale_{1.0f};
 
