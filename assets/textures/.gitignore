@@ -1,3 +1,5 @@
 *
 !.gitignore
 !source_textures.txt
+!cubemap/*
+!cloudy_cubemap/*
