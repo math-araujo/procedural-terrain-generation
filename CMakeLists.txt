@@ -1,4 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
+ # Add vcpkg as package manager and install dependencies
+include(cmake/fetchvcpkg.cmake)
 project(procedural-terrain LANGUAGES CXX)
 
 # Dependencies
