@@ -24,7 +24,7 @@ def main():
 
 def resize_textures(input_dir: Union[str, pathlib.Path], output_dir: Union[str, pathlib.Path], file_extension: str, target_size: int):
     output_dir.mkdir(exist_ok=True)
-    for image_path in input_dir.glob(f"*/*.{file_extension}"):
+    for image_path in input_dir.rglob(f"*.{file_extension}"):
         image_filename = image_path.stem
         print(f"Current File: {image_filename}")
         image = Image.open(image_path)
