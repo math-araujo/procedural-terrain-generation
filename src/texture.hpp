@@ -45,6 +45,9 @@ public:
     template <typename T>
     void copy_image(const T* image_data, std::int32_t width, std::int32_t height);
 
+    template <typename T>
+    void copy_image_array(const std::vector<T*> image_data, std::int32_t width, std::int32_t height);
+
     void copy_image(std::string_view filename, bool flip_on_load = true);
     void load_cubemap(const std::vector<std::string_view>& filenames, bool flip_on_load = true);
     void load_array_texture(const std::vector<std::string_view>& filenames, bool flip_on_load = true);
@@ -66,6 +69,11 @@ private:
     void set_texture_parameters();
     void generate_mipmap();
 };
+
+Texture create_texture_from_file(std::string_view filename, Texture::Attributes attributes = {},
+                                 bool flip_on_load = true);
+Texture create_arraytexture_from_file(const std::vector<std::string_view>& filenames,
+                                      Texture::Attributes attributes = {}, bool flip_on_load = true);
 
 #include "texture.inl"
 

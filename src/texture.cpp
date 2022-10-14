@@ -208,3 +208,102 @@ void Texture::load_array_texture(const std::vector<std::string_view>& filenames,
         stbi_set_flip_vertically_on_load(!flip_on_load);
     }
 }
+
+Texture create_texture_from_file(std::string_view filename, Texture::Attributes attributes, bool flip_on_load)
+{
+    int width{0};
+    int height{0};
+    int number_of_channels{0};
+    stbi_set_flip_vertically_on_load(flip_on_load);
+    unsigned char* data = stbi_load(filename.data(), &width, &height, &number_of_channels, 0);
+    assert(data != nullptr);
+    if (number_of_channels == 3)
+    {
+        attributes.pixel_data_format = GL_RGB;
+    }
+    else if (number_of_channels == 1)
+    {
+        attributes.pixel_data_format = GL_RED;
+    }
+    Texture texture{static_cast<std::uint32_t>(width), static_cast<std::uint32_t>(height), attributes};
+    texture.copy_image(data, width, height);
+    stbi_image_free(data);
+
+    if (flip_on_load)
+    {
+        stbi_set_flip_vertically_on_load(!flip_on_load);
+    }
+
+    return texture;
+}
+
+Texture create_arraytexture_from_file(const std::vector<std::string_view>& filenames, Texture::Attributes attributes,
+                                      bool flip_on_load)
+{
+    if (attributes.target != GL_TEXTURE_2D_ARRAY)
+    {
+        throw std::invalid_argument("Expects a GL_TEXTURE_2D_ARRAY");
+    }
+
+    if (attributes.layers.value() != static_cast<GLsizei>(filenames.size()))
+    {
+        throw std::invalid_argument("Number of images is incompatible with the number of layers of the array texture");
+    }
+
+    std::vector<unsigned char*> pixel_data;
+    pixel_data.reserve(filenames.size());
+    stbi_set_flip_vertically_on_load(flip_on_load);
+    int width{0};
+    int height{0};
+    int number_of_channels{0};
+    unsigned char* data = stbi_load(filenames.front().data(), &width, &height, &number_of_channels, 0);
+    if (number_of_channels == 3 && attributes.pixel_data_format != GL_RGB)
+    {
+        throw std::invalid_argument("Image has incompatible data format of type GL_RGB");
+    }
+    else if (number_of_channels == 1 && attributes.pixel_data_format != GL_RED)
+    {
+        throw std::invalid_argument("Image has incompatible data format of type GL_RED");
+    }
+    assert(data != nullptr);
+    pixel_data.emplace_back(data);
+
+    for (std::size_t layer = 1; layer < filenames.size(); ++layer)
+    {
+        int current_width{0};
+        int current_height{0};
+        int current_number_of_channels{0};
+        unsigned char* data =
+            stbi_load(filenames[layer].data(), &current_width, &current_height, &current_number_of_channels, 0);
+        assert(data != nullptr);
+        // For array textures, all textures must have the same dimensions and pixel data format
+        if (number_of_channels != current_number_of_channels)
+        {
+            throw std::invalid_argument("Images have incompatible number of channels for array texture");
+        }
+        else if (width != current_width)
+        {
+            throw std::invalid_argument("Images have incompatible width for array texture");
+        }
+        else if (height != current_height)
+        {
+            throw std::invalid_argument("Image has incompatible height of type GL_RED");
+        }
+        pixel_data.emplace_back(data);
+    }
+
+    Texture texture{static_cast<std::uint32_t>(width), static_cast<std::uint32_t>(height), attributes};
+    texture.copy_image_array(pixel_data, width, height);
+
+    for (unsigned char* pointer : pixel_data)
+    {
+        stbi_image_free(pointer);
+    }
+
+    if (flip_on_load)
+    {
+        stbi_set_flip_vertically_on_load(!flip_on_load);
+    }
+
+    return texture;
+}

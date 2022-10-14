@@ -10,8 +10,6 @@
 Water::Water(int plane_scale) : plane_scale_{static_cast<float>(plane_scale)}
 {
     compute_model_matrix();
-    dudv_map_.copy_image("textures/water/dudv.png");
-    normal_map_.copy_image("textures/water/normal.png");
 }
 
 void Water::compute_model_matrix()

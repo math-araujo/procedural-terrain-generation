@@ -70,12 +70,18 @@ private:
         {"shaders/water/vertex_shader.vs", Shader::Type::Vertex},
         {"shaders/water/fragment_shader.fs", Shader::Type::Fragment},
     }};
-    Texture dudv_map_{512, 512, Texture::Attributes{.wrap_s = GL_REPEAT, .wrap_t = GL_REPEAT}};
-    Texture normal_map_{512, 512, Texture::Attributes{.wrap_s = GL_REPEAT, .wrap_t = GL_REPEAT}};
+    Texture dudv_map_{create_texture_from_file("textures/water/dudv.png",
+                                               Texture::Attributes{.wrap_s = GL_REPEAT, .wrap_t = GL_REPEAT})};
+    Texture normal_map_{create_texture_from_file("textures/water/normal.png",
+                                                 Texture::Attributes{.wrap_s = GL_REPEAT, .wrap_t = GL_REPEAT})};
+
+    // Reflection uses renderbuffer for depth buffer and texture for color buffer
     Framebuffer reflection_fbo_{
         reflection_width_, reflection_height_,
         Renderbuffer{reflection_width_, reflection_height_, GL_DEPTH_COMPONENT32},
         Texture{reflection_width_, reflection_height_, Texture::Attributes{.wrap_s = GL_REPEAT, .wrap_t = GL_REPEAT}}};
+
+    // Refraction uses texture for both depth and colors buffers
     Framebuffer refraction_fbo_{
         refraction_width_, refraction_height_,
         Texture{refraction_width_, refraction_height_,

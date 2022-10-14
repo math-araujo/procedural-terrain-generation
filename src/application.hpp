@@ -69,7 +69,7 @@ private:
     std::unique_ptr<Texture> terrain_normalmap_{};
     std::unique_ptr<Mesh> terrain_mesh_{};
     std::unique_ptr<Texture> terrain_albedos_;
-    std::unique_ptr<Texture> terain_normal_maps_{};
+    std::unique_ptr<Texture> terrain_normal_maps_{};
     std::unique_ptr<Texture> terrain_ao_maps_{};
     std::unique_ptr<ShaderProgram> terrain_program_{};
     float terrain_elevation_{35.0f};
