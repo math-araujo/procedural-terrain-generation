@@ -285,18 +285,18 @@ void Application::initialize_terrain()
     terrain_albedos_ =
         std::make_unique<Texture>(grid_mesh_dim_.first, grid_mesh_dim_.second, terrain_texture_attributes);
     std::vector<std::string_view> albedo_names{
-        "textures/terrain/water.png",
-        "textures/terrain/rock.png",
-        "textures/terrain/snow.png",
+        "textures/terrain/albedo/river_rock1_albedo_256.png",
+        "textures/terrain/albedo/slate2-tiled-albedo2_256.png",
+        "textures/terrain/albedo/rock-snow-ice1-2k_Base_Color_256.png",
     };
     terrain_albedos_->load_array_texture(albedo_names);
 
     terain_normal_maps_ =
         std::make_unique<Texture>(grid_mesh_dim_.first, grid_mesh_dim_.second, terrain_texture_attributes);
     std::vector<std::string_view> normal_names{
-        "textures/terrain/water_normal.png",
-        "textures/terrain/rock_normal.png",
-        "textures/terrain/snow_normal.png",
+        "textures/terrain/normal/river_rock1_Normal-dx_256.png",
+        "textures/terrain/normal/slate2-tiled-normal3-UE4_256.png",
+        "textures/terrain/normal/rock-snow-ice1-2k_Normal-dx_256.png",
     };
     terain_normal_maps_->load_array_texture(normal_names);
 
@@ -307,9 +307,9 @@ void Application::initialize_terrain()
         std::make_unique<Texture>(grid_mesh_dim_.first, grid_mesh_dim_.second, ambient_occlusion_attributes);
 
     std::vector<std::string_view> ao_names{
-        "textures/terrain/water_ao.png",
-        "textures/terrain/rock_ao.png",
-        "textures/terrain/snow_ao.png",
+        "textures/terrain/ao/river_rock1_ao_256.png",
+        "textures/terrain/ao/slate2-tiled-ao_256.png",
+        "textures/terrain/ao/rock-snow-ice1-2k_Ambient_Occlusion_256.png",
     };
     terrain_ao_maps_->load_array_texture(ao_names);
 
