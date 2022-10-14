@@ -248,7 +248,7 @@ void Application::initialize_terrain()
 
     heightmap_generator_ =
         std::make_unique<ShaderProgram>(std::initializer_list<std::pair<std::string_view, Shader::Type>>{
-            {"shaders/heightmap/heightmap.cs", Shader::Type::Compute},
+            {"shaders/heightmap/heightmap.glsl", Shader::Type::Compute},
         });
     heightmap_generator_->set_float_uniform("lacunarity", fractal_noise_generator_.noise_settings.lacunarity);
     heightmap_generator_->set_float_uniform("persistance", fractal_noise_generator_.noise_settings.persistance);
@@ -264,7 +264,7 @@ void Application::initialize_terrain()
 
     normalmap_generator_ =
         std::make_unique<ShaderProgram>(std::initializer_list<std::pair<std::string_view, Shader::Type>>{
-            {"shaders/heightmap/normalmap.cs", Shader::Type::Compute},
+            {"shaders/heightmap/normalmap.glsl", Shader::Type::Compute},
         });
     terrain_normalmap_ = std::make_unique<Texture>(height_map_dim_.first, height_map_dim_.second);
     normalmap_generator_->use();
