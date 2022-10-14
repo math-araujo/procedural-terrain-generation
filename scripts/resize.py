@@ -25,11 +25,11 @@ def main():
 def resize_textures(input_dir: Union[str, pathlib.Path], output_dir: Union[str, pathlib.Path], file_extension: str, target_size: int):
     output_dir.mkdir(exist_ok=True)
     for image_path in input_dir.rglob(f"*.{file_extension}"):
-        image_filename = image_path.stem
+        image_filename = image_path.name
         print(f"Current File: {image_filename}")
         image = Image.open(image_path)
         resized_image = image.resize((target_size, target_size), resample=Image.Resampling.LANCZOS)
-        resized_dest = output_dir / f"{image_filename}_{target_size}.{file_extension}"
+        resized_dest = output_dir / f"{image_filename}"
         assert not resized_dest.is_file(), f"Image file {resized_dest} already exists in directory {output_dir}"
         
         if "ao" in str(image_path):

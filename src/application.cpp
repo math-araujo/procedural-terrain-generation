@@ -283,17 +283,17 @@ void Application::initialize_terrain()
                                                                              .layers = 3}};
 
     std::vector<std::string_view> albedo_names{
-        "textures/terrain/albedo/river_rock1_albedo_256.png",
-        "textures/terrain/albedo/slate2-tiled-albedo2_256.png",
-        "textures/terrain/albedo/rock-snow-ice1-2k_Base_Color_256.png",
+        "textures/terrain/albedo/river_rock1_albedo.png",
+        "textures/terrain/albedo/slate2-tiled-albedo2.png",
+        "textures/terrain/albedo/rock-snow-ice1-2k_Base_Color.png",
     };
     terrain_albedos_ =
         std::make_unique<Texture>(create_arraytexture_from_file(albedo_names, terrain_texture_attributes));
 
     std::vector<std::string_view> normal_names{
-        "textures/terrain/normal/river_rock1_Normal-dx_256.png",
-        "textures/terrain/normal/slate2-tiled-normal3-UE4_256.png",
-        "textures/terrain/normal/rock-snow-ice1-2k_Normal-dx_256.png",
+        "textures/terrain/normal/river_rock1_Normal-dx.png",
+        "textures/terrain/normal/slate2-tiled-normal3-UE4.png",
+        "textures/terrain/normal/rock-snow-ice1-2k_Normal-dx.png",
     };
     terrain_normal_maps_ =
         std::make_unique<Texture>(create_arraytexture_from_file(normal_names, terrain_texture_attributes));
@@ -302,9 +302,9 @@ void Application::initialize_terrain()
     ambient_occlusion_attributes.internal_format = GL_R8;
     ambient_occlusion_attributes.pixel_data_format = GL_RED;
     std::vector<std::string_view> ao_names{
-        "textures/terrain/ao/river_rock1_ao_256.png",
-        "textures/terrain/ao/slate2-tiled-ao_256.png",
-        "textures/terrain/ao/rock-snow-ice1-2k_Ambient_Occlusion_256.png",
+        "textures/terrain/ao/river_rock1_ao.png",
+        "textures/terrain/ao/slate2-tiled-ao.png",
+        "textures/terrain/ao/rock-snow-ice1-2k_Ambient_Occlusion.png",
     };
     terrain_ao_maps_ = std::make_unique<Texture>(create_arraytexture_from_file(ao_names, ambient_occlusion_attributes));
     std::cout << terrain_ao_maps_->id() << "\n";
