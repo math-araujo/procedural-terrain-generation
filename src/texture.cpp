@@ -2,9 +2,9 @@
 
 #include <algorithm>
 #include <cassert>
-#include <exception>
 #include <glm/glm.hpp>
 #include <stb_image.h>
+#include <stdexcept>
 
 Texture::Texture(std::uint32_t width, std::uint32_t height, Attributes attributes) :
     width_{width}, height_{height}, attributes_{attributes}
@@ -141,7 +141,7 @@ void Texture::load_cubemap(const std::vector<std::string_view>& filenames, bool 
 {
     assert(attributes_.target == GL_TEXTURE_CUBE_MAP);
     stbi_set_flip_vertically_on_load(flip_on_load);
-    for (std::size_t face = 0; face < filenames.size(); ++face)
+    for (GLint face = 0; face < static_cast<GLint>(filenames.size()); ++face)
     {
         int width{0};
         int height{0};
@@ -180,7 +180,7 @@ void Texture::load_array_texture(const std::vector<std::string_view>& filenames,
     }
 
     stbi_set_flip_vertically_on_load(flip_on_load);
-    for (std::size_t layer = 0; layer < filenames.size(); ++layer)
+    for (GLint layer = 0; layer < static_cast<GLint>(filenames.size()); ++layer)
     {
         int width{0};
         int height{0};
@@ -268,7 +268,7 @@ Texture create_arraytexture_from_file(const std::vector<std::string_view>& filen
     assert(data != nullptr);
     pixel_data.emplace_back(data);
 
-    for (std::size_t layer = 1; layer < filenames.size(); ++layer)
+    for (GLint layer = 1; layer < static_cast<GLint>(filenames.size()); ++layer)
     {
         int current_width{0};
         int current_height{0};

@@ -4,9 +4,9 @@
 
 #include "mesh.hpp"
 
-Mesh::Mesh(std::vector<float> vertices_data, std::vector<int> attributes_sizes) : 
-    attributes_sizes_{std::move(attributes_sizes)},
-    stride_{std::accumulate(attributes_sizes_.cbegin(), attributes_sizes_.cend(), 0)},
+Mesh::Mesh(std::vector<float> vertices_data, std::vector<int> attributes_sizes) :
+    attributes_sizes_{std::move(attributes_sizes)}, stride_{std::accumulate(attributes_sizes_.cbegin(),
+                                                                            attributes_sizes_.cend(), 0)},
     number_of_vertices_{static_cast<int>(vertices_data.size()) / stride_}
 {
     glGenVertexArrays(1, &vertex_array_identifier_);
@@ -21,9 +21,10 @@ Mesh::Mesh(std::vector<float> vertices_data, std::vector<int> attributes_sizes) 
 
     // Specify vertex format (default: position and texture coordinates)
     int offset = 0;
-    for (std::size_t index = 0; index < attributes_sizes_.size(); ++index)
+    for (GLuint index = 0; index < static_cast<GLuint>(attributes_sizes_.size()); ++index)
     {
-        glVertexAttribPointer(index, attributes_sizes_[index], GL_FLOAT, GL_FALSE, stride_ * sizeof(float), reinterpret_cast<void*>(offset * sizeof(float)));
+        glVertexAttribPointer(index, attributes_sizes_[index], GL_FLOAT, GL_FALSE, stride_ * sizeof(float),
+                              reinterpret_cast<void*>(offset * sizeof(float)));
         glEnableVertexAttribArray(index);
         offset += attributes_sizes_[index];
     }
@@ -69,7 +70,7 @@ int Mesh::number_of_attributes() const
     return static_cast<int>(attributes_sizes_.size());
 }
 
-PatchMesh::PatchMesh(int vertices_per_patch, std::vector<float> vertices_data): 
+PatchMesh::PatchMesh(int vertices_per_patch, std::vector<float> vertices_data) :
     Mesh{std::move(vertices_data)}, vertices_per_patch_{vertices_per_patch}
 {
     glPatchParameteri(GL_PATCH_VERTICES, vertices_per_patch_);
@@ -81,9 +82,9 @@ void PatchMesh::render()
     glDrawArrays(GL_PATCHES, 0, number_of_vertices());
 }
 
-IndexedMesh::IndexedMesh(std::vector<float> vertices_data, std::vector<std::uint32_t> indices): 
-    number_of_vertices_{static_cast<int>(vertices_data.size() / 5)}, 
-    number_of_indices_{static_cast<int>(indices.size())}
+IndexedMesh::IndexedMesh(std::vector<float> vertices_data, std::vector<std::uint32_t> indices) :
+    number_of_vertices_{static_cast<int>(vertices_data.size() / 5)}, number_of_indices_{
+                                                                         static_cast<int>(indices.size())}
 {
     glCreateVertexArrays(1, &vertex_array_identifier_);
     glBindVertexArray(vertex_array_identifier_);
@@ -102,7 +103,7 @@ IndexedMesh::IndexedMesh(std::vector<float> vertices_data, std::vector<std::uint
     glEnableVertexAttribArray(1);
 }
 
-IndexedMesh::IndexedMesh(IndexedMesh&& mesh) noexcept: 
+IndexedMesh::IndexedMesh(IndexedMesh&& mesh) noexcept :
     number_of_vertices_{mesh.number_of_vertices_}, number_of_indices_{mesh.number_of_indices_},
     vertex_array_identifier_{mesh.vertex_array_identifier_}, vertex_buffer_identifier_{mesh.vertex_buffer_identifier_},
     element_buffer_object_id_{mesh.element_buffer_object_id_}
@@ -119,7 +120,7 @@ IndexedMesh& IndexedMesh::operator=(IndexedMesh&& mesh) noexcept
     std::swap(number_of_vertices_, mesh.number_of_vertices_);
     std::swap(number_of_indices_, mesh.number_of_indices_);
     std::swap(vertex_array_identifier_, mesh.vertex_array_identifier_);
-    std::swap(vertex_buffer_identifier_ , mesh.vertex_buffer_identifier_);
+    std::swap(vertex_buffer_identifier_, mesh.vertex_buffer_identifier_);
     std::swap(element_buffer_object_id_, mesh.element_buffer_object_id_);
     return *this;
 }

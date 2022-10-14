@@ -53,9 +53,9 @@ public:
     void use();
     void set_bool_uniform(const std::string& uniform_name, bool value);
     void set_int_uniform(const std::string& uniform_name, int value);
-    void set_int_array_uniform(const std::string& uniform_name, const int* value, std::size_t count);
+    void set_int_array_uniform(const std::string& uniform_name, const int* value, GLsizei count);
     void set_float_uniform(const std::string& uniform_name, float value);
-    void set_float_array_uniform(const std::string& uniform_name, const float* value, std::size_t count);
+    void set_float_array_uniform(const std::string& uniform_name, const float* value, GLsizei count);
     void set_vec2_uniform(const std::string& uniform_name, float x, float y);
     void set_vec2_uniform(const std::string& uniform_name, const glm::vec2& vector);
     void set_vec3_uniform(const std::string& uniform_name, float x, float y, float z);

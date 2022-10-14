@@ -74,9 +74,9 @@ void FractalNoiseGenerator::update_normal_map()
 {
     const float dz = 1.0f / 2.0f;
     const auto float_to_uint = [](float channel_value) { return static_cast<std::uint8_t>(channel_value); };
-    for (std::size_t i = 0; i < height_; ++i)
+    for (int i = 0; i < static_cast<int>(height_); ++i)
     {
-        for (std::size_t j = 0; j < width_; ++j)
+        for (int j = 0; j < static_cast<int>(width_); ++j)
         {
             const float top_left = clamp_at_edge_height(i - 1, j - 1);
             const float top = clamp_at_edge_height(i - 1, j);
@@ -100,7 +100,7 @@ float FractalNoiseGenerator::clamp_at_edge_height(int row, int column)
 {
     row = std::clamp(row, 0, static_cast<int>(height_ - 1));
     column = std::clamp(column, 0, static_cast<int>(width_ - 1));
-    return height_map_.get(row, column);
+    return height_map_.get(static_cast<std::size_t>(row), static_cast<std::size_t>(column));
 }
 
 glm::vec3 FractalNoiseGenerator::cast_normal_to_rgb(glm::vec3 vector)

@@ -7,8 +7,8 @@
 
 void save_image(std::string_view filename, const Image<std::uint8_t>& image)
 {
-    stbi_write_png(filename.data(), image.width(), image.height(), image.depth(), 
-                    image.data(), image.width() * image.depth());
+    stbi_write_png(filename.data(), static_cast<int>(image.width()), static_cast<int>(image.height()),
+                   static_cast<int>(image.depth()), image.data(), static_cast<int>(image.width() * image.depth()));
 }
 
 void normalize_image(Image<float>& image)
@@ -19,7 +19,7 @@ void normalize_image(Image<float>& image)
 void normalize_image(Image<float>& image, float max, float min)
 {
     const float range{max - min};
-    for (float& value: image)
+    for (float& value : image)
     {
         value = (value - min) / range;
     }
@@ -38,5 +38,5 @@ Image<std::uint8_t> from_float_to_uint8(const Image<float>& image)
             }
         }
     }
-    return new_image;    
+    return new_image;
 }

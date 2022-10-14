@@ -1,4 +1,5 @@
 #include "texture.hpp"
+#include <stdexcept>
 
 template <typename T>
 void Texture::copy_image(const Image<T>& image)
@@ -22,7 +23,7 @@ void Texture::copy_image_array(const std::vector<T*> image_data, std::int32_t wi
         throw std::invalid_argument("Expects a GL_TEXTURE_2D_ARRAY");
     }
 
-    for (std::size_t layer = 0; layer < image_data.size(); ++layer)
+    for (GLint layer = 0; layer < static_cast<GLint>(image_data.size()); ++layer)
     {
         glTextureSubImage3D(id_, 0, 0, 0, layer, width, height, 1, attributes_.pixel_data_format,
                             attributes_.pixel_data_type, image_data[layer]);

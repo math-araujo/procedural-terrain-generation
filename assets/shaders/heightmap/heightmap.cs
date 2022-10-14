@@ -11,7 +11,7 @@ uniform float random_offsets_y[16];
 uniform float lacunarity;
 uniform float persistance;
 uniform float noise_scale;
-uniform float octaves;
+uniform int octaves;
 
 // The functions to compute random numbers and random vectors on GLSL
 // are due to the user Spatial on StackOverflow on the following answer:

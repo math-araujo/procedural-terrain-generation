@@ -218,7 +218,7 @@ void Application::set_mouse_click(bool mouse_click)
 void scroll_callback(GLFWwindow* window, double /*x_offset*/, double y_offset)
 {
     Application* application = static_cast<Application*>(glfwGetWindowUserPointer(window));
-    application->camera().process_mouse_scroll(y_offset);
+    application->camera().process_mouse_scroll(static_cast<float>(y_offset));
 }
 
 void Application::load_opengl()
@@ -252,7 +252,7 @@ void Application::initialize_terrain()
         });
     heightmap_generator_->set_float_uniform("lacunarity", fractal_noise_generator_.noise_settings.lacunarity);
     heightmap_generator_->set_float_uniform("persistance", fractal_noise_generator_.noise_settings.persistance);
-    heightmap_generator_->set_float_uniform("octaves", fractal_noise_generator_.noise_settings.octaves);
+    heightmap_generator_->set_int_uniform("octaves", fractal_noise_generator_.noise_settings.octaves);
     heightmap_generator_->set_float_uniform("noise_scale", fractal_noise_generator_.noise_settings.noise_scale);
     heightmap_generator_->set_float_uniform("exponent", fractal_noise_generator_.noise_settings.exponent);
 
@@ -307,7 +307,6 @@ void Application::initialize_terrain()
         "textures/terrain/ao/rock-snow-ice1-2k_Ambient_Occlusion.png",
     };
     terrain_ao_maps_ = std::make_unique<Texture>(create_arraytexture_from_file(ao_names, ambient_occlusion_attributes));
-    std::cout << terrain_ao_maps_->id() << "\n";
 
     terrain_program_ = std::make_unique<ShaderProgram>(std::initializer_list<std::pair<std::string_view, Shader::Type>>{
         {"shaders/gpu_terrain/vertex_shader.vs", Shader::Type::Vertex},
@@ -317,10 +316,12 @@ void Application::initialize_terrain()
     });
 
     terrain_program_->set_float_uniform("elevation", terrain_elevation_);
-    terrain_program_->set_float_array_uniform("triplanar_scale[0]", textures_scale_.data(), textures_scale_.size());
+    terrain_program_->set_float_array_uniform("triplanar_scale[0]", textures_scale_.data(),
+                                              static_cast<GLsizei>(textures_scale_.size()));
     terrain_program_->set_float_array_uniform("start_heights[0]", textures_start_height_.data(),
-                                              textures_start_height_.size());
-    terrain_program_->set_float_array_uniform("blend_end[0]", textures_blend_end_.data(), textures_blend_end_.size());
+                                              static_cast<GLsizei>(textures_start_height_.size()));
+    terrain_program_->set_float_array_uniform("blend_end[0]", textures_blend_end_.data(),
+                                              static_cast<GLsizei>(textures_blend_end_.size()));
     terrain_program_->set_vec4_uniform("clip_plane", glm::vec4{0.0f, 0.0f, 0.0f, 0.0f});
 
     terrain_heightmap_->bind(0);
@@ -532,10 +533,10 @@ void Application::render_imgui_editor()
     ImGui::SliderFloat2("Offset", glm::value_ptr(fractal_noise_generator_.noise_settings.offset), -1000, 1000);
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
                 ImGui::GetIO().Framerate);
-    ImTextureID imgui_texture_id = reinterpret_cast<void*>(terrain_heightmap_->id());
+    ImTextureID imgui_texture_id = reinterpret_cast<void*>(static_cast<std::intptr_t>(terrain_heightmap_->id()));
     ImGui::Image(imgui_texture_id, ImVec2{200, 200}, ImVec2{0.0f, 0.0f}, ImVec2{1.0f, 1.0f},
                  ImVec4{1.0f, 1.0f, 1.0f, 1.0f}, ImVec4{1.0f, 1.0f, 1.0f, 0.5f});
-    imgui_texture_id = reinterpret_cast<void*>(terrain_normalmap_->id());
+    imgui_texture_id = reinterpret_cast<void*>(static_cast<std::intptr_t>(terrain_normalmap_->id()));
     ImGui::Image(imgui_texture_id, ImVec2{200, 200}, ImVec2{0.0f, 0.0f}, ImVec2{1.0f, 1.0f},
                  ImVec4{1.0f, 1.0f, 1.0f, 1.0f}, ImVec4{1.0f, 1.0f, 1.0f, 0.5f});
     ImGui::End();
@@ -578,17 +579,18 @@ void Application::render_imgui_editor()
     */
     if (ImGui::SliderFloat("River Rock", &textures_scale_[0], 0.02f, 1.1f))
     {
-        terrain_program_->set_float_array_uniform("triplanar_scale[0]", textures_scale_.data(), textures_scale_.size());
+        terrain_program_->set_float_array_uniform("triplanar_scale[0]", textures_scale_.data(),
+                                                  static_cast<GLsizei>(textures_scale_.size()));
     }
     if (ImGui::SliderFloat("River Rock Start", &textures_start_height_[0], 0.0f, 0.0f))
     {
         terrain_program_->set_float_array_uniform("start_heights[0]", textures_start_height_.data(),
-                                                  textures_start_height_.size());
+                                                  static_cast<GLsizei>(textures_start_height_.size()));
     }
     if (ImGui::SliderFloat("River Rock Blend End", &textures_blend_end_[0], 0.0, 1.0f))
     {
         terrain_program_->set_float_array_uniform("blend_end[0]", textures_blend_end_.data(),
-                                                  textures_blend_end_.size());
+                                                  static_cast<GLsizei>(textures_blend_end_.size()));
     }
     /*if (ImGui::SliderFloat("Sand", &textures_scale_[1], 0.02f, 1.1f))
     {
@@ -600,32 +602,34 @@ void Application::render_imgui_editor()
     }*/
     if (ImGui::SliderFloat("Mountain Rock", &textures_scale_[1], 0.02f, 1.1f))
     {
-        terrain_program_->set_float_array_uniform("triplanar_scale[0]", textures_scale_.data(), textures_scale_.size());
+        terrain_program_->set_float_array_uniform("triplanar_scale[0]", textures_scale_.data(),
+                                                  static_cast<GLsizei>(textures_scale_.size()));
     }
     if (ImGui::SliderFloat("Mountain Rock Start", &textures_start_height_[1], 0.0f, 1.0f))
     {
         terrain_program_->set_float_array_uniform("start_heights[0]", textures_start_height_.data(),
-                                                  textures_start_height_.size());
+                                                  static_cast<GLsizei>(textures_start_height_.size()));
     }
     if (ImGui::SliderFloat("Mountain Rock Blend End", &textures_blend_end_[1], 0.0f, 1.0f))
     {
         terrain_program_->set_float_array_uniform("blend_end[0]", textures_blend_end_.data(),
-                                                  textures_blend_end_.size());
+                                                  static_cast<GLsizei>(textures_blend_end_.size()));
     }
 
     if (ImGui::SliderFloat("Snow", &textures_scale_[2], 0.02f, 1.1f))
     {
-        terrain_program_->set_float_array_uniform("triplanar_scale[0]", textures_scale_.data(), textures_scale_.size());
+        terrain_program_->set_float_array_uniform("triplanar_scale[0]", textures_scale_.data(),
+                                                  static_cast<GLsizei>(textures_scale_.size()));
     }
     if (ImGui::SliderFloat("Snow Start", &textures_start_height_[2], 0.0f, 1.0f))
     {
         terrain_program_->set_float_array_uniform("start_heights[0]", textures_start_height_.data(),
-                                                  textures_start_height_.size());
+                                                  static_cast<GLsizei>(textures_start_height_.size()));
     }
     if (ImGui::SliderFloat("Snow Blend End", &textures_blend_end_[2], 1.1f, 1.1f))
     {
         terrain_program_->set_float_array_uniform("blend_end[0]", textures_blend_end_.data(),
-                                                  textures_blend_end_.size());
+                                                  static_cast<GLsizei>(textures_blend_end_.size()));
     }
     ImGui::End();
 
@@ -644,7 +648,7 @@ void Application::render_imgui_editor()
     }
     ImGui::End();
 
-    ImGui::Begin("Water");
+    /*ImGui::Begin("Water");
     ImGui::Text("Reflection:");
     imgui_texture_id = reinterpret_cast<void*>(water_->reflection_color_attachment());
     ImGui::Image(imgui_texture_id, ImVec2{200, 200}, ImVec2{0.0f, 0.0f}, ImVec2{1.0f, 1.0f},
@@ -653,7 +657,7 @@ void Application::render_imgui_editor()
     imgui_texture_id = reinterpret_cast<void*>(water_->refraction_color_attachment());
     ImGui::Image(imgui_texture_id, ImVec2{200, 200}, ImVec2{0.0f, 0.0f}, ImVec2{1.0f, 1.0f},
                  ImVec4{1.0f, 1.0f, 1.0f, 1.0f}, ImVec4{1.0f, 1.0f, 1.0f, 0.5f});
-    ImGui::End();
+    ImGui::End();*/
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -665,7 +669,7 @@ void Application::update_noise_and_mesh()
     heightmap_generator_->use();
     heightmap_generator_->set_float_uniform("lacunarity", fractal_noise_generator_.noise_settings.lacunarity);
     heightmap_generator_->set_float_uniform("persistance", fractal_noise_generator_.noise_settings.persistance);
-    heightmap_generator_->set_float_uniform("octaves", fractal_noise_generator_.noise_settings.octaves);
+    heightmap_generator_->set_int_uniform("octaves", fractal_noise_generator_.noise_settings.octaves);
     heightmap_generator_->set_float_uniform("noise_scale", fractal_noise_generator_.noise_settings.noise_scale);
     heightmap_generator_->set_float_uniform("exponent", fractal_noise_generator_.noise_settings.exponent);
     glDispatchCompute(height_map_dim_.first / 32, height_map_dim_.second / 32, 1);

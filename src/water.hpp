@@ -13,7 +13,7 @@
 #include "shader.hpp"
 #include "texture.hpp"
 
-class DirectionalLight;
+struct DirectionalLight;
 class FPSCamera;
 
 class Water
