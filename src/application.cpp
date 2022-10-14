@@ -580,16 +580,16 @@ void Application::render_imgui_editor()
                                               textures_start_height_.size());
     terrain_program_->set_float_array_uniform("blend_end[0]", textures_blend_end_.data(), textures_blend_end_.size());
     */
-    if (ImGui::SliderFloat("Water", &textures_scale_[0], 0.02f, 1.1f))
+    if (ImGui::SliderFloat("River Rock", &textures_scale_[0], 0.02f, 1.1f))
     {
         terrain_program_->set_float_array_uniform("triplanar_scale[0]", textures_scale_.data(), textures_scale_.size());
     }
-    if (ImGui::SliderFloat("Water Start", &textures_start_height_[0], 0.0f, 0.0f))
+    if (ImGui::SliderFloat("River Rock Start", &textures_start_height_[0], 0.0f, 0.0f))
     {
         terrain_program_->set_float_array_uniform("start_heights[0]", textures_start_height_.data(),
                                                   textures_start_height_.size());
     }
-    if (ImGui::SliderFloat("Water Blend End", &textures_blend_end_[0], 0.0, 1.0f))
+    if (ImGui::SliderFloat("River Rock Blend End", &textures_blend_end_[0], 0.0, 1.0f))
     {
         terrain_program_->set_float_array_uniform("blend_end[0]", textures_blend_end_.data(),
                                                   textures_blend_end_.size());
@@ -602,16 +602,16 @@ void Application::render_imgui_editor()
     {
         terrain_program_->set_float_array_uniform("triplanar_scale[0]", textures_scale_.data(), textures_scale_.size());
     }*/
-    if (ImGui::SliderFloat("Rock", &textures_scale_[1], 0.02f, 1.1f))
+    if (ImGui::SliderFloat("Mountain Rock", &textures_scale_[1], 0.02f, 1.1f))
     {
         terrain_program_->set_float_array_uniform("triplanar_scale[0]", textures_scale_.data(), textures_scale_.size());
     }
-    if (ImGui::SliderFloat("Rock Start", &textures_start_height_[1], 0.0f, 1.0f))
+    if (ImGui::SliderFloat("Mountain Rock Start", &textures_start_height_[1], 0.0f, 1.0f))
     {
         terrain_program_->set_float_array_uniform("start_heights[0]", textures_start_height_.data(),
                                                   textures_start_height_.size());
     }
-    if (ImGui::SliderFloat("Rock Blend End", &textures_blend_end_[1], 0.0f, 1.0f))
+    if (ImGui::SliderFloat("Mountain Rock Blend End", &textures_blend_end_[1], 0.0f, 1.0f))
     {
         terrain_program_->set_float_array_uniform("blend_end[0]", textures_blend_end_.data(),
                                                   textures_blend_end_.size());
