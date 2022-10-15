@@ -50,7 +50,7 @@ private:
     const std::uint32_t refraction_width_{1024};
     const std::uint32_t refraction_height_{768};
     const float wave_speed_{.03f};
-    float height_{11.0f};
+    float height_{16.5f};
     glm::vec4 reflection_clip_plane_{0.0f, 1.0f, 0.0f, -height_ + 0.1f};
     glm::vec4 refraction_clip_plane_{0.0f, -1.0f, 0.0f, height_ + 0.2f};
     glm::mat4 model_{1.0f};

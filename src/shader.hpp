@@ -11,6 +11,7 @@
 #include <type_traits>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 class Shader
 {
@@ -58,6 +59,7 @@ public:
     void set_float_array_uniform(const std::string& uniform_name, const float* value, GLsizei count);
     void set_vec2_uniform(const std::string& uniform_name, float x, float y);
     void set_vec2_uniform(const std::string& uniform_name, const glm::vec2& vector);
+    void set_vec2_array_uniform(const std::string& uniform_name, const std::vector<glm::vec2>& value, GLsizei count);
     void set_vec3_uniform(const std::string& uniform_name, float x, float y, float z);
     void set_vec3_uniform(const std::string& uniform_name, const glm::vec3& vector);
     void set_vec4_uniform(const std::string& uniform_name, const glm::vec4& vector);

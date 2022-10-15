@@ -25,13 +25,7 @@ void FractalNoiseGenerator::update(bool apply_hermite_interpolation)
 
 void FractalNoiseGenerator::update_height_map(bool apply_hermite_interpolation)
 {
-    random_offsets_.clear();
-    random_offsets_.resize(noise_settings.octaves);
-    for (int i = 0; i < noise_settings.octaves; ++i)
-    {
-        const glm::vec2 random_sample{glm::linearRand(-10000.0f, 10000.0f), -glm::linearRand(-10000.0f, 10000.0f)};
-        random_offsets_[i] = noise_settings.offset + random_sample;
-    }
+    generate_random_offsets();
 
     float min_height{std::numeric_limits<float>::max()};
     float max_height{std::numeric_limits<float>::lowest()};
@@ -67,6 +61,17 @@ void FractalNoiseGenerator::update_height_map(bool apply_hermite_interpolation)
     if (apply_hermite_interpolation)
     {
         height_map_.transform([&curve = curve_](float noise_height) { return curve.evaluate(noise_height).y; });
+    }
+}
+
+void FractalNoiseGenerator::generate_random_offsets()
+{
+    random_offsets_.clear();
+    random_offsets_.resize(noise_settings.octaves);
+    for (int i = 0; i < noise_settings.octaves; ++i)
+    {
+        const glm::vec2 random_sample{glm::linearRand(-10000.0f, 10000.0f), -glm::linearRand(-10000.0f, 10000.0f)};
+        random_offsets_[i] = noise_settings.offset + random_sample;
     }
 }
 
@@ -123,4 +128,9 @@ const Image<float>& FractalNoiseGenerator::height_map() const
 const Image<std::uint8_t>& FractalNoiseGenerator::normal_map() const
 {
     return normal_map_;
+}
+
+const std::vector<glm::vec2>& FractalNoiseGenerator::random_offsets() const
+{
+    return random_offsets_;
 }

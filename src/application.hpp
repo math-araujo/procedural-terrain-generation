@@ -72,12 +72,12 @@ private:
     std::unique_ptr<Texture> terrain_normal_maps_{};
     std::unique_ptr<Texture> terrain_ao_maps_{};
     std::unique_ptr<ShaderProgram> terrain_program_{};
-    float terrain_elevation_{35.0f};
+    float terrain_elevation_{45.0f};
     bool apply_normal_map_{true};
 
     // Heights, blend end and texture scale for River-Rock, Mountain-Rock and Snow, respectively
     std::array<float, 3 + 1> textures_start_height_{0.0f, 0.17f, 0.5f, 1.1f};
-    std::array<float, 3> textures_blend_end_{0.36f, 0.8f, 1.1f};
+    std::array<float, 3> textures_blend_end_{0.45f, 0.8f, 1.1f};
     std::array<float, 3> textures_scale_{0.3f, 0.1f, 0.4f};
 
     glm::mat4 terrain_scale_{1.0f};
@@ -133,9 +133,9 @@ private:
     void render_imgui_editor();
 
     /*
-    Update height map and mesh.
+    Update heightmap and normal map for the terrain.
     */
-    void update_noise_and_mesh();
+    void compute_terrain_maps();
 
     /*
     Manually cleanup OpenGL-related objects. Since Application

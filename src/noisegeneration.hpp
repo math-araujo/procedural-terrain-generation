@@ -36,11 +36,13 @@ public:
 
     void update(bool apply_hermite_interpolation = false);
     void update_height_map(bool apply_hermite_interpolation = false);
+    void generate_random_offsets();
     void update_normal_map();
     void reset_settings();
     const Image<float>& height_map() const;
     const Image<std::uint8_t>& color_map() const;
     const Image<std::uint8_t>& normal_map() const;
+    const std::vector<glm::vec2>& random_offsets() const;
 
 private:
     const std::uint32_t width_{0};

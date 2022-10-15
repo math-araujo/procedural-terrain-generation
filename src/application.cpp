@@ -257,21 +257,22 @@ void Application::initialize_terrain()
     heightmap_generator_->set_float_uniform("exponent", fractal_noise_generator_.noise_settings.exponent);
 
     terrain_heightmap_ = std::make_unique<Texture>(height_map_dim_.first, height_map_dim_.second);
-    terrain_heightmap_->bind_image(0);
+    /*terrain_heightmap_->bind_image(0);
     heightmap_generator_->use();
     glDispatchCompute(height_map_dim_.first / 32, height_map_dim_.second / 32, 1);
-    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);*/
 
     normalmap_generator_ =
         std::make_unique<ShaderProgram>(std::initializer_list<std::pair<std::string_view, Shader::Type>>{
             {"shaders/heightmap/normalmap.glsl", Shader::Type::Compute},
         });
     terrain_normalmap_ = std::make_unique<Texture>(height_map_dim_.first, height_map_dim_.second);
-    normalmap_generator_->use();
+    /*normalmap_generator_->use();
     terrain_heightmap_->bind_image(0);
     terrain_normalmap_->bind_image(1);
     glDispatchCompute(height_map_dim_.first / 32, height_map_dim_.second / 32, 1);
-    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);*/
+    compute_terrain_maps();
 
     // Terrain textures attributes
     const Texture::Attributes terrain_texture_attributes{Texture::Attributes{.target = GL_TEXTURE_2D_ARRAY,
@@ -514,25 +515,30 @@ void Application::render_imgui_editor()
     {
         if (ImGui::SliderFloat("Lacunarity", &fractal_noise_generator_.noise_settings.lacunarity, 0.01f, 10.0f))
         {
-            update_noise_and_mesh();
+            compute_terrain_maps();
         }
         if (ImGui::SliderFloat("Persistance", &fractal_noise_generator_.noise_settings.persistance, 0.01f, 1.0f))
         {
-            update_noise_and_mesh();
+            compute_terrain_maps();
         }
         if (ImGui::SliderInt("Octaves", &fractal_noise_generator_.noise_settings.octaves, 1, 16))
         {
-            update_noise_and_mesh();
+            compute_terrain_maps();
         }
         if (ImGui::SliderFloat("Noise Scale", &fractal_noise_generator_.noise_settings.noise_scale, 0.01f, 50.0f))
         {
-            update_noise_and_mesh();
+            compute_terrain_maps();
         }
         if (ImGui::SliderFloat("Redistribution", &fractal_noise_generator_.noise_settings.exponent, 1.0f, 2.0f))
         {
-            update_noise_and_mesh();
+            compute_terrain_maps();
         }
-        ImGui::SliderFloat2("Offset", glm::value_ptr(fractal_noise_generator_.noise_settings.offset), -1000, 1000);
+        if (ImGui::SliderFloat2("Offset", glm::value_ptr(fractal_noise_generator_.noise_settings.offset), -1000, 1000))
+        {
+            fractal_noise_generator_.generate_random_offsets();
+            compute_terrain_maps();
+        }
+
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
                     ImGui::GetIO().Framerate);
         ImTextureID imgui_texture_id = reinterpret_cast<void*>(static_cast<std::intptr_t>(terrain_heightmap_->id()));
@@ -648,7 +654,7 @@ void Application::render_imgui_editor()
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-void Application::update_noise_and_mesh()
+void Application::compute_terrain_maps()
 {
     terrain_heightmap_->bind_image(0);
     heightmap_generator_->use();
@@ -657,6 +663,8 @@ void Application::update_noise_and_mesh()
     heightmap_generator_->set_int_uniform("octaves", fractal_noise_generator_.noise_settings.octaves);
     heightmap_generator_->set_float_uniform("noise_scale", fractal_noise_generator_.noise_settings.noise_scale);
     heightmap_generator_->set_float_uniform("exponent", fractal_noise_generator_.noise_settings.exponent);
+    heightmap_generator_->set_vec2_array_uniform("offsets[0]", fractal_noise_generator_.random_offsets(),
+                                                 fractal_noise_generator_.noise_settings.octaves);
     glDispatchCompute(height_map_dim_.first / 32, height_map_dim_.second / 32, 1);
     glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
