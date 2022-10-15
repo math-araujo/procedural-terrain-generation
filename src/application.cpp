@@ -429,9 +429,7 @@ void Application::update(float delta_time)
 
         terrain_program_->use();
         terrain_program_->set_vec3_uniform("light.direction", light_.direction);
-        terrain_program_->set_vec3_uniform("light.ambient", light_.ambient);
         terrain_program_->set_vec3_uniform("light.diffuse", light_.diffuse);
-        terrain_program_->set_vec3_uniform("light.specular", light_.specular);
         light_.to_update = false;
     }
 
@@ -653,7 +651,6 @@ void Application::render_imgui_editor()
     if (ImGui::TreeNode("Directional Light"))
     {
         light_.to_update = ImGui::SliderFloat3("Direction", glm::value_ptr(light_.direction), -20.0f, 20.0f);
-        light_.to_update |= ImGui::SliderFloat3("Ambient", glm::value_ptr(light_.ambient), 0.0f, 1.0f);
         light_.to_update |= ImGui::SliderFloat3("Diffuse", glm::value_ptr(light_.diffuse), 0.0f, 1.0f);
         if (ImGui::Button("Reset Light"))
         {
