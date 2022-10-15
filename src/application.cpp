@@ -509,155 +509,140 @@ void Application::render_imgui_editor()
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    ImGui::Begin("Fractal Noise Settings");
-    if (ImGui::SliderFloat("Lacunarity", &fractal_noise_generator_.noise_settings.lacunarity, 0.01f, 10.0f))
+    ImGui::Begin("Settings");
+    if (ImGui::TreeNode("Noise"))
     {
-        update_noise_and_mesh();
-    }
-    if (ImGui::SliderFloat("Persistance", &fractal_noise_generator_.noise_settings.persistance, 0.01f, 1.0f))
-    {
-        update_noise_and_mesh();
-    }
-    if (ImGui::SliderInt("Octaves", &fractal_noise_generator_.noise_settings.octaves, 1, 16))
-    {
-        update_noise_and_mesh();
-    }
-    if (ImGui::SliderFloat("Noise Scale", &fractal_noise_generator_.noise_settings.noise_scale, 0.01f, 50.0f))
-    {
-        update_noise_and_mesh();
-    }
-    if (ImGui::SliderFloat("Redistribution", &fractal_noise_generator_.noise_settings.exponent, 1.0f, 2.0f))
-    {
-        update_noise_and_mesh();
-    }
-    ImGui::SliderFloat2("Offset", glm::value_ptr(fractal_noise_generator_.noise_settings.offset), -1000, 1000);
-    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
-                ImGui::GetIO().Framerate);
-    ImTextureID imgui_texture_id = reinterpret_cast<void*>(static_cast<std::intptr_t>(terrain_heightmap_->id()));
-    ImGui::Image(imgui_texture_id, ImVec2{200, 200}, ImVec2{0.0f, 0.0f}, ImVec2{1.0f, 1.0f},
-                 ImVec4{1.0f, 1.0f, 1.0f, 1.0f}, ImVec4{1.0f, 1.0f, 1.0f, 0.5f});
-    imgui_texture_id = reinterpret_cast<void*>(static_cast<std::intptr_t>(terrain_normalmap_->id()));
-    ImGui::Image(imgui_texture_id, ImVec2{200, 200}, ImVec2{0.0f, 0.0f}, ImVec2{1.0f, 1.0f},
-                 ImVec4{1.0f, 1.0f, 1.0f, 1.0f}, ImVec4{1.0f, 1.0f, 1.0f, 0.5f});
-    ImGui::End();
-
-    ImGui::Begin("Light Settings");
-    light_.to_update = ImGui::SliderFloat3("Direction", glm::value_ptr(light_.direction), -20.0f, 20.0f);
-    light_.to_update |= ImGui::SliderFloat3("Ambient", glm::value_ptr(light_.ambient), 0.0f, 1.0f);
-    light_.to_update |= ImGui::SliderFloat3("Diffuse", glm::value_ptr(light_.diffuse), 0.0f, 1.0f);
-    if (ImGui::Button("Reset Light"))
-    {
-        light_ = start_light_;
-        light_.to_update = true;
-    }
-    ImGui::End();
-
-    ImGui::Begin("Terrain");
-    if (ImGui::SliderFloat("Elevation", &terrain_elevation_, -20.0f, 50.0f))
-    {
-        terrain_program_->set_float_uniform("elevation", terrain_elevation_);
-    }
-    float water_height{water_->height()};
-    if (ImGui::SliderFloat("Water Height", &water_height, 0.0f, 50.0f))
-    {
-        water_->set_height(water_height);
-    }
-    if (ImGui::Checkbox("Use normal mapping", &apply_normal_map_))
-    {
-        terrain_program_->set_bool_uniform("apply_normal_map", apply_normal_map_);
-    }
-    if (ImGui::Checkbox("Use triplanar texture mapping", &use_triplanar_texturing_))
-    {
-        terrain_program_->set_int_uniform("use_triplanar_texturing", static_cast<int>(use_triplanar_texturing_));
-    }
-
-    /*
-    terrain_program_->set_float_array_uniform("triplanar_scale[0]", textures_scale_.data(), textures_scale_.size());
-    terrain_program_->set_float_array_uniform("start_heights[0]", textures_start_height_.data(),
-                                              textures_start_height_.size());
-    terrain_program_->set_float_array_uniform("blend_end[0]", textures_blend_end_.data(), textures_blend_end_.size());
-    */
-    if (ImGui::SliderFloat("River Rock", &textures_scale_[0], 0.02f, 1.1f))
-    {
-        terrain_program_->set_float_array_uniform("triplanar_scale[0]", textures_scale_.data(),
-                                                  static_cast<GLsizei>(textures_scale_.size()));
-    }
-    if (ImGui::SliderFloat("River Rock Start", &textures_start_height_[0], 0.0f, 0.0f))
-    {
-        terrain_program_->set_float_array_uniform("start_heights[0]", textures_start_height_.data(),
-                                                  static_cast<GLsizei>(textures_start_height_.size()));
-    }
-    if (ImGui::SliderFloat("River Rock Blend End", &textures_blend_end_[0], 0.0, 1.0f))
-    {
-        terrain_program_->set_float_array_uniform("blend_end[0]", textures_blend_end_.data(),
-                                                  static_cast<GLsizei>(textures_blend_end_.size()));
-    }
-    /*if (ImGui::SliderFloat("Sand", &textures_scale_[1], 0.02f, 1.1f))
-    {
-        terrain_program_->set_float_array_uniform("triplanar_scale[0]", textures_scale_.data(), textures_scale_.size());
-    }
-    if (ImGui::SliderFloat("Grass", &textures_scale_[2], 0.02f, 1.1f))
-    {
-        terrain_program_->set_float_array_uniform("triplanar_scale[0]", textures_scale_.data(), textures_scale_.size());
-    }*/
-    if (ImGui::SliderFloat("Mountain Rock", &textures_scale_[1], 0.02f, 1.1f))
-    {
-        terrain_program_->set_float_array_uniform("triplanar_scale[0]", textures_scale_.data(),
-                                                  static_cast<GLsizei>(textures_scale_.size()));
-    }
-    if (ImGui::SliderFloat("Mountain Rock Start", &textures_start_height_[1], 0.0f, 1.0f))
-    {
-        terrain_program_->set_float_array_uniform("start_heights[0]", textures_start_height_.data(),
-                                                  static_cast<GLsizei>(textures_start_height_.size()));
-    }
-    if (ImGui::SliderFloat("Mountain Rock Blend End", &textures_blend_end_[1], 0.0f, 1.0f))
-    {
-        terrain_program_->set_float_array_uniform("blend_end[0]", textures_blend_end_.data(),
-                                                  static_cast<GLsizei>(textures_blend_end_.size()));
-    }
-
-    if (ImGui::SliderFloat("Snow", &textures_scale_[2], 0.02f, 1.1f))
-    {
-        terrain_program_->set_float_array_uniform("triplanar_scale[0]", textures_scale_.data(),
-                                                  static_cast<GLsizei>(textures_scale_.size()));
-    }
-    if (ImGui::SliderFloat("Snow Start", &textures_start_height_[2], 0.0f, 1.0f))
-    {
-        terrain_program_->set_float_array_uniform("start_heights[0]", textures_start_height_.data(),
-                                                  static_cast<GLsizei>(textures_start_height_.size()));
-    }
-    if (ImGui::SliderFloat("Snow Blend End", &textures_blend_end_[2], 1.1f, 1.1f))
-    {
-        terrain_program_->set_float_array_uniform("blend_end[0]", textures_blend_end_.data(),
-                                                  static_cast<GLsizei>(textures_blend_end_.size()));
-    }
-    ImGui::End();
-
-    ImGui::Begin("Fog");
-    ImGui::Checkbox("Apply Halfspace Fog", &apply_fog_);
-    if (apply_fog_)
-    {
-        if (ImGui::SliderFloat("Fog Height", &fog_height_, 0.0f, 40.0f))
+        if (ImGui::SliderFloat("Lacunarity", &fractal_noise_generator_.noise_settings.lacunarity, 0.01f, 10.0f))
         {
-            terrain_program_->set_float_uniform("fog.height", fog_height_);
+            update_noise_and_mesh();
         }
-        if (ImGui::SliderFloat("Fog Density", &fog_density_, 0.001f, 0.1f))
+        if (ImGui::SliderFloat("Persistance", &fractal_noise_generator_.noise_settings.persistance, 0.01f, 1.0f))
         {
-            terrain_program_->set_float_uniform("fog.density", fog_density_);
+            update_noise_and_mesh();
         }
+        if (ImGui::SliderInt("Octaves", &fractal_noise_generator_.noise_settings.octaves, 1, 16))
+        {
+            update_noise_and_mesh();
+        }
+        if (ImGui::SliderFloat("Noise Scale", &fractal_noise_generator_.noise_settings.noise_scale, 0.01f, 50.0f))
+        {
+            update_noise_and_mesh();
+        }
+        if (ImGui::SliderFloat("Redistribution", &fractal_noise_generator_.noise_settings.exponent, 1.0f, 2.0f))
+        {
+            update_noise_and_mesh();
+        }
+        ImGui::SliderFloat2("Offset", glm::value_ptr(fractal_noise_generator_.noise_settings.offset), -1000, 1000);
+        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
+                    ImGui::GetIO().Framerate);
+        ImTextureID imgui_texture_id = reinterpret_cast<void*>(static_cast<std::intptr_t>(terrain_heightmap_->id()));
+        ImGui::Image(imgui_texture_id, ImVec2{200, 200}, ImVec2{0.0f, 0.0f}, ImVec2{1.0f, 1.0f},
+                     ImVec4{1.0f, 1.0f, 1.0f, 1.0f}, ImVec4{1.0f, 1.0f, 1.0f, 0.5f});
+        imgui_texture_id = reinterpret_cast<void*>(static_cast<std::intptr_t>(terrain_normalmap_->id()));
+        ImGui::Image(imgui_texture_id, ImVec2{200, 200}, ImVec2{0.0f, 0.0f}, ImVec2{1.0f, 1.0f},
+                     ImVec4{1.0f, 1.0f, 1.0f, 1.0f}, ImVec4{1.0f, 1.0f, 1.0f, 0.5f});
+        ImGui::TreePop();
     }
-    ImGui::End();
 
-    /*ImGui::Begin("Water");
-    ImGui::Text("Reflection:");
-    imgui_texture_id = reinterpret_cast<void*>(water_->reflection_color_attachment());
-    ImGui::Image(imgui_texture_id, ImVec2{200, 200}, ImVec2{0.0f, 0.0f}, ImVec2{1.0f, 1.0f},
-                 ImVec4{1.0f, 1.0f, 1.0f, 1.0f}, ImVec4{1.0f, 1.0f, 1.0f, 0.5f});
-    ImGui::Text("Refraction:");
-    imgui_texture_id = reinterpret_cast<void*>(water_->refraction_color_attachment());
-    ImGui::Image(imgui_texture_id, ImVec2{200, 200}, ImVec2{0.0f, 0.0f}, ImVec2{1.0f, 1.0f},
-                 ImVec4{1.0f, 1.0f, 1.0f, 1.0f}, ImVec4{1.0f, 1.0f, 1.0f, 0.5f});
-    ImGui::End();*/
+    if (ImGui::TreeNode("Terrain and Water"))
+    {
+        if (ImGui::SliderFloat("Terrain Elevation", &terrain_elevation_, 0.0f, 50.0f))
+        {
+            terrain_program_->set_float_uniform("elevation", terrain_elevation_);
+        }
+        float water_height{water_->height()};
+
+        if (ImGui::SliderFloat("Water Height", &water_height, 0.0f, 50.0f))
+        {
+            water_->set_height(water_height);
+        }
+        ImGui::TreePop();
+    }
+
+    if (ImGui::TreeNode("Texturing"))
+    {
+        if (ImGui::Checkbox("Use normal mapping", &apply_normal_map_))
+        {
+            terrain_program_->set_bool_uniform("apply_normal_map", apply_normal_map_);
+        }
+        if (ImGui::Checkbox("Use triplanar texture mapping", &use_triplanar_texturing_))
+        {
+            terrain_program_->set_int_uniform("use_triplanar_texturing", static_cast<int>(use_triplanar_texturing_));
+        }
+        if (ImGui::SliderFloat("River Rock", &textures_scale_[0], 0.02f, 1.1f))
+        {
+            terrain_program_->set_float_array_uniform("triplanar_scale[0]", textures_scale_.data(),
+                                                      static_cast<GLsizei>(textures_scale_.size()));
+        }
+
+        ImGui::Text("River Rock Blend Start is fixed at 0.0");
+        if (ImGui::SliderFloat("River Rock Blend End", &textures_blend_end_[0], 0.0, 1.0f))
+        {
+            terrain_program_->set_float_array_uniform("blend_end[0]", textures_blend_end_.data(),
+                                                      static_cast<GLsizei>(textures_blend_end_.size()));
+        }
+
+        if (ImGui::SliderFloat("Mountain Rock", &textures_scale_[1], 0.02f, 1.1f))
+        {
+            terrain_program_->set_float_array_uniform("triplanar_scale[0]", textures_scale_.data(),
+                                                      static_cast<GLsizei>(textures_scale_.size()));
+        }
+        if (ImGui::SliderFloat("Mountain Rock Start", &textures_start_height_[1], textures_start_height_[0], 1.0f))
+        {
+            terrain_program_->set_float_array_uniform("start_heights[0]", textures_start_height_.data(),
+                                                      static_cast<GLsizei>(textures_start_height_.size()));
+        }
+        if (ImGui::SliderFloat("Mountain Rock Blend End", &textures_blend_end_[1], 0.0f, 1.0f))
+        {
+            terrain_program_->set_float_array_uniform("blend_end[0]", textures_blend_end_.data(),
+                                                      static_cast<GLsizei>(textures_blend_end_.size()));
+        }
+
+        if (ImGui::SliderFloat("Snow", &textures_scale_[2], 0.02f, 1.1f))
+        {
+            terrain_program_->set_float_array_uniform("triplanar_scale[0]", textures_scale_.data(),
+                                                      static_cast<GLsizei>(textures_scale_.size()));
+        }
+        if (ImGui::SliderFloat("Snow Start", &textures_start_height_[2], 0.0f, 1.0f))
+        {
+            terrain_program_->set_float_array_uniform("start_heights[0]", textures_start_height_.data(),
+                                                      static_cast<GLsizei>(textures_start_height_.size()));
+        }
+        ImGui::Text("Snow Blend End is fixed at 1.0");
+        ImGui::TreePop();
+    }
+
+    if (ImGui::TreeNode("Halfspace Fog"))
+    {
+        ImGui::Checkbox("Apply Halfspace Fog", &apply_fog_);
+        if (apply_fog_)
+        {
+            if (ImGui::SliderFloat("Fog Height", &fog_height_, 0.0f, 40.0f))
+            {
+                terrain_program_->set_float_uniform("fog.height", fog_height_);
+            }
+            if (ImGui::SliderFloat("Fog Density", &fog_density_, 0.001f, 0.1f))
+            {
+                terrain_program_->set_float_uniform("fog.density", fog_density_);
+            }
+        }
+        ImGui::TreePop();
+    }
+
+    if (ImGui::TreeNode("Directional Light"))
+    {
+        light_.to_update = ImGui::SliderFloat3("Direction", glm::value_ptr(light_.direction), -20.0f, 20.0f);
+        light_.to_update |= ImGui::SliderFloat3("Ambient", glm::value_ptr(light_.ambient), 0.0f, 1.0f);
+        light_.to_update |= ImGui::SliderFloat3("Diffuse", glm::value_ptr(light_.diffuse), 0.0f, 1.0f);
+        if (ImGui::Button("Reset Light"))
+        {
+            light_ = start_light_;
+            light_.to_update = true;
+        }
+        ImGui::TreePop();
+    }
+
+    ImGui::End();
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
