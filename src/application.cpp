@@ -11,8 +11,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include <exception>
+#include <ctime>
 #include <iostream>
+#include <stdexcept>
 #include <string>
 
 #include "framebuffer.hpp"
@@ -525,7 +526,7 @@ void Application::render_imgui_editor()
         {
             compute_terrain_maps();
         }
-        if (ImGui::SliderFloat("Noise Scale", &fractal_noise_generator_.noise_settings.noise_scale, 0.01f, 50.0f))
+        if (ImGui::SliderFloat("Noise Scale", &fractal_noise_generator_.noise_settings.noise_scale, 0.01f, 10.0f))
         {
             compute_terrain_maps();
         }
@@ -533,6 +534,20 @@ void Application::render_imgui_editor()
         {
             compute_terrain_maps();
         }
+        if (ImGui::SliderInt("Seed", &fractal_noise_generator_.noise_settings.seed, -1, 100))
+        {
+            if (fractal_noise_generator_.noise_settings.seed == -1)
+            {
+                std::srand(std::time(nullptr));
+            }
+            else
+            {
+                std::srand(fractal_noise_generator_.noise_settings.seed);
+            }
+            fractal_noise_generator_.generate_random_offsets();
+            compute_terrain_maps();
+        }
+        ImGui::Text("(Note: Set seed = -1 to use current time as seed)");
         if (ImGui::SliderFloat2("Offset", glm::value_ptr(fractal_noise_generator_.noise_settings.offset), -1000, 1000))
         {
             fractal_noise_generator_.generate_random_offsets();
