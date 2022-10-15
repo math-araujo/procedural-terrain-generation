@@ -1,5 +1,4 @@
 #include <cstdlib>
-#include <ctime>
 #include <exception>
 #include <iostream>
 
@@ -7,8 +6,7 @@
 
 int main()
 {
-    std::srand(std::time(nullptr)); // Bad random generator, consider refactoring later
-
+    std::srand(0);
     try
     {
         Application application{1024, 768, "Procedural Terrain Generation"};

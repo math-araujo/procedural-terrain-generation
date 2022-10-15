@@ -23,6 +23,7 @@ public:
         float persistance{0.5f};
         int octaves{8};
         glm::vec2 offset{0.0f};
+        int seed{0};
     };
 
     NoiseSettings noise_settings{};
