@@ -1,3 +1,11 @@
+Texture files on the assets/textures/cubemap and assets/textures/cloudy_cubemap directories with ".png" and ".jpg" extension are released under the following Creative Commons license:
+    
+    Creative Commons Attribution-NonCommercial-ShareAlike 3.0
+    Unported License (CC-BY-NC-SA 3.0)
+    https://creativecommons.org/licenses/by-nc-sa/3.0/
+
+The files containing source code, except by `assets/shaders/heightmap/noise.glsl` are released under the following MIT License:
+
 MIT License
 
 Copyright (c) 2022 math-araujo (Matheus Araujo)
@@ -19,3 +27,27 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+The file `assets/shaders/heightmap/noise.glsl` is due to Stefan Gustavson, and
+is released under the MIT License as follows (see https://github.com/stegu/webgl-noise/blob/master/LICENSE):
+
+Copyright (C) 2011 by Ashima Arts (Simplex noise)
+Copyright (C) 2011-2016 by Stefan Gustavson (Classic noise and others)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
