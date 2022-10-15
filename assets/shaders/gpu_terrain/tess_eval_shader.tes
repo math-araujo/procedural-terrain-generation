@@ -9,7 +9,7 @@ out vec2 tes_tex_coords;
 out vec3 tes_frag_pos;
 out vec3 tes_normal;
 
-layout (binding = 0) uniform sampler2D texture_sampler;
+layout (binding = 0) uniform sampler2D heightmap_sampler;
 layout (binding = 1) uniform sampler2D normal_map_sampler;
 uniform mat4 model;
 uniform mat4 mvp;
@@ -43,8 +43,8 @@ void main()
     vec2 t1 = mix(t01, t11, u);
     vec2 interpolated_tex_coordinates = mix(t0, t1, v);
     
-    vec4 texel = texture(texture_sampler, interpolated_tex_coordinates);
-    tes_height = texel.a;
+    vec4 texel = texture(heightmap_sampler, interpolated_tex_coordinates);
+    tes_height = texel.r;
     position.y = elevation * tes_height;
 
     tes_tex_coords = interpolated_tex_coordinates;
