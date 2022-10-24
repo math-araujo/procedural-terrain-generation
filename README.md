@@ -1,5 +1,7 @@
 # Procedural Terrain Generation
 
+[![Windows](https://github.com/math-araujo/procedural-terrain-generation/actions/workflows/Windows.yml/badge.svg?event=push)](https://github.com/math-araujo/procedural-terrain-generation/actions/workflows/Windows.yml) [![Ubuntu](https://github.com/math-araujo/procedural-terrain-generation/actions/workflows/Ubuntu.yml/badge.svg?event=push)](https://github.com/math-araujo/procedural-terrain-generation/actions/workflows/Ubuntu.yml)
+
 ![Scene](docs/gifs/main.gif)
 
 This project is a C++20/OpenGL 4.5 implementation of a procedural terrain generator on GPU using coherent noise. It uses compute shaders to create heightmaps based on 2D fractal Brownian noise (fBm). To calculate normal vectors based on the terrain height, it uses compute shaders that leverages the shared memory of GPU blocks to apply the Sobel operator on the heightmap. The heightmap is then used by tessellation shaders to generate a triangulation for the terrain, with dynamic level-of-detail (LOD) based on the camera distance. Since the triangles are generated dynamically on the GPU, instead of precomputed UV-coordinates for each triangle vertex, triplanar texture mapping is used to assign texture coordinates on-the-fly. The reflections on the water are created using planar reflection, and textures are used to simulate distortions on the water surface. Instead of a classic distance-based fog, a halfspace fog is implemented, which uses an arbitrary plane to cut the space in two halfspaces: one affected and one unaffected by fog.

@@ -1,0 +1,17 @@
+name: Windows
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  
+jobs:
+  build:
+    runs-on: windows-2022
+    steps:
+    - uses: actions/checkout@v2
+    - name: Configure project
+      run: cmake --preset=default
+    - name: Build project
+      run: cmake --build build
