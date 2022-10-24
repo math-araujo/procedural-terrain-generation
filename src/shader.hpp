@@ -67,7 +67,7 @@ public:
 
 private:
     std::uint32_t program_id_{0};
-    std::unordered_map<std::string, std::uint32_t> uniform_locations{};
+    std::unordered_map<std::string, std::uint32_t> uniform_locations_{};
 
     void retrieve_uniforms();
 };

@@ -131,7 +131,6 @@ void FPSCamera::invert_pitch()
     orientation_update_ = true;
 }
 
-#include <iostream>
 const glm::mat4& FPSCamera::view()
 {
     if (orientation_update_)

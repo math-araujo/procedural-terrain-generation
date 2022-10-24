@@ -30,33 +30,7 @@ Application::Application(int window_width, int window_height, std::string_view t
     create_context(title);
     load_opengl();
     initialize_imgui();
-    /*mesh_ = std::make_unique<Mesh>(
-        std::vector<float>
-        {
-            // X     Y     Z     U     V
-            0.5f, 0.5f, 0.0f, 1.0f, 1.0f, // Top-right
-            -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, // Top-left
-            0.5f, -0.5f, 0.0f, 1.0f, 0.0f, // Bottom-right
-            0.5f, -0.5f, 0.0f, 1.0f, 0.0f, // Bottom-right
-            -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, // Top-left
-            -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, // Bottom-left
-        }
-    );*/
-    /*mesh_ = std::make_unique<IndexedMesh>(
-        std::vector<float>
-        {
-            // X     Y     Z     U     V
-            0.5f, 0.5f, 0.0f, 1.0f, 1.0f, // Top-right
-            -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, // Top-left
-            0.5f, -0.5f, 0.0f, 1.0f, 0.0f, // Bottom-right
-            -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, // Bottom-left
-        },
-        std::vector<std::uint32_t>
-        {
-            0, 1, 2,
-            2, 1, 3
-        }
-    );*/
+
     std::cout << "Vendor: " << glGetString(GL_VENDOR) << "\n";
     std::cout << "Renderer: " << glGetString(GL_RENDERER) << "\n";
 
@@ -258,21 +232,11 @@ void Application::initialize_terrain()
     heightmap_generator_->set_float_uniform("exponent", fractal_noise_generator_.noise_settings.exponent);
 
     terrain_heightmap_ = std::make_unique<Texture>(height_map_dim_.first, height_map_dim_.second);
-    /*terrain_heightmap_->bind_image(0);
-    heightmap_generator_->use();
-    glDispatchCompute(height_map_dim_.first / 32, height_map_dim_.second / 32, 1);
-    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);*/
-
     normalmap_generator_ =
         std::make_unique<ShaderProgram>(std::initializer_list<std::pair<std::string_view, Shader::Type>>{
             {"shaders/heightmap/normalmap.glsl", Shader::Type::Compute},
         });
     terrain_normalmap_ = std::make_unique<Texture>(height_map_dim_.first, height_map_dim_.second);
-    /*normalmap_generator_->use();
-    terrain_heightmap_->bind_image(0);
-    terrain_normalmap_->bind_image(1);
-    glDispatchCompute(height_map_dim_.first / 32, height_map_dim_.second / 32, 1);
-    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);*/
     compute_terrain_maps();
 
     // Terrain textures attributes
@@ -465,7 +429,6 @@ void Application::render()
     reset_viewport();
 
     // Clear window with specified color
-    // glClearColor(0.0f, 0.1f, 0.4f, 1.0f);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -552,14 +515,14 @@ void Application::render_imgui_editor()
             compute_terrain_maps();
         }
 
-        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
-                    ImGui::GetIO().Framerate);
         ImTextureID imgui_texture_id = reinterpret_cast<void*>(static_cast<std::intptr_t>(terrain_heightmap_->id()));
         ImGui::Image(imgui_texture_id, ImVec2{200, 200}, ImVec2{0.0f, 0.0f}, ImVec2{1.0f, 1.0f},
                      ImVec4{1.0f, 1.0f, 1.0f, 1.0f}, ImVec4{1.0f, 1.0f, 1.0f, 0.5f});
         imgui_texture_id = reinterpret_cast<void*>(static_cast<std::intptr_t>(terrain_normalmap_->id()));
         ImGui::Image(imgui_texture_id, ImVec2{200, 200}, ImVec2{0.0f, 0.0f}, ImVec2{1.0f, 1.0f},
                      ImVec4{1.0f, 1.0f, 1.0f, 1.0f}, ImVec4{1.0f, 1.0f, 1.0f, 0.5f});
+        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
+                    ImGui::GetIO().Framerate);
         ImGui::TreePop();
     }
 
