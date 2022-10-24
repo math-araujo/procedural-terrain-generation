@@ -36,6 +36,20 @@ Tested on:
 
 ## Gallery
 
+### Views
+
+Some views of the scene
+
+| |
+| :---: 
+| ![View2](docs/images/terrain_view2.png?raw=True) |
+
+| |
+| :---: 
+| ![View1](docs/images/terrain_view1.png?raw=True) |
+
+
+
 ### Noise Settings
 
 The coherent noise used was 2D fractal Brownian noise (fBm), which adds layers of noise with increasing frequency but decreasing influence. The first layers of noise defines the overall shape of the terrain, while the subsequent layers defines small-scale details of the terrain. The number of layers is denoted by octaves, the sampling frequency is controlled by the lacunarity variable and the influence of each layer is decided by the persistance variable. The following image show the real-time update of the terrain by changing these parameters on the GUI.
