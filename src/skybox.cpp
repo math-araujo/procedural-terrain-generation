@@ -10,19 +10,19 @@
 Skybox::Skybox()
 {
     shader_ = std::make_unique<ShaderProgram>(std::initializer_list<std::pair<std::string_view, Shader::Type>>{
-        {"shaders/skybox/vertex_shader.vs", Shader::Type::Vertex},
-        {"shaders/skybox/fragment_shader.fs", Shader::Type::Fragment},
+        {"assets/shaders/skybox/vertex_shader.vs", Shader::Type::Vertex},
+        {"assets/shaders/skybox/fragment_shader.fs", Shader::Type::Fragment},
     });
 
     cubemap_ = std::make_unique<Texture>(1024, 1024, Texture::Attributes{.target = GL_TEXTURE_CUBE_MAP});
 
     std::vector<std::string_view> filenames{
-        "textures/cubemap/right.png",  "textures/cubemap/left.png", "textures/cubemap/top.png",
-        "textures/cubemap/bottom.png", "textures/cubemap/back.png", "textures/cubemap/front.png",
+        "assets/textures/cubemap/right.png",  "assets/textures/cubemap/left.png", "assets/textures/cubemap/top.png",
+        "assets/textures/cubemap/bottom.png", "assets/textures/cubemap/back.png", "assets/textures/cubemap/front.png",
     };
     /*std::vector<std::string_view> filenames{
-        "textures/cloudy_cubemap/right.png",  "textures/cloudy_cubemap/left.png", "textures/cloudy_cubemap/top.png",
-        "textures/cloudy_cubemap/bottom.png", "textures/cloudy_cubemap/back.png", "textures/cloudy_cubemap/front.png",
+        "assets/textures/cloudy_cubemap/right.png",  "textures/cloudy_cubemap/left.png", "textures/cloudy_cubemap/top.png",
+        "assets/textures/cloudy_cubemap/bottom.png", "textures/cloudy_cubemap/back.png", "textures/cloudy_cubemap/front.png",
     };*/
 
     cubemap_->load_cubemap(filenames, false);

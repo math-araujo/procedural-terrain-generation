@@ -67,12 +67,12 @@ private:
                       std::vector<std::uint32_t>{0, 1, 2, 2, 1, 3}};
 
     ShaderProgram shader_program_{std::initializer_list<std::pair<std::string_view, Shader::Type>>{
-        {"shaders/water/vertex_shader.vs", Shader::Type::Vertex},
-        {"shaders/water/fragment_shader.fs", Shader::Type::Fragment},
+        {"assets/shaders/water/vertex_shader.vs", Shader::Type::Vertex},
+        {"assets/shaders/water/fragment_shader.fs", Shader::Type::Fragment},
     }};
-    Texture dudv_map_{create_texture_from_file("textures/water/dudv.png",
+    Texture dudv_map_{create_texture_from_file("assets/textures/water/dudv.png",
                                                Texture::Attributes{.wrap_s = GL_REPEAT, .wrap_t = GL_REPEAT})};
-    Texture normal_map_{create_texture_from_file("textures/water/normal.png",
+    Texture normal_map_{create_texture_from_file("assets/textures/water/normal.png",
                                                  Texture::Attributes{.wrap_s = GL_REPEAT, .wrap_t = GL_REPEAT})};
 
     // Reflection uses renderbuffer for depth buffer and texture for color buffer

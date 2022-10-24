@@ -29,7 +29,8 @@ endif()
 
 # Copy 'assets' directory to 'build' directory after build
 add_custom_command(TARGET main POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:main>/assets
     COMMAND ${CMAKE_COMMAND} -E copy_directory
     ${CMAKE_SOURCE_DIR}/assets
-    ${CMAKE_CURRENT_BINARY_DIR}/
+    $<TARGET_FILE_DIR:main>/assets
 )

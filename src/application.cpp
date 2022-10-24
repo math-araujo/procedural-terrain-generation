@@ -223,7 +223,7 @@ void Application::initialize_terrain()
 
     heightmap_generator_ =
         std::make_unique<ShaderProgram>(std::initializer_list<std::pair<std::string_view, Shader::Type>>{
-            {"shaders/heightmap/heightmap.glsl", Shader::Type::Compute},
+            {"assets/shaders/heightmap/heightmap.glsl", Shader::Type::Compute},
         });
     heightmap_generator_->set_float_uniform("lacunarity", fractal_noise_generator_.noise_settings.lacunarity);
     heightmap_generator_->set_float_uniform("persistance", fractal_noise_generator_.noise_settings.persistance);
@@ -234,7 +234,7 @@ void Application::initialize_terrain()
     terrain_heightmap_ = std::make_unique<Texture>(height_map_dim_.first, height_map_dim_.second);
     normalmap_generator_ =
         std::make_unique<ShaderProgram>(std::initializer_list<std::pair<std::string_view, Shader::Type>>{
-            {"shaders/heightmap/normalmap.glsl", Shader::Type::Compute},
+            {"assets/shaders/heightmap/normalmap.glsl", Shader::Type::Compute},
         });
     terrain_normalmap_ = std::make_unique<Texture>(height_map_dim_.first, height_map_dim_.second);
     compute_terrain_maps();
@@ -249,17 +249,17 @@ void Application::initialize_terrain()
                                                                              .layers = 3}};
 
     std::vector<std::string_view> albedo_names{
-        "textures/terrain/albedo/river_rock1_albedo.png",
-        "textures/terrain/albedo/slate2-tiled-albedo2.png",
-        "textures/terrain/albedo/rock-snow-ice1-2k_Base_Color.png",
+        "assets/textures/terrain/albedo/river_rock1_albedo.png",
+        "assets/textures/terrain/albedo/slate2-tiled-albedo2.png",
+        "assets/textures/terrain/albedo/rock-snow-ice1-2k_Base_Color.png",
     };
     terrain_albedos_ =
         std::make_unique<Texture>(create_arraytexture_from_file(albedo_names, terrain_texture_attributes));
 
     std::vector<std::string_view> normal_names{
-        "textures/terrain/normal/river_rock1_Normal-dx.png",
-        "textures/terrain/normal/slate2-tiled-normal3-UE4.png",
-        "textures/terrain/normal/rock-snow-ice1-2k_Normal-dx.png",
+        "assets/textures/terrain/normal/river_rock1_Normal-dx.png",
+        "assets/textures/terrain/normal/slate2-tiled-normal3-UE4.png",
+        "assets/textures/terrain/normal/rock-snow-ice1-2k_Normal-dx.png",
     };
     terrain_normal_maps_ =
         std::make_unique<Texture>(create_arraytexture_from_file(normal_names, terrain_texture_attributes));
@@ -268,17 +268,17 @@ void Application::initialize_terrain()
     ambient_occlusion_attributes.internal_format = GL_R8;
     ambient_occlusion_attributes.pixel_data_format = GL_RED;
     std::vector<std::string_view> ao_names{
-        "textures/terrain/ao/river_rock1_ao.png",
-        "textures/terrain/ao/slate2-tiled-ao.png",
-        "textures/terrain/ao/rock-snow-ice1-2k_Ambient_Occlusion.png",
+        "assets/textures/terrain/ao/river_rock1_ao.png",
+        "assets/textures/terrain/ao/slate2-tiled-ao.png",
+        "assets/textures/terrain/ao/rock-snow-ice1-2k_Ambient_Occlusion.png",
     };
     terrain_ao_maps_ = std::make_unique<Texture>(create_arraytexture_from_file(ao_names, ambient_occlusion_attributes));
 
     terrain_program_ = std::make_unique<ShaderProgram>(std::initializer_list<std::pair<std::string_view, Shader::Type>>{
-        {"shaders/gpu_terrain/vertex_shader.vs", Shader::Type::Vertex},
-        {"shaders/gpu_terrain/tess_control_shader.tcs", Shader::Type::TessControl},
-        {"shaders/gpu_terrain/tess_eval_shader.tes", Shader::Type::TessEval},
-        {"shaders/gpu_terrain/fragment_shader.fs", Shader::Type::Fragment},
+        {"assets/shaders/gpu_terrain/vertex_shader.vs", Shader::Type::Vertex},
+        {"assets/shaders/gpu_terrain/tess_control_shader.tcs", Shader::Type::TessControl},
+        {"assets/shaders/gpu_terrain/tess_eval_shader.tes", Shader::Type::TessEval},
+        {"assets/shaders/gpu_terrain/fragment_shader.fs", Shader::Type::Fragment},
     });
 
     terrain_program_->set_float_uniform("elevation", terrain_elevation_);
